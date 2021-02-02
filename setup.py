@@ -13,10 +13,13 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/antoniolopezmc/subgroup-discovery",
     packages=setuptools.find_packages(),
+    install_requires=[
+        'pandas',
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.8.5',
 )
