@@ -24,13 +24,13 @@ class Selector(object):
     
     def __init__(self, attribute_name, operator, value):
         if type(attribute_name) is not str:
-            raise TypeError("The parameter 'attribute_name' is not of type str.")
+            raise TypeError("The type of the parameter 'attribute_name' must be 'str'.")
         if not isinstance(operator, Operator):
             raise TypeError("The parameter 'operator' is not a valid Operator.")
         if (type(value) is not str) and (type(value) is not int) and (type(value) is not float):
-            raise TypeError("The parameter 'value' is not of types str, int or float.")
+            raise TypeError("The type of the parameter 'value' must be 'str', 'int' or 'float'.")
         if (type(value) is str) and (operator != Operator.EQUAL) and (operator != Operator.NOT_EQUAL):
-            raise ValueError("If the parameter 'value' is of type str, only EQUAL and NOT EQUAL operators are available.")
+            raise ValueError("If the type of the parameter 'value' is 'str', only EQUAL and NOT EQUAL operators are available.")
         self._attribute_name = attribute_name
         self._operator = operator
         self._value = value
@@ -61,9 +61,9 @@ class Selector(object):
         :return: Whether the parameters 'attribute_name' and 'value' match with the selector.
         """
         if type(attribute_name) is not str:
-            raise TypeError("The parameter 'attribute_name' is not of type str.")
+            raise TypeError("The type of the parameter 'attribute_name' must be 'str'.")
         if (type(value) is not str) and (type(value) is not int) and (type(value) is not float):
-            raise TypeError("The parameter 'value' is not of types str, int or float.")
+            raise TypeError("The type of the parameter 'value' must be 'str', 'int' or 'float'.")
         # Evaluate the complete expression and return the result.
         return (attribute_name == self.attribute_name) and (self.operator.evaluate(value, self.value))
     
@@ -77,7 +77,7 @@ class Selector(object):
         :return: Operator generated from the str.
         """
         if type(input_str) is not str:
-            raise TypeError("The parameter 'input_str' is not of type str.")
+            raise TypeError("The type of the parameter 'input_str' must be 'str'.")
         input_str_split = input_str.split(" ", 2) # Split the input str in 3 substrings using the space as a separator. The third part could have spaces.
         new_operator = Operator.generate_from_str(input_str_split[1])
         # We have to check the format of the value (i.e., input_str_split[2]).
@@ -94,17 +94,17 @@ class Selector(object):
     
     def __eq__(self, other):
         if not isinstance(other, Selector):
-            raise TypeError("The parameter is not of type Selector.")
+            raise TypeError("The type of the parameter must be 'Selector'.")
         return (self._attribute_name == other._attribute_name) and (self._operator == other._operator) and (self._value == other._value)
     
     def __ne__(self, other):
         if not isinstance(other, Selector):
-            raise TypeError("The parameter is not of type Selector.")
+            raise TypeError("The type of the parameter must be 'Selector'.")
         return (self._attribute_name != other._attribute_name) or (self._operator != other._operator) or (self._value != other._value)
 
     def __lt__(self, other):
         if not isinstance(other, Selector):
-            raise TypeError("The parameter is not of type Selector.")
+            raise TypeError("The type of the parameter must be 'Selector'.")
         if (self._attribute_name != other._attribute_name):
             return self._attribute_name < other._attribute_name
         elif (self._operator != other._operator):
@@ -120,7 +120,7 @@ class Selector(object):
     
     def __gt__(self, other):
         if not isinstance(other, Selector):
-            raise TypeError("The parameter is not of type Selector.")
+            raise TypeError("The type of the parameter must be 'Selector'.")
         if (self._attribute_name != other._attribute_name):
             return self._attribute_name > other._attribute_name
         elif (self._operator != other._operator):
@@ -136,7 +136,7 @@ class Selector(object):
     
     def __le__(self, other):
         if not isinstance(other, Selector):
-            raise TypeError("The parameter is not of type Selector.")
+            raise TypeError("The type of the parameter must be 'Selector'.")
         if (self._attribute_name != other._attribute_name):
             return self._attribute_name <= other._attribute_name
         elif (self._operator != other._operator):
@@ -152,7 +152,7 @@ class Selector(object):
     
     def __ge__(self, other):
         if not isinstance(other, Selector):
-            raise TypeError("The parameter is not of type Selector.")
+            raise TypeError("The type of the parameter must be 'Selector'.")
         if (self._attribute_name != other._attribute_name):
             return self._attribute_name >= other._attribute_name
         elif (self._operator != other._operator):
@@ -167,7 +167,7 @@ class Selector(object):
         return True
     
     def __repr__(self):
-        raise exceptions.MethodNotSupportedError("The method __repr__ is not supported.")
+        return str(self)
     
     def __str__(self):
         self_value = self._value

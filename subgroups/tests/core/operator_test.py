@@ -157,8 +157,3 @@ def test_Operator_string_representation():
     assert (str(Operator.GREATER) == ">")
     assert (str(Operator.LESS_OR_EQUAL) == "<=")
     assert (str(Operator.GREATER_OR_EQUAL) == ">=")
-    try:
-        repr(Operator.EQUAL)
-        assert (False)
-    except exceptions.MethodNotSupportedError:
-        assert (True)

@@ -59,7 +59,7 @@ class Operator(Enum):
         :return: Operator generated from the str.
         """
         if type(input_str) is not str:
-            raise TypeError("The parameter 'input_str' is not of type str.")
+            raise TypeError("The type of the parameter 'input_str' must be 'str'.")
         if input_str == "=":
             return Operator.EQUAL
         elif input_str == "!=":
@@ -77,36 +77,33 @@ class Operator(Enum):
     
     def __eq__(self, other):
         if not isinstance(other, Operator):
-            raise TypeError("The parameter is not of type Operator.")
+            raise TypeError("The type of the parameter must be 'Operator'.")
         return self.value == other.value
     
     def __ne__(self, other):
         if not isinstance(other, Operator):
-            raise TypeError("The parameter is not of type Operator.")
+            raise TypeError("The type of the parameter must be 'Operator'.")
         return self.value != other.value
     
     def __lt__(self, other):
         if not isinstance(other, Operator):
-            raise TypeError("The parameter is not of type Operator.")
+            raise TypeError("The type of the parameter must be 'Operator'.")
         return self.value < other.value
     
     def __gt__(self, other):
         if not isinstance(other, Operator):
-            raise TypeError("The parameter is not of type Operator.")
+            raise TypeError("The type of the parameter must be 'Operator'.")
         return self.value > other.value
     
     def __le__(self, other):
         if not isinstance(other, Operator):
-            raise TypeError("The parameter is not of type Operator.")
+            raise TypeError("The type of the parameter must be 'Operator'.")
         return self.value <= other.value
     
     def __ge__(self, other):
         if not isinstance(other, Operator):
-            raise TypeError("The parameter is not of type Operator.")
+            raise TypeError("The type of the parameter must be 'Operator'.")
         return self.value >= other.value
-    
-    def __repr__(self):
-        raise exceptions.MethodNotSupportedError("The method __repr__ is not supported.")
     
     def __str__(self):
         if self == Operator.EQUAL:

@@ -18,11 +18,6 @@ def test_Selector_attributes():
     assert(selector1.value == "value_1")
     assert(type(selector1.value) is str)
     assert(str(selector1) == "attribute_name_1 = \'value_1\'")
-    try:
-        repr(selector1)
-        assert (False)
-    except exceptions.MethodNotSupportedError:
-        assert (True)
     selector2 = Selector("attribute_name_2", Operator.NOT_EQUAL, "value_2")
     assert(selector2.attribute_name == "attribute_name_2")
     assert(selector2.operator == Operator.NOT_EQUAL)
