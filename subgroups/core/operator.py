@@ -25,11 +25,11 @@ class Operator(Enum):
         """Method to evaluate whether the expression (left_element self right_element) is True.
         
         :type left_element: str, int or float
-        :param left_element: The left element of the expression.
+        :param left_element: the left element of the expression.
         :type right_element: str, int or float
-        :param right_element: The right element of the expression.
+        :param right_element: the right element of the expression.
         :rtype: bool
-        :return: Whether the expression (left_element self right_element) is True.
+        :return: whether the expression (left_element self right_element) is True.
         """
         try:
             if self == Operator.EQUAL:
@@ -54,9 +54,9 @@ class Operator(Enum):
         """Static method to generate an Operator from a str.
         
         :type input_str: str
-        :param input_str: The str from which to generate the Operator.
+        :param input_str: the str from which to generate the Operator.
         :rtype: Operator
-        :return: Operator generated from the str.
+        :return: the operator generated from the str.
         """
         if type(input_str) is not str:
             raise TypeError("The type of the parameter 'input_str' must be 'str'.")
@@ -73,7 +73,7 @@ class Operator(Enum):
         elif input_str == ">=":
             return Operator.GREATER_OR_EQUAL
         else:
-            raise AttributeError("The parameter 'input_str' does not match with any operator.")
+            raise AttributeError("The parameter 'input_str' (with the value '" + input_str + "') does not match with any operator.")
     
     def __eq__(self, other):
         if not isinstance(other, Operator):
@@ -119,7 +119,7 @@ class Operator(Enum):
         elif self == Operator.GREATER_OR_EQUAL:
             return ">="
         else:
-            raise exceptions.OperatorNotSupportedError("This operator does not have a string representation.")
+            raise exceptions.OperatorNotSupportedError("This operator does not have a string representation (method '__str__').")
     
     def __hash__(self):
         return hash(self.value)

@@ -13,11 +13,11 @@ class Selector(object):
     """This class represents a 'Selector'. A 'Selector' is an IMMUTABLE structure which contains an attribute name, an operator and a value.
     
     :type attribute_name: str
-    :param attribute_name: Attribute name. It must be a non-empty str.
+    :param attribute_name: the attribute name. It must be a non-empty str.
     :type operator: str
-    :param operator: The operator between the attribute name and the value. If the value is of type str, only EQUAL and NOT EQUAL operators are available.
+    :param operator: the operator between the attribute name and the value. If the value is of type str, only EQUAL and NOT EQUAL operators are available.
     :type value: str, int or float
-    :param value: Value.
+    :param value: the value.
     """
     
     __slots__ = "_attribute_name", "_operator", "_value"
@@ -54,11 +54,11 @@ class Selector(object):
         """Method to evaluate whether the parameters 'attribute_name' and 'value' match with the selector. In this case, "match" means that the expression ((attribute_name == self.attribute_name) and (value self.operator self.value)) is True.
         
         :type attribute_name: str
-        :param attribute_name: The attribute name which is compared with self.attribute_name.
+        :param attribute_name: the attribute name which is compared with self.attribute_name.
         :type value: str, int or float
-        :param value: The value which is compared with self.value.
+        :param value: the value which is compared with self.value.
         :rtype: bool
-        :return: Whether the parameters 'attribute_name' and 'value' match with the selector.
+        :return: whether the parameters 'attribute_name' and 'value' match with the selector.
         """
         if type(attribute_name) is not str:
             raise TypeError("The type of the parameter 'attribute_name' must be 'str'.")
@@ -72,9 +72,9 @@ class Selector(object):
         """Static method to generate a Selector from a str.
         
         :type input_str: str
-        :param input_str: The str from which to generate the Operator. Be careful with the whitespaces: (1) each part of the selector must be separated by only one whitespace and (2) whitespaces at the left side of the str or at the right side of the str are not allowed.
-        :rtype: Operator
-        :return: Operator generated from the str.
+        :param input_str: the str from which to generate the Selector. We assume the following format: <attribute_name><whitespace><operator><whitespace><value>. Be careful with the whitespaces: (1) each part of the selector must be separated by only one whitespace and (2) whitespaces at the left side of the str or at the right side of the str are not allowed.
+        :rtype: Selector
+        :return: the selector generated from the str.
         """
         if type(input_str) is not str:
             raise TypeError("The type of the parameter 'input_str' must be 'str'.")
