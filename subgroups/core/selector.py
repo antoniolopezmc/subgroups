@@ -74,7 +74,7 @@ class Selector(object):
         :type input_str: str
         :param input_str: the str from which to generate the Selector. We assume the following format: <attribute_name><whitespace><operator><whitespace><value>. Be careful with the whitespaces: (1) each part of the selector must be separated by only one whitespace and (2) whitespaces at the left side of the str or at the right side of the str are not allowed.
         :rtype: Selector
-        :return: the selector generated from the str.
+        :return: the Selector generated from the str.
         """
         if type(input_str) is not str:
             raise TypeError("The type of the parameter 'input_str' must be 'str'.")
@@ -101,7 +101,7 @@ class Selector(object):
         if not isinstance(other, Selector):
             raise TypeError("The type of the parameter must be 'Selector'.")
         return (self._attribute_name != other._attribute_name) or (self._operator != other._operator) or (self._value != other._value)
-
+    
     def __lt__(self, other):
         if not isinstance(other, Selector):
             raise TypeError("The type of the parameter must be 'Selector'.")

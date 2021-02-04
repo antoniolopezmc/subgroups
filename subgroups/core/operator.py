@@ -56,7 +56,7 @@ class Operator(Enum):
         :type input_str: str
         :param input_str: the str from which to generate the Operator.
         :rtype: Operator
-        :return: the operator generated from the str.
+        :return: the Operator generated from the str.
         """
         if type(input_str) is not str:
             raise TypeError("The type of the parameter 'input_str' must be 'str'.")
