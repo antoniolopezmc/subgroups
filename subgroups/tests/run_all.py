@@ -11,8 +11,9 @@ from subgroups.tests.core.selector_test import *
 
 if __name__ == "__main__":
     test_Operator_evaluate_method()
+    test_Operator_generate_from_str_method()
     test_Operator_string_representation()
-    test_Selector_creation_process()
     test_Selector_attributes()
     test_Selector_match_mathod()
+    test_Selector_generate_from_str_method()
     test_Selector_comparisons()

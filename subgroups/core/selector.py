@@ -6,10 +6,10 @@
 """This file contains the implementation of a 'Selector'. A 'Selector' is an IMMUTABLE structure which contains an attribute name, an operator and a value.
 """
 
-from enum import Enum
+from subgroups import exceptions
 from subgroups.core.operator import Operator
 
-class Selector(tuple):
+class Selector(object):
     """This class represents a 'Selector'. A 'Selector' is an IMMUTABLE structure which contains an attribute name, an operator and a value.
     
     :type attribute_name: str
@@ -20,64 +20,33 @@ class Selector(tuple):
     :param value: Value.
     """
     
-    # The selectors are stored in a selector pool. Two selectors with the same attribute name, the same operator and the same value are the same object.
-    _dict_of_selectors = dict()
+    __slots__ = "_attribute_name", "_operator", "_value"
     
-    def __new__(cls, attribute_name, operator, value):
+    def __init__(self, attribute_name, operator, value):
         if type(attribute_name) is not str:
             raise TypeError("The parameter 'attribute_name' is not of type str.")
-        if not isinstance(operator, Enum):
+        if not isinstance(operator, Operator):
             raise TypeError("The parameter 'operator' is not a valid Operator.")
         if (type(value) is not str) and (type(value) is not int) and (type(value) is not float):
             raise TypeError("The parameter 'value' is not of types str, int or float.")
         if (type(value) is str) and (operator != Operator.EQUAL) and (operator != Operator.NOT_EQUAL):
             raise ValueError("If the parameter 'value' is of type str, only EQUAL and NOT EQUAL operators are available.")
-        if (attribute_name not in Selector._dict_of_selectors):
-            Selector._dict_of_selectors[attribute_name] = dict()
-            Selector._dict_of_selectors[attribute_name][operator] = dict()
-            new_instance = super().__new__(cls, (attribute_name, operator, value))
-            new_instance._tuple = (attribute_name, operator, value)
-            Selector._dict_of_selectors[attribute_name][operator][value] = new_instance
-            return new_instance
-        elif (operator not in Selector._dict_of_selectors[attribute_name]):
-            Selector._dict_of_selectors[attribute_name][operator] = dict()
-            new_instance = super().__new__(cls, (attribute_name, operator, value))
-            new_instance._tuple = (attribute_name, operator, value)
-            Selector._dict_of_selectors[attribute_name][operator][value] = new_instance
-            return new_instance
-        elif (value not in Selector._dict_of_selectors[attribute_name][operator]):
-            new_instance = super().__new__(cls, (attribute_name, operator, value))
-            new_instance._tuple = (attribute_name, operator, value)
-            Selector._dict_of_selectors[attribute_name][operator][value] = new_instance
-            return new_instance
-        else:
-            return Selector._dict_of_selectors[attribute_name][operator][value]
-    
-    def __del__(self):
-        self_attribute_name = self.attribute_name
-        self_operator = self.operator
-        self_value = self.value
-        # 1. Delete the key (self_value) and the value (instance) stored in the dictionary _dict_of_selectors[self_attribute_name][self_operator].
-        del Selector._dict_of_selectors[self_attribute_name][self_operator][self_value]
-        # 2. If the dictionary _dict_of_selectors[self_attribute_name][self_operator] is empty, delete the key (self_operator) and the value (dictionary) stored in the dictionary _dict_of_selectors[self_attribute_name].
-        if (len(Selector._dict_of_selectors[self_attribute_name][self_operator]) == 0):
-            del Selector._dict_of_selectors[self_attribute_name][self_operator]
-            # 3. If the dictionary _dict_of_selectors[self_attribute_name] is empty, delete the key (self_attribute_name) and the value (dictionary) stored in the dictionary _dict_of_selectors.
-            if (len(Selector._dict_of_selectors[self_attribute_name]) == 0):
-                del Selector._dict_of_selectors[self_attribute_name]
+        self._attribute_name = attribute_name
+        self._operator = operator
+        self._value = value
     
     def _get_attribute_name(self):
-        return self[0]
+        return self._attribute_name
     
     attribute_name = property(_get_attribute_name, None, None, "Attribute name.")
     
     def _get_operator(self):
-        return self[1]
+        return self._operator
     
     operator = property(_get_operator, None, None, "The operator between the attribute name and the value.")
     
     def _get_value(self):
-        return self[2]
+        return self._value
     
     value = property(_get_value, None, None, "Value.")
     
@@ -98,85 +67,113 @@ class Selector(tuple):
         # Evaluate the complete expression and return the result.
         return (attribute_name == self.attribute_name) and (self.operator.evaluate(value, self.value))
     
+    @staticmethod
+    def generate_from_str(input_str):
+        """Static method to generate a Selector from a str.
+        
+        :type input_str: str
+        :param input_str: The str from which to generate the Operator. Be careful with the whitespaces: (1) each part of the selector must be separated by only one whitespace and (2) whitespaces at the left side of the str or at the right side of the str are not allowed.
+        :rtype: Operator
+        :return: Operator generated from the str.
+        """
+        if type(input_str) is not str:
+            raise TypeError("The parameter 'input_str' is not of type str.")
+        input_str_split = input_str.split(" ", 2) # Split the input str in 3 substrings using the space as a separator. The third part could have spaces.
+        new_operator = Operator.generate_from_str(input_str_split[1])
+        # We have to check the format of the value (i.e., input_str_split[2]).
+        if (input_str_split[2][0] == input_str_split[2][-1] == "\'") or (input_str_split[2][0] == input_str_split[2][-1] == "\""): # The value is of type str.
+            return Selector(input_str_split[0], new_operator, input_str_split[2][1:-1]) # [1:-1] -> Delete the characters "\'" or "\"".
+        else: # The value could be of types int or float.
+            try:
+                if ("." in input_str_split[2]):
+                    return Selector(input_str_split[0], new_operator, float(input_str_split[2]))
+                else:
+                    return Selector(input_str_split[0], new_operator, int(input_str_split[2]))
+            except ValueError: # If we cannot transform to int or float, we return the value as a str.
+                return Selector(input_str_split[0], new_operator, input_str_split[2])
+    
     def __eq__(self, other):
         if not isinstance(other, Selector):
             raise TypeError("The parameter is not of type Selector.")
-        return (self[0] == other[0]) and (self[1] == other[1]) and (self[2] == other[2])
+        return (self._attribute_name == other._attribute_name) and (self._operator == other._operator) and (self._value == other._value)
     
     def __ne__(self, other):
         if not isinstance(other, Selector):
             raise TypeError("The parameter is not of type Selector.")
-        return (self[0] != other[0]) or (self[1] != other[1]) or (self[2] != other[2])
+        return (self._attribute_name != other._attribute_name) or (self._operator != other._operator) or (self._value != other._value)
 
     def __lt__(self, other):
         if not isinstance(other, Selector):
             raise TypeError("The parameter is not of type Selector.")
-        if (self[0] != other[0]):
-            return self[0] < other[0]
-        elif (self[1] != other[1]):
-            return self[1] < other[1]
-        elif (self[2] != other[2]):
+        if (self._attribute_name != other._attribute_name):
+            return self._attribute_name < other._attribute_name
+        elif (self._operator != other._operator):
+            return self._operator < other._operator
+        elif (self._value != other._value):
             try:
-                return self[2] < other[2]
+                return self._value < other._value
             except TypeError:
                 # If one value is of type str and the other is of any numeric type, the operator '<' is not supported and a TypeError exception is raised.
                 # - In this case, we transform to str and compare them.
-                return str(self[2]) < str(other[2])
+                return str(self._value) < str(other._value)
         return False
     
     def __gt__(self, other):
         if not isinstance(other, Selector):
             raise TypeError("The parameter is not of type Selector.")
-        if (self[0] != other[0]):
-            return self[0] > other[0]
-        elif (self[1] != other[1]):
-            return self[1] > other[1]
-        elif (self[2] != other[2]):
+        if (self._attribute_name != other._attribute_name):
+            return self._attribute_name > other._attribute_name
+        elif (self._operator != other._operator):
+            return self._operator > other._operator
+        elif (self._value != other._value):
             try:
-                return self[2] > other[2]
+                return self._value > other._value
             except TypeError:
                 # If one value is of type str and the other is of any numeric type, the operator '>' is not supported and a TypeError exception is raised.
                 # - In this case, we transform to str and compare them.
-                return str(self[2]) > str(other[2])
+                return str(self._value) > str(other._value)
         return False
     
     def __le__(self, other):
         if not isinstance(other, Selector):
             raise TypeError("The parameter is not of type Selector.")
-        if (self[0] != other[0]):
-            return self[0] <= other[0]
-        elif (self[1] != other[1]):
-            return self[1] <= other[1]
-        elif (self[2] != other[2]):
+        if (self._attribute_name != other._attribute_name):
+            return self._attribute_name <= other._attribute_name
+        elif (self._operator != other._operator):
+            return self._operator <= other._operator
+        elif (self._value != other._value):
             try:
-                return self[2] <= other[2]
+                return self._value <= other._value
             except TypeError:
                 # If one value is of type str and the other is of any numeric type, the operator '<=' is not supported and a TypeError exception is raised.
                 # - In this case, we transform to str and compare them.
-                return str(self[2]) <= str(other[2])
+                return str(self._value) <= str(other._value)
         return True
     
     def __ge__(self, other):
         if not isinstance(other, Selector):
             raise TypeError("The parameter is not of type Selector.")
-        if (self[0] != other[0]):
-            return self[0] >= other[0]
-        elif (self[1] != other[1]):
-            return self[1] >= other[1]
-        elif (self[2] != other[2]):
+        if (self._attribute_name != other._attribute_name):
+            return self._attribute_name >= other._attribute_name
+        elif (self._operator != other._operator):
+            return self._operator >= other._operator
+        elif (self._value != other._value):
             try:
-                return self[2] >= other[2]
+                return self._value >= other._value
             except TypeError:
                 # If one value is of type str and the other is of any numeric type, the operator '>=' is not supported and a TypeError exception is raised.
                 # - In this case, we transform to str and compare them.
-                return str(self[2]) >= str(other[2])
+                return str(self._value) >= str(other._value)
         return True
     
+    def __repr__(self):
+        raise exceptions.MethodNotSupportedError("The method __repr__ is not supported.")
+    
     def __str__(self):
-        self_value = self.value
-        if type(self.value) is str:
+        self_value = self._value
+        if type(self._value) is str:
             self_value = "\'" + self_value + "\'"
-        return self[0] + " " + str(self[1]) + " " + str(self_value)
+        return self._attribute_name + " " + str(self._operator) + " " + str(self_value)
     
     def __hash__(self):
-        return super().__hash__()
+        return hash(str(self))

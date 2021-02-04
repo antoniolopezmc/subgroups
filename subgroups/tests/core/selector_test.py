@@ -8,82 +8,7 @@
 
 from subgroups.core.selector import Selector
 from subgroups.core.operator import Operator
-
-# This method counts the number of elements contained in each layer of the dictionary '_dict_of_selectors'.
-def _number_of_items_per_layer():
-    final_vector = [0, 0, 0]
-    _number_of_items_per_layer__in(Selector._dict_of_selectors, 0, final_vector)
-    return final_vector
-
-def _number_of_items_per_layer__in(current_dict, layer, vector_of_amounts):
-    assert((layer >= 0) and (layer <= 2))
-    if (layer == 2):
-        vector_of_amounts[layer] = vector_of_amounts[layer] + len(current_dict)
-    else:
-        for key in current_dict:
-            vector_of_amounts[layer] = vector_of_amounts[layer] + 1
-            _number_of_items_per_layer__in(current_dict[key], layer+1, vector_of_amounts)
-
-def test_Selector_creation_process():
-    # --------------------------------------------------------------
-    assert (_number_of_items_per_layer() == [0, 0, 0])
-    selector1 = Selector("a", Operator.EQUAL, 23)
-    assert (_number_of_items_per_layer() == [1, 1, 1])
-    selector2 = Selector("a", Operator.EQUAL, 23)
-    assert (_number_of_items_per_layer() == [1, 1, 1])
-    selector3 = Selector("a", Operator.EQUAL, 45)
-    assert (_number_of_items_per_layer() == [1, 1, 2])
-    selector4 = Selector("a", Operator.EQUAL, 45)
-    assert (_number_of_items_per_layer() == [1, 1, 2])
-    selector5 = Selector("a", Operator.LESS, 52)
-    assert (_number_of_items_per_layer() == [1, 2, 3])
-    selector6 = Selector("a", Operator.LESS, 52)
-    assert (_number_of_items_per_layer() == [1, 2, 3])
-    selector7 = Selector("a", Operator.GREATER, 52)
-    assert (_number_of_items_per_layer() == [1, 3, 4])
-    selector8 = Selector("qwe", Operator.EQUAL, 23)
-    assert (_number_of_items_per_layer() == [2, 4, 5])
-    selector9 = Selector("qwe", Operator.EQUAL, 23)
-    assert (_number_of_items_per_layer() == [2, 4, 5])
-    selector10 = Selector("qwe", Operator.EQUAL, 45)
-    assert (_number_of_items_per_layer() == [2, 4, 6])
-    selector11 = Selector("qwe", Operator.EQUAL, 45)
-    assert (_number_of_items_per_layer() == [2, 4, 6])
-    selector12 = Selector("qwe", Operator.LESS_OR_EQUAL, 52)
-    assert (_number_of_items_per_layer() == [2, 5, 7])
-    selector13 = Selector("qwe", Operator.LESS_OR_EQUAL, 52)
-    assert (_number_of_items_per_layer() == [2, 5, 7])
-    selector14 = Selector("qwe", Operator.GREATER_OR_EQUAL, 52)
-    assert (_number_of_items_per_layer() == [2, 6, 8])
-    # --------------------------------------------------------------
-    assert (id(selector1) == id(selector2))
-    assert (id(selector3) == id(selector4))
-    assert (id(selector5) == id(selector6))
-    assert (id(selector1) != id(selector7))
-    assert (id(selector2) != id(selector7))
-    assert (id(selector3) != id(selector7))
-    assert (id(selector4) != id(selector7))
-    assert (id(selector5) != id(selector7))
-    assert (id(selector6) != id(selector7))
-    # --------------------------------------------------------------
-    assert (id(selector8) == id(selector9))
-    assert (id(selector10) == id(selector11))
-    assert (id(selector12) == id(selector13))
-    assert (id(selector8) != id(selector14))
-    assert (id(selector9) != id(selector14))
-    assert (id(selector10) != id(selector14))
-    assert (id(selector11) != id(selector14))
-    assert (id(selector12) != id(selector14))
-    assert (id(selector13) != id(selector14))
-    # --------------------------------------------------------------
-    assert (id(selector1) != id(selector8))
-    assert (id(selector2) != id(selector9))
-    assert (id(selector3) != id(selector10))
-    assert (id(selector4) != id(selector11))
-    assert (id(selector5) != id(selector12))
-    assert (id(selector6) != id(selector13))
-    assert (id(selector7) != id(selector14))
-    # --------------------------------------------------------------
+from subgroups import exceptions
 
 def test_Selector_attributes():
     # These examples must run ok.
@@ -93,6 +18,11 @@ def test_Selector_attributes():
     assert(selector1.value == "value_1")
     assert(type(selector1.value) is str)
     assert(str(selector1) == "attribute_name_1 = \'value_1\'")
+    try:
+        repr(selector1)
+        assert (False)
+    except exceptions.MethodNotSupportedError:
+        assert (True)
     selector2 = Selector("attribute_name_2", Operator.NOT_EQUAL, "value_2")
     assert(selector2.attribute_name == "attribute_name_2")
     assert(selector2.operator == Operator.NOT_EQUAL)
@@ -168,6 +98,40 @@ def test_Selector_match_mathod():
         selector3.match(12, "value_3")
         assert(False)
     except TypeError:
+        assert(True)
+
+def test_Selector_generate_from_str_method():
+    assert (Selector.generate_from_str("a = 23") == Selector("a", Operator.EQUAL, 23))
+    assert (Selector.generate_from_str("a != 23") == Selector("a", Operator.NOT_EQUAL, 23))
+    assert (Selector.generate_from_str("a < 23") == Selector("a", Operator.LESS, 23))
+    assert (Selector.generate_from_str("a > 23") == Selector("a", Operator.GREATER, 23))
+    assert (Selector.generate_from_str("a <= 23") == Selector("a", Operator.LESS_OR_EQUAL, 23))
+    assert (Selector.generate_from_str("a >= 23") == Selector("a", Operator.GREATER_OR_EQUAL, 23))
+    assert (type(Selector.generate_from_str("a >= 23").value) is int)
+    assert (Selector.generate_from_str("a > 23.06") == Selector("a", Operator.GREATER, 23.06))
+    assert (type(Selector.generate_from_str("a > 23.06").value) is float)
+    assert (Selector.generate_from_str("a != 'hello'") == Selector("a", Operator.NOT_EQUAL, "hello"))
+    assert (type(Selector.generate_from_str("a != 'hello'").value) is str)
+    assert (Selector.generate_from_str("a != 'hello'").value == "hello")
+    assert (Selector.generate_from_str('a != "hello"') == Selector("a", Operator.NOT_EQUAL, "hello"))
+    assert (type(Selector.generate_from_str('a != "hello"').value) is str)
+    assert (Selector.generate_from_str('a != "hello"').value == "hello")
+    assert (Selector.generate_from_str("a != \'hello\'") == Selector("a", Operator.NOT_EQUAL, "hello"))
+    assert (type(Selector.generate_from_str("a != \'hello\'").value) is str)
+    assert (Selector.generate_from_str("a != \'hello\'").value == "hello")
+    assert (Selector.generate_from_str('a != \"hello\"') == Selector("a", Operator.NOT_EQUAL, "hello"))
+    assert (type(Selector.generate_from_str('a != \"hello\"').value) is str)
+    assert (Selector.generate_from_str('a != \"hello\"').value == "hello")
+    assert (Selector.generate_from_str("a != hello") == Selector("a", Operator.NOT_EQUAL, "hello"))
+    assert (type(Selector.generate_from_str("a != hello").value) is str)
+    assert (Selector.generate_from_str("a != hello").value == "hello")
+    assert (Selector.generate_from_str("a != 25.36.12") == Selector("a", Operator.NOT_EQUAL, "25.36.12"))
+    assert (type(Selector.generate_from_str("a != 25.36.12").value) is str)
+    assert (Selector.generate_from_str("a != 25.36.12").value == "25.36.12")
+    try:
+        Selector.generate_from_str("a < 'hello'")
+        assert(False)
+    except ValueError:
         assert(True)
 
 def test_Selector_comparisons():

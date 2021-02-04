@@ -48,36 +48,65 @@ class Operator(Enum):
                 raise exceptions.OperatorNotSupportedError("This operator has not been added to the method 'evaluate'.")
         except TypeError: # If the operator is not supported between the two values, a TypeError exception is raised. In this case, the evaluation is always False.
             return False
-
+    
+    @staticmethod
+    def generate_from_str(input_str):
+        """Static method to generate an Operator from a str.
+        
+        :type input_str: str
+        :param input_str: The str from which to generate the Operator.
+        :rtype: Operator
+        :return: Operator generated from the str.
+        """
+        if type(input_str) is not str:
+            raise TypeError("The parameter 'input_str' is not of type str.")
+        if input_str == "=":
+            return Operator.EQUAL
+        elif input_str == "!=":
+            return Operator.NOT_EQUAL
+        elif input_str == "<":
+            return Operator.LESS
+        elif input_str == ">":
+            return Operator.GREATER
+        elif input_str == "<=":
+            return Operator.LESS_OR_EQUAL
+        elif input_str == ">=":
+            return Operator.GREATER_OR_EQUAL
+        else:
+            raise AttributeError("The parameter 'input_str' does not match with any operator.")
+    
     def __eq__(self, other):
         if not isinstance(other, Operator):
-            print("The parameter is not of type Operator.")
+            raise TypeError("The parameter is not of type Operator.")
         return self.value == other.value
     
     def __ne__(self, other):
         if not isinstance(other, Operator):
-            print("The parameter is not of type Operator.")
+            raise TypeError("The parameter is not of type Operator.")
         return self.value != other.value
     
     def __lt__(self, other):
         if not isinstance(other, Operator):
-            print("The parameter is not of type Operator.")
+            raise TypeError("The parameter is not of type Operator.")
         return self.value < other.value
     
     def __gt__(self, other):
         if not isinstance(other, Operator):
-            print("The parameter is not of type Operator.")
+            raise TypeError("The parameter is not of type Operator.")
         return self.value > other.value
     
     def __le__(self, other):
         if not isinstance(other, Operator):
-            print("The parameter is not of type Operator.")
+            raise TypeError("The parameter is not of type Operator.")
         return self.value <= other.value
     
     def __ge__(self, other):
         if not isinstance(other, Operator):
-            print("The parameter is not of type Operator.")
+            raise TypeError("The parameter is not of type Operator.")
         return self.value >= other.value
+    
+    def __repr__(self):
+        raise exceptions.MethodNotSupportedError("The method __repr__ is not supported.")
     
     def __str__(self):
         if self == Operator.EQUAL:

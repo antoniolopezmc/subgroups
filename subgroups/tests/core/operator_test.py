@@ -7,6 +7,7 @@
 """
 
 from subgroups.core.operator import Operator
+from subgroups import exceptions
 
 def test_Operator_evaluate_method():
     # --------------------------------------------------------------
@@ -141,6 +142,14 @@ def test_Operator_evaluate_method():
         assert (True)
     # --------------------------------------------------------------
 
+def test_Operator_generate_from_str_method():
+    assert (Operator.generate_from_str("=") == Operator.EQUAL)
+    assert (Operator.generate_from_str("!=") == Operator.NOT_EQUAL)
+    assert (Operator.generate_from_str("<") == Operator.LESS)
+    assert (Operator.generate_from_str(">") == Operator.GREATER)
+    assert (Operator.generate_from_str("<=") == Operator.LESS_OR_EQUAL)
+    assert (Operator.generate_from_str(">=") == Operator.GREATER_OR_EQUAL)
+
 def test_Operator_string_representation():
     assert (str(Operator.EQUAL) == "=")
     assert (str(Operator.NOT_EQUAL) == "!=")
@@ -148,3 +157,8 @@ def test_Operator_string_representation():
     assert (str(Operator.GREATER) == ">")
     assert (str(Operator.LESS_OR_EQUAL) == "<=")
     assert (str(Operator.GREATER_OR_EQUAL) == ">=")
+    try:
+        repr(Operator.EQUAL)
+        assert (False)
+    except exceptions.MethodNotSupportedError:
+        assert (True)
