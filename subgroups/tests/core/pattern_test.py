@@ -34,6 +34,9 @@ def test_Pattern():
     assert (len(pattern_2) == 4)
     assert (str(pattern_2) == str(Pattern.generate_from_str("[aaaaa >= -789, age > 78, att2 >= 128, name = name1]")))
     assert (str(pattern_2) == str(Pattern.generate_from_str("[aaaaa >= -789, age > 78, att2 >= 128, name = 'name1']")))
+    assert (str(pattern_2) == str(Pattern.generate_from_str("[aaaaa >= -789, age > 78, att2 >= 128, name = name1, aaaaa >= -789, age > 78, att2 >= 128, name = name1]")))
+    assert (str(pattern_2) == str(Pattern.generate_from_str("[aaaaa >= -789, age > 78, att2 >= 128, name = 'name1', aaaaa >= -789, age > 78, att2 >= 128, name = 'name1']")))
+    assert (str(pattern_2) == "[aaaaa >= -789, age > 78, att2 >= 128, name = 'name1']")
     assert (pattern_1 == pattern_1)
     assert (pattern_1 == pattern_1.copy())
     assert (pattern_1 != pattern_2)
@@ -69,4 +72,13 @@ def test_Pattern():
     assert (len(pattern_4) == 5)
     pattern_4.remove_selector(Selector("zzzz", Operator.EQUAL, "value4"))
     assert (len(pattern_4) == 4)
+    assert (str(pattern_4) == "[age < 25, age > 78, att2 >= 25, name = 'name1']")
+    pattern_4.remove_selector_by_index(1)
+    assert (len(pattern_4) == 3)
+    assert (str(pattern_4) == "[age < 25, att2 >= 25, name = 'name1']")
+    try:
+        pattern_3.remove_selector_by_index(125)
+        assert (False)
+    except IndexError:
+        assert (True)
     Pattern([]).remove_selector(Selector.generate_from_str("aaaaa >= -789"))

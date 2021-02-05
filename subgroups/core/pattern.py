@@ -21,20 +21,16 @@ class Pattern(object):
     def __init__(self, list_of_selectors):
         if type(list_of_selectors) is not list:
             raise TypeError("The type of the parameter 'list_of_selectors' must be 'list'.")
+        # We use a temporal list in order to store a copy of the list 'list_of_selectors'. IMPORTANT: We only copy the list, but not the selectors contained in it.
+        temporal_list_of_selectors = list_of_selectors.copy()
+        # Sort the temporal list of selectors.
+        temporal_list_of_selectors.sort()
         # Initialize 'self._list_of_selectors' to empty list.
         self._list_of_selectors = []
-        # Check if the list 'list_of_selectors' is not empty.
-        if len(list_of_selectors) > 0:
-            # Add the first element of 'list_of_selectors' to 'self._list_of_selectors'.
-            self._list_of_selectors.append(list_of_selectors[0])
-            # Iterate over the rest of the elements.
-            for elem in list_of_selectors[1:]: # In this point, the list 'self._list_of_selectors' has ONLY ONE selector.
-                # We use the bisection algorithm in order to insert the elements.
-                index = bisect.bisect_left(self._list_of_selectors, elem)
-                if (index == len(self._list_of_selectors)): # The element will be inserted in the right side of the list.
-                    self._list_of_selectors.append(elem)
-                elif (self._list_of_selectors[index] != elem): # To avoid duplicates. In this point, the element will not be inserted in the right side of the list.
-                    self._list_of_selectors.insert(index, elem)
+        # Append the elements of the list 'temporal_list_of_selectors' to the list 'self._list_of_selectors', avoiding the duplicates.
+        for elem in temporal_list_of_selectors:
+            if (len(self._list_of_selectors) == 0) or (self._list_of_selectors[-1] != elem):
+                self._list_of_selectors.append(elem)
     
     def add_selector(self, selector):
         """Method to add a selector to the pattern. If the selector already exists, this method does nothing.
@@ -64,8 +60,18 @@ class Pattern(object):
         if (index < len(self._list_of_selectors)) and (self._list_of_selectors[index] == selector):
             self._list_of_selectors.pop(index)
     
+    def remove_selector_by_index(self, index):
+        """Method to remove a selector from the pattern by index. If the index is out of range, an 'IndexError' exception is raised.
+        
+        :type index: int
+        :param index: the index which is used.
+        """
+        if type(index) is not int:
+            raise TypeError("The type of the parameter 'index' must be 'int'.")
+        self._list_of_selectors.pop(index)
+    
     def get_selector(self, index):
-        """Method to get the selector from the pattern in the index determined by the parameter 'index'.
+        """Method to get a selector from the pattern by index. If the index is out of range, an 'IndexError' exception is raised.
         
         :type index: int
         :param index: the index which is used.
