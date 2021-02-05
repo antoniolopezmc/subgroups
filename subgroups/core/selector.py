@@ -8,6 +8,7 @@
 
 from subgroups import exceptions
 from subgroups.core.operator import Operator
+import weakref
 
 class Selector(object):
     """This class represents a 'Selector'. A 'Selector' is an IMMUTABLE structure which contains an attribute name, an operator and a value.
@@ -20,9 +21,12 @@ class Selector(object):
     :param value: the value.
     """
     
-    __slots__ = "_attribute_name", "_operator", "_value"
+    __slots__ = "_attribute_name", "_operator", "_value", "__weakref__"
+
+    # We implement a selector pool using Weak References.
+    _dict_of_selectors = weakref.WeakValueDictionary()
     
-    def __init__(self, attribute_name, operator, value):
+    def __new__(cls, attribute_name, operator, value):
         if type(attribute_name) is not str:
             raise TypeError("The type of the parameter 'attribute_name' must be 'str'.")
         if not isinstance(operator, Operator):
@@ -31,9 +35,17 @@ class Selector(object):
             raise TypeError("The type of the parameter 'value' must be 'str', 'int' or 'float'.")
         if (type(value) is str) and (operator != Operator.EQUAL) and (operator != Operator.NOT_EQUAL):
             raise ValueError("If the type of the parameter 'value' is 'str', only EQUAL and NOT EQUAL operators are available.")
-        self._attribute_name = attribute_name
-        self._operator = operator
-        self._value = value
+        # This will be the key used in the dictionary.
+        key = attribute_name + str(operator) + str(value)
+        if key in Selector._dict_of_selectors:
+            return Selector._dict_of_selectors[key]
+        else:
+            new_instance = super().__new__(cls)
+            new_instance._attribute_name = attribute_name
+            new_instance._operator = operator
+            new_instance._value = value
+            Selector._dict_of_selectors[key] = new_instance
+            return new_instance
     
     def _get_attribute_name(self):
         return self._attribute_name

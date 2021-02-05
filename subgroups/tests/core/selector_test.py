@@ -10,6 +10,205 @@ from subgroups.core.selector import Selector
 from subgroups.core.operator import Operator
 from subgroups import exceptions
 
+def test_Selector_creation_process():
+    # --------------------------------------------------------------
+    assert (len(Selector._dict_of_selectors) == 0)
+    selector1 = Selector("a", Operator.EQUAL, 23)
+    assert (len(Selector._dict_of_selectors) == 1)
+    selector2 = Selector("a", Operator.EQUAL, 23)
+    assert (len(Selector._dict_of_selectors) == 1)
+    selector3 = Selector("a", Operator.EQUAL, 45)
+    assert (len(Selector._dict_of_selectors) == 2)
+    selector4 = Selector("a", Operator.EQUAL, 45)
+    assert (len(Selector._dict_of_selectors) == 2)
+    selector5 = Selector("a", Operator.LESS, 52)
+    assert (len(Selector._dict_of_selectors) == 3)
+    selector6 = Selector("a", Operator.LESS, 52)
+    assert (len(Selector._dict_of_selectors) == 3)
+    selector7 = Selector("a", Operator.GREATER, 52)
+    assert (len(Selector._dict_of_selectors) == 4)
+    selector8 = Selector("qwe", Operator.EQUAL, 23)
+    assert (len(Selector._dict_of_selectors) == 5)
+    selector9 = Selector("qwe", Operator.EQUAL, 23)
+    assert (len(Selector._dict_of_selectors) == 5)
+    selector10 = Selector("qwe", Operator.EQUAL, 45)
+    assert (len(Selector._dict_of_selectors) == 6)
+    selector11 = Selector("qwe", Operator.EQUAL, 45)
+    assert (len(Selector._dict_of_selectors) == 6)
+    selector12 = Selector("qwe", Operator.LESS_OR_EQUAL, 52)
+    assert (len(Selector._dict_of_selectors) == 7)
+    selector13 = Selector("qwe", Operator.LESS_OR_EQUAL, 52)
+    assert (len(Selector._dict_of_selectors) == 7)
+    selector14 = Selector("qwe", Operator.GREATER_OR_EQUAL, 52)
+    assert (len(Selector._dict_of_selectors) == 8)
+    # --------------------------------------------------------------
+    assert (id(selector1) == id(selector2))
+    assert (id(selector3) == id(selector4))
+    assert (id(selector5) == id(selector6))
+    assert (id(selector1) != id(selector7))
+    assert (id(selector2) != id(selector7))
+    assert (id(selector3) != id(selector7))
+    assert (id(selector4) != id(selector7))
+    assert (id(selector5) != id(selector7))
+    assert (id(selector6) != id(selector7))
+    # --------------------------------------------------------------
+    assert (id(selector8) == id(selector9))
+    assert (id(selector10) == id(selector11))
+    assert (id(selector12) == id(selector13))
+    assert (id(selector8) != id(selector14))
+    assert (id(selector9) != id(selector14))
+    assert (id(selector10) != id(selector14))
+    assert (id(selector11) != id(selector14))
+    assert (id(selector12) != id(selector14))
+    assert (id(selector13) != id(selector14))
+    # --------------------------------------------------------------
+    assert (id(selector1) != id(selector8))
+    assert (id(selector2) != id(selector9))
+    assert (id(selector3) != id(selector10))
+    assert (id(selector4) != id(selector11))
+    assert (id(selector5) != id(selector12))
+    assert (id(selector6) != id(selector13))
+    assert (id(selector7) != id(selector14))
+    # --------------------------------------------------------------
+    assert (len(Selector._dict_of_selectors) == 8)
+    del selector1
+    del selector2
+    del selector3
+    del selector4
+    del selector5
+    del selector6
+    del selector7
+    del selector8
+    del selector9
+    del selector10
+    del selector11
+    del selector12
+    del selector13
+    del selector14
+    assert (len(Selector._dict_of_selectors) == 0)
+
+def test_Selector_deletion_process():
+    # --------------------------------------------------------------
+    assert (len(Selector._dict_of_selectors) == 0)
+    selector1 = Selector("a", Operator.EQUAL, 23)
+    assert (len(Selector._dict_of_selectors) == 1)
+    selector2 = Selector("a", Operator.EQUAL, 23)
+    assert (len(Selector._dict_of_selectors) == 1)
+    selector3 = Selector("a", Operator.EQUAL, 45)
+    assert (len(Selector._dict_of_selectors) == 2)
+    selector4 = Selector("a", Operator.EQUAL, 45)
+    assert (len(Selector._dict_of_selectors) == 2)
+    selector5 = Selector("a", Operator.LESS, 52)
+    assert (len(Selector._dict_of_selectors) == 3)
+    selector6 = Selector("a", Operator.LESS, 52)
+    assert (len(Selector._dict_of_selectors) == 3)
+    selector7 = Selector("a", Operator.GREATER, 52)
+    assert (len(Selector._dict_of_selectors) == 4)
+    selector8 = Selector("qwe", Operator.EQUAL, 23)
+    assert (len(Selector._dict_of_selectors) == 5)
+    selector9 = Selector("qwe", Operator.EQUAL, 23)
+    assert (len(Selector._dict_of_selectors) == 5)
+    selector10 = Selector("qwe", Operator.EQUAL, 45)
+    assert (len(Selector._dict_of_selectors) == 6)
+    selector11 = Selector("qwe", Operator.EQUAL, 45)
+    assert (len(Selector._dict_of_selectors) == 6)
+    selector12 = Selector("qwe", Operator.LESS_OR_EQUAL, 52)
+    assert (len(Selector._dict_of_selectors) == 7)
+    selector13 = Selector("qwe", Operator.LESS_OR_EQUAL, 52)
+    assert (len(Selector._dict_of_selectors) == 7)
+    selector14 = Selector("qwe", Operator.GREATER_OR_EQUAL, 52)
+    assert (len(Selector._dict_of_selectors) == 8)
+    # --------------------------------------------------------------
+    assert (len(Selector._dict_of_selectors) == 8)
+    del selector1
+    assert (len(Selector._dict_of_selectors) == 8)
+    del selector2
+    assert (len(Selector._dict_of_selectors) == 7)
+    del selector3
+    assert (len(Selector._dict_of_selectors) == 7)
+    del selector4
+    assert (len(Selector._dict_of_selectors) == 6)
+    del selector5
+    assert (len(Selector._dict_of_selectors) == 6)
+    del selector6
+    assert (len(Selector._dict_of_selectors) == 5)
+    del selector7
+    assert (len(Selector._dict_of_selectors) == 4)
+    del selector8
+    assert (len(Selector._dict_of_selectors) == 4)
+    del selector9
+    assert (len(Selector._dict_of_selectors) == 3)
+    del selector10
+    assert (len(Selector._dict_of_selectors) == 3)
+    del selector11
+    assert (len(Selector._dict_of_selectors) == 2)
+    del selector12
+    assert (len(Selector._dict_of_selectors) == 2)
+    del selector13
+    assert (len(Selector._dict_of_selectors) == 1)
+    del selector14
+    assert (len(Selector._dict_of_selectors) == 0)
+    # --------------------------------------------------------------
+    assert (len(Selector._dict_of_selectors) == 0)
+    selector1 = Selector("a", Operator.EQUAL, 23)
+    assert (len(Selector._dict_of_selectors) == 1)
+    selector2 = Selector("a", Operator.EQUAL, 23)
+    assert (len(Selector._dict_of_selectors) == 1)
+    selector3 = Selector("a", Operator.EQUAL, 45)
+    assert (len(Selector._dict_of_selectors) == 2)
+    selector4 = Selector("a", Operator.EQUAL, 45)
+    assert (len(Selector._dict_of_selectors) == 2)
+    selector5 = Selector("a", Operator.LESS, 52)
+    assert (len(Selector._dict_of_selectors) == 3)
+    selector6 = Selector("a", Operator.LESS, 52)
+    assert (len(Selector._dict_of_selectors) == 3)
+    selector7 = Selector("a", Operator.GREATER, 52)
+    assert (len(Selector._dict_of_selectors) == 4)
+    selector8 = Selector("qwe", Operator.EQUAL, 23)
+    assert (len(Selector._dict_of_selectors) == 5)
+    selector9 = Selector("qwe", Operator.EQUAL, 23)
+    assert (len(Selector._dict_of_selectors) == 5)
+    selector10 = Selector("qwe", Operator.EQUAL, 45)
+    assert (len(Selector._dict_of_selectors) == 6)
+    selector11 = Selector("qwe", Operator.EQUAL, 45)
+    assert (len(Selector._dict_of_selectors) == 6)
+    selector12 = Selector("qwe", Operator.LESS_OR_EQUAL, 52)
+    assert (len(Selector._dict_of_selectors) == 7)
+    selector13 = Selector("qwe", Operator.LESS_OR_EQUAL, 52)
+    assert (len(Selector._dict_of_selectors) == 7)
+    selector14 = Selector("qwe", Operator.GREATER_OR_EQUAL, 52)
+    assert (len(Selector._dict_of_selectors) == 8)
+    # --------------------------------------------------------------
+    assert (len(Selector._dict_of_selectors) == 8)
+    selector14 = None
+    assert (len(Selector._dict_of_selectors) == 7)
+    selector13 = None
+    assert (len(Selector._dict_of_selectors) == 7)
+    selector12 = None
+    assert (len(Selector._dict_of_selectors) == 6)
+    selector11 = None
+    assert (len(Selector._dict_of_selectors) == 6)
+    selector10 = None
+    assert (len(Selector._dict_of_selectors) == 5)
+    selector9 = None
+    assert (len(Selector._dict_of_selectors) == 5)
+    selector8 = None
+    assert (len(Selector._dict_of_selectors) == 4)
+    selector7 = None
+    assert (len(Selector._dict_of_selectors) == 3)
+    selector6 = None
+    assert (len(Selector._dict_of_selectors) == 3)
+    selector5 = None
+    assert (len(Selector._dict_of_selectors) == 2)
+    selector4 = None
+    assert (len(Selector._dict_of_selectors) == 2)
+    selector3 = None
+    assert (len(Selector._dict_of_selectors) == 1)
+    selector2 = None
+    assert (len(Selector._dict_of_selectors) == 1)
+    selector1 = None
+    assert (len(Selector._dict_of_selectors) == 0)
+
 def test_Selector_attributes():
     # These examples must run ok.
     selector1 = Selector("attribute_name_1", Operator.EQUAL, "value_1")
