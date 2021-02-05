@@ -28,10 +28,12 @@ class Pattern(object):
             # Add the first element of 'list_of_selectors' to 'self._list_of_selectors'.
             self._list_of_selectors.append(list_of_selectors[0])
             # Iterate over the rest of the elements.
-            for elem in list_of_selectors[1:]:
+            for elem in list_of_selectors[1:]: # In this point, the list 'self._list_of_selectors' has ONLY ONE selector.
                 # We use the bisection algorithm in order to insert the elements.
                 index = bisect.bisect_left(self._list_of_selectors, elem)
-                if (self._list_of_selectors[index] != elem): # To avoid duplicates.
+                if (index == len(self._list_of_selectors)): # The element will be inserted in the right side of the list.
+                    self._list_of_selectors.append(elem)
+                elif (self._list_of_selectors[index] != elem): # To avoid duplicates. In this point, the element will not be inserted in the right side of the list.
                     self._list_of_selectors.insert(index, elem)
     
     def add_selector(self, selector):
@@ -44,7 +46,9 @@ class Pattern(object):
             raise TypeError("The type of the parameter 'selector' must be 'Selector'.")
         # We can use the bisection algorithm because the list is sorted.
         index = bisect.bisect_left(self._list_of_selectors, selector)
-        if (len(self._list_of_selectors) == 0) or (self._list_of_selectors[index] != selector):
+        if (index == len(self._list_of_selectors)): # The list is empty OR the element will be inserted in the right side of the list.
+            self._list_of_selectors.append(selector)
+        elif (self._list_of_selectors[index] != selector): # The list is not empty AND the element will not be inserted in the right side of the list.
             self._list_of_selectors.insert(index, selector)
     
     def remove_selector(self, selector):
@@ -57,7 +61,7 @@ class Pattern(object):
             raise TypeError("The type of the parameter 'selector' must be 'Selector'.")
         # We can use the bisection algorithm because the list is sorted.
         index = bisect.bisect_left(self._list_of_selectors, selector)
-        if (len(self._list_of_selectors) > 0) and (self._list_of_selectors[index] == selector):
+        if (index < len(self._list_of_selectors)) and (self._list_of_selectors[index] == selector):
             self._list_of_selectors.pop(index)
     
     def get_selector(self, index):

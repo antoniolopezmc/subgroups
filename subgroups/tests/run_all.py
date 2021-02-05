@@ -8,6 +8,7 @@
 
 from subgroups.tests.core.operator_test import *
 from subgroups.tests.core.selector_test import *
+from subgroups.tests.core.pattern_test import *
 
 if __name__ == "__main__":
     test_Operator_evaluate_method()
@@ -17,3 +18,4 @@ if __name__ == "__main__":
     test_Selector_match_mathod()
     test_Selector_generate_from_str_method()
     test_Selector_comparisons()
+    test_Pattern()
