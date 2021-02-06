@@ -6,7 +6,6 @@
 """This file contains the implementation of a 'Selector'. A 'Selector' is an IMMUTABLE structure which contains an attribute name, an operator and a value.
 """
 
-from subgroups import exceptions
 from subgroups.core.operator import Operator
 import weakref
 

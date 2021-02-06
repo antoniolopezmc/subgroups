@@ -156,6 +156,3 @@ class Pattern(object):
     
     def __iter__(self):
         return iter(self._list_of_selectors)
-    
-    def __next__(self):
-        return next(self._list_of_selectors)
