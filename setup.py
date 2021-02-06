@@ -14,7 +14,7 @@ setuptools.setup(
     url="https://github.com/antoniolopezmc/subgroups",
     packages=setuptools.find_packages(),
     install_requires=[
-        'pandas',
+        'pandas>=1.1.3',
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
