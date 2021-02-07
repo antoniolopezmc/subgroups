@@ -272,7 +272,7 @@ def test_Selector_attributes():
     except ValueError:
         assert (True)
 
-def test_Selector_match_mathod():
+def test_Selector_match_method():
     selector1 = Selector("a", Operator.EQUAL, 23)
     selector2 = Selector("a", Operator.GREATER, 23)
     assert (selector1.match("a", 23))

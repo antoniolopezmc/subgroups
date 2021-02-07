@@ -31,6 +31,10 @@ class Operator(Enum):
         :rtype: bool
         :return: whether the expression (left_element self right_element) is True.
         """
+        if (type(left_element) is not str) and (type(left_element) is not int) and (type(left_element) is not float):
+            raise TypeError("The type of the parameter 'left_element' must be 'str', 'int' or 'float'.")
+        if (type(right_element) is not str) and (type(right_element) is not int) and (type(right_element) is not float):
+            raise TypeError("The type of the parameter 'right_element' must be 'str', 'int' or 'float'.")
         try:
             if self == Operator.EQUAL:
                 return left_element == right_element
