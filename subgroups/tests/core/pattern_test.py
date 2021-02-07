@@ -9,7 +9,6 @@
 from subgroups.core.pattern import Pattern
 from subgroups.core.selector import Selector
 from subgroups.core.operator import Operator
-from subgroups import exceptions
 
 def test_Pattern():
     assert (Pattern.generate_from_str("[]") == Pattern([]))

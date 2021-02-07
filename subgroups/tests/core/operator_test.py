@@ -7,7 +7,6 @@
 """
 
 from subgroups.core.operator import Operator
-from subgroups import exceptions
 
 def test_Operator_evaluate_method():
     # --------------------------------------------------------------

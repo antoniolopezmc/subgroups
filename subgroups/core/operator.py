@@ -7,7 +7,7 @@
 """
 
 from enum import Enum
-from subgroups import exceptions
+from subgroups.exceptions import OperatorNotSupportedError
 
 class Operator(Enum):
     
@@ -45,7 +45,7 @@ class Operator(Enum):
             elif self == Operator.GREATER_OR_EQUAL:
                 return left_element >= right_element
             else:
-                raise exceptions.OperatorNotSupportedError("This operator has not been added to the method 'evaluate'.")
+                raise OperatorNotSupportedError("This operator has not been added to the method 'evaluate'.")
         except TypeError: # If the operator is not supported between the two values, a TypeError exception is raised. In this case, the evaluation is always False.
             return False
     
@@ -119,7 +119,7 @@ class Operator(Enum):
         elif self == Operator.GREATER_OR_EQUAL:
             return ">="
         else:
-            raise exceptions.OperatorNotSupportedError("This operator does not have a string representation (method '__str__').")
+            raise OperatorNotSupportedError("This operator does not have a string representation (method '__str__').")
     
     def __hash__(self):
         return hash(self.value)

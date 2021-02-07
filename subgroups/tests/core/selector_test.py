@@ -8,7 +8,6 @@
 
 from subgroups.core.selector import Selector
 from subgroups.core.operator import Operator
-from subgroups import exceptions
 
 def test_Selector_creation_process():
     # --------------------------------------------------------------

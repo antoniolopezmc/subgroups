@@ -49,7 +49,7 @@ class Selector(object):
     def _get_attribute_name(self):
         return self._attribute_name
     
-    attribute_name = property(_get_attribute_name, None, None, "Attribute name.")
+    attribute_name = property(_get_attribute_name, None, None, "The attribute name.")
     
     def _get_operator(self):
         return self._operator
@@ -59,7 +59,7 @@ class Selector(object):
     def _get_value(self):
         return self._value
     
-    value = property(_get_value, None, None, "Value.")
+    value = property(_get_value, None, None, "The value.")
     
     def match(self, attribute_name, value):
         """Method to evaluate whether the parameters 'attribute_name' and 'value' match with the selector. In this case, "match" means that the expression ((attribute_name == self.attribute_name) and (value self.operator self.value)) is True.
