@@ -8,6 +8,7 @@
 
 from subgroups.core.operator import Operator
 import weakref
+from pandas import Series
 
 class Selector(object):
     """This class represents a 'Selector'. A 'Selector' is an IMMUTABLE structure which contains an attribute name, an operator and a value.
@@ -62,19 +63,19 @@ class Selector(object):
     value = property(_get_value, None, None, "The value.")
     
     def match(self, attribute_name, value):
-        """Method to evaluate whether the parameters 'attribute_name' and 'value' match with the selector. In this case, "match" means that the expression ((attribute_name == self.attribute_name) and (value self.operator self.value)) is True.
+        """Method to check whether the parameters 'attribute_name' and 'value' match with the selector. In this case, "match" means that the expression ((attribute_name == self.attribute_name) and (value self.operator self.value)) is True. IMPORTANT: if the selector operator is not supported between value and self.value, a TypeError exception is raised.
         
         :type attribute_name: str
         :param attribute_name: the attribute name which is compared with self.attribute_name.
-        :type value: str, int or float
-        :param value: the value which is compared with self.value.
-        :rtype: bool
+        :type value: str, int, float or pandas.Series
+        :param value: the value which is compared with self.value. The value can be also of type 'pandas.Series' in order to allow comparisons with whole arrays.
+        :rtype: bool or collection[bool]
         :return: whether the parameters 'attribute_name' and 'value' match with the selector.
         """
         if type(attribute_name) is not str:
             raise TypeError("The type of the parameter 'attribute_name' must be 'str'.")
-        if (type(value) is not str) and (type(value) is not int) and (type(value) is not float):
-            raise TypeError("The type of the parameter 'value' must be 'str', 'int' or 'float'.")
+        if (type(value) is not str) and (type(value) is not int) and (type(value) is not float) and (type(value) is not Series):
+            raise TypeError("The type of the parameter 'value' must be 'str', 'int', 'float' or 'pandas.Series'.")
         # Evaluate the complete expression and return the result.
         return (attribute_name == self.attribute_name) and (self.operator.evaluate(value, self.value))
     

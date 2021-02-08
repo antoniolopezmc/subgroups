@@ -63,10 +63,26 @@ def test_Operator_evaluate_method():
     assert (Operator.LESS.evaluate(2.0, 3))
     assert not (Operator.LESS.evaluate(20, 2.0))
     # - str and any numeric types (they do not support this operator).
-    assert not (Operator.LESS.evaluate("a", 23.0))
-    assert not (Operator.LESS.evaluate("12", 23.0))
-    assert not (Operator.LESS.evaluate("120", 23.0))
-    assert not (Operator.LESS.evaluate("23.0", 23.0))
+    try:
+        Operator.LESS.evaluate("a", 23.0)
+        assert(False)
+    except TypeError:
+        assert(True)
+    try:
+        Operator.LESS.evaluate("12", 23.0)
+        assert(False)
+    except TypeError:
+        assert(True)
+    try:
+        Operator.LESS.evaluate("120", 23.0)
+        assert(False)
+    except TypeError:
+        assert(True)
+    try:
+        Operator.LESS.evaluate("23.0", 23.0)
+        assert(False)
+    except TypeError:
+        assert(True)
     # --------------------------------------------------------------
     # Operator GREATER.
     # - int type.
@@ -82,10 +98,26 @@ def test_Operator_evaluate_method():
     assert (Operator.GREATER.evaluate(20.0, 3))
     assert not (Operator.GREATER.evaluate(2, 2.1))
     # - str and any numeric types (they do not support this operator).
-    assert not (Operator.GREATER.evaluate("a", 23.0))
-    assert not (Operator.GREATER.evaluate("12", 23.0))
-    assert not (Operator.GREATER.evaluate("120", 23.0))
-    assert not (Operator.GREATER.evaluate("23.0", 23.0))
+    try:
+        Operator.GREATER.evaluate("a", 23.0)
+        assert(False)
+    except TypeError:
+        assert(True)
+    try:
+        Operator.GREATER.evaluate("12", 23.0)
+        assert(False)
+    except TypeError:
+        assert(True)
+    try:
+        Operator.GREATER.evaluate("120", 23.0)
+        assert(False)
+    except TypeError:
+        assert(True)
+    try:
+        Operator.GREATER.evaluate("23.0", 23.0)
+        assert(False)
+    except TypeError:
+        assert(True)
     # --------------------------------------------------------------
     # Operator LESS_OR_EQUAL.
     # - int type.
@@ -105,10 +137,26 @@ def test_Operator_evaluate_method():
     assert not (Operator.LESS_OR_EQUAL.evaluate(20, 2.0))
     assert (Operator.LESS_OR_EQUAL.evaluate(2.0, 2))
     # - str and any numeric types (they do not support this operator).
-    assert not (Operator.LESS_OR_EQUAL.evaluate("a", 23.0))
-    assert not (Operator.LESS_OR_EQUAL.evaluate("12", 23.0))
-    assert not (Operator.LESS_OR_EQUAL.evaluate("120", 23.0))
-    assert not (Operator.LESS_OR_EQUAL.evaluate("23.0", 23.0))
+    try:
+        Operator.LESS_OR_EQUAL.evaluate("a", 23.0)
+        assert(False)
+    except TypeError:
+        assert(True)
+    try:
+        Operator.LESS_OR_EQUAL.evaluate("12", 23.0)
+        assert(False)
+    except TypeError:
+        assert(True)
+    try:
+        Operator.LESS_OR_EQUAL.evaluate("120", 23.0)
+        assert(False)
+    except TypeError:
+        assert(True)
+    try:
+        Operator.LESS_OR_EQUAL.evaluate("23.0", 23.0)
+        assert(False)
+    except TypeError:
+        assert(True)
     # --------------------------------------------------------------
     # Operator GREATER_OR_EQUAL.
     # - int type.
@@ -128,20 +176,36 @@ def test_Operator_evaluate_method():
     assert not (Operator.GREATER_OR_EQUAL.evaluate(1, 2.0))
     assert (Operator.GREATER_OR_EQUAL.evaluate(2.0, 2))
     # - str and any numeric types (they do not support this operator).
-    assert not (Operator.GREATER_OR_EQUAL.evaluate("a", 23.0))
-    assert not (Operator.GREATER_OR_EQUAL.evaluate("12", 23.0))
-    assert not (Operator.GREATER_OR_EQUAL.evaluate("120", 23.0))
-    assert not (Operator.GREATER_OR_EQUAL.evaluate("23.0", 23.0))
+    try:
+        Operator.GREATER_OR_EQUAL.evaluate("a", 23.0)
+        assert(False)
+    except TypeError:
+        assert(True)
+    try:
+        Operator.GREATER_OR_EQUAL.evaluate("12", 23.0)
+        assert(False)
+    except TypeError:
+        assert(True)
+    try:
+        Operator.GREATER_OR_EQUAL.evaluate("120", 23.0)
+        assert(False)
+    except TypeError:
+        assert(True)
+    try:
+        Operator.GREATER_OR_EQUAL.evaluate("23.0", 23.0)
+        assert(False)
+    except TypeError:
+        assert(True)
     # --------------------------------------------------------------
 
-def test_Operator_evaluate_raw_method():
-    assert (Operator.EQUAL.evaluate_raw(Series([1,2,3,4,5]), 5) == Series([False, False, False, False, True])).all()
-    assert (Operator.EQUAL.evaluate_raw(45, Series([1,2,3,4,5])) == Series([False, False, False, False, False])).all()
-    assert (Operator.NOT_EQUAL.evaluate_raw("45", Series(["1","2","3","4","5"])) == Series([True, True, True, True, True])).all()
-    assert (Operator.NOT_EQUAL.evaluate_raw(Series(["1","2","3","4","5"]), "5") == Series([True, True, True, True, False])).all()
-    assert (Operator.EQUAL.evaluate_raw("45", Series([1,2,3,4,5])) == Series([False, False, False, False, False])).all()
-    assert (Operator.LESS.evaluate_raw(45, Series([1,2,3,4,5])) == Series([False, False, False, False, False])).all()
-    assert (Operator.GREATER.evaluate_raw(45, Series([1,2,3,4,5])) == Series([True, True, True, True, True])).all()
+def test_Operator_evaluate_method_with_pandasSeries():
+    assert (Operator.EQUAL.evaluate(Series([1,2,3,4,5]), 5) == Series([False, False, False, False, True])).all()
+    assert (Operator.EQUAL.evaluate(45, Series([1,2,3,4,5])) == Series([False, False, False, False, False])).all()
+    assert (Operator.NOT_EQUAL.evaluate("45", Series(["1","2","3","4","5"])) == Series([True, True, True, True, True])).all()
+    assert (Operator.NOT_EQUAL.evaluate(Series(["1","2","3","4","5"]), "5") == Series([True, True, True, True, False])).all()
+    assert (Operator.EQUAL.evaluate("45", Series([1,2,3,4,5])) == Series([False, False, False, False, False])).all()
+    assert (Operator.LESS.evaluate(45, Series([1,2,3,4,5])) == Series([False, False, False, False, False])).all()
+    assert (Operator.GREATER.evaluate(45, Series([1,2,3,4,5])) == Series([True, True, True, True, True])).all()
 
 def test_Operator_generate_from_str_method():
     assert (Operator.generate_from_str("=") == Operator.EQUAL)

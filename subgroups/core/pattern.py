@@ -8,6 +8,7 @@
 
 from subgroups.core.selector import Selector
 import bisect
+from pandas import Series, DataFrame
 
 class Pattern(object):
     """This class represents a 'Pattern'. A 'Pattern' is a sorted list of non-repeated selectors.
@@ -90,6 +91,23 @@ class Pattern(object):
         new_pattern = Pattern([]) # The list of selectors is already sorted. It is not needed to sort it in the __init__ method.
         new_pattern._list_of_selectors = new_list_of_selectors
         return new_pattern
+    
+    def is_contained(self, pandas_dataframe):
+        """Method to check whether the pattern is contained in each row of the pandas.DataFrame passed by parameter. IMPORTANT: If an attribute name of a selector of the pattern is not in the pandas.DataFrame passed by parameter, a KeyError exception is raised.
+        
+        :type pandas_dataframe: pandas.DataFrame
+        :param pandas_dataframe: the pandas.DataFrame with which the pattern is checked.
+        :rtype: collection[bool]
+        :return: whether the pattern is contained in each row of the pandas.DataFrame passed by parameter.
+        """
+        if type(pandas_dataframe) is not DataFrame:
+            raise TypeError("The type of the parameter 'pandas_dataframe' must be 'pandas.DataFrame'.")
+        final_result = Series([True] * len(pandas_dataframe)) # The empty pattern is contained in all the rows of a pandas DataFrame.
+        for selector in self._list_of_selectors:
+            current_attribute_name = selector.attribute_name
+            corresponding_Series = pandas_dataframe[current_attribute_name]
+            final_result = final_result & selector.match(current_attribute_name, corresponding_Series)
+        return final_result
     
     @staticmethod
     def generate_from_str(input_str):

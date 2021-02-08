@@ -8,6 +8,7 @@
 
 from enum import Enum
 from subgroups.exceptions import OperatorNotSupportedError
+from pandas import Series
 
 class Operator(Enum):
     
@@ -22,47 +23,19 @@ class Operator(Enum):
     GREATER_OR_EQUAL = 6
     
     def evaluate(self, left_element, right_element):
-        """Method to evaluate whether the expression (left_element self right_element) is True.
+        """Method to evaluate whether the expression (left_element self right_element) is True. IMPORTANT: if the operator is not supported between the both elements, a TypeError exception is raised.
         
-        :type left_element: str, int or float
-        :param left_element: the left element of the expression.
-        :type right_element: str, int or float
-        :param right_element: the right element of the expression.
-        :rtype: bool
-        :return: whether the expression (left_element self right_element) is True.
-        """
-        if (type(left_element) is not str) and (type(left_element) is not int) and (type(left_element) is not float):
-            raise TypeError("The type of the parameter 'left_element' must be 'str', 'int' or 'float'.")
-        if (type(right_element) is not str) and (type(right_element) is not int) and (type(right_element) is not float):
-            raise TypeError("The type of the parameter 'right_element' must be 'str', 'int' or 'float'.")
-        try:
-            if self == Operator.EQUAL:
-                return left_element == right_element
-            elif self == Operator.NOT_EQUAL:
-                return left_element != right_element
-            elif self == Operator.LESS:
-                return left_element < right_element
-            elif self == Operator.GREATER:
-                return left_element > right_element
-            elif self == Operator.LESS_OR_EQUAL:
-                return left_element <= right_element
-            elif self == Operator.GREATER_OR_EQUAL:
-                return left_element >= right_element
-            else:
-                raise OperatorNotSupportedError("This operator has not been added to the method 'evaluate'.")
-        except TypeError: # If the operator is not supported between the two values, a TypeError exception is raised. In this case, the evaluation is always False.
-            return False
-    
-    def evaluate_raw(self, left_element, right_element):
-        """Method to evaluate whether the expression (left_element self right_element) is True. IMPORTANT: (1) all data types are allowed; and (2) if the operator is not supported between the both elements, a TypeError exception is raised.
-        
-        :type left_element: object
-        :param left_element: the left element of the expression.
-        :type right_element: object
-        :param right_element: the right element of the expression.
+        :type left_element: str, int, float or pandas.Series
+        :param left_element: the left element of the expression. It can be also of type 'pandas.Series' in order to allow comparisons with whole arrays.
+        :type right_element: str, int, float or pandas.Series
+        :param right_element: the right element of the expression. It can be also of type 'pandas.Series' in order to allow comparisons with whole arrays.
         :rtype: bool or collection[bool]
         :return: whether the expression (left_element self right_element) is True.
         """
+        if (type(left_element) is not str) and (type(left_element) is not int) and (type(left_element) is not float) and (type(left_element) is not Series):
+            raise TypeError("The type of the parameter 'left_element' must be 'str', 'int', 'float' or 'pandas.Series'.")
+        if (type(right_element) is not str) and (type(right_element) is not int) and (type(right_element) is not float) and (type(right_element) is not Series):
+            raise TypeError("The type of the parameter 'right_element' must be 'str', 'int', 'float' or 'pandas.Series'.")
         if self == Operator.EQUAL:
             return left_element == right_element
         elif self == Operator.NOT_EQUAL:
@@ -76,7 +49,7 @@ class Operator(Enum):
         elif self == Operator.GREATER_OR_EQUAL:
             return left_element >= right_element
         else:
-            raise OperatorNotSupportedError("This operator has not been added to the method 'evaluate_raw'.")
+            raise OperatorNotSupportedError("This operator has not been added to the method 'evaluate'.")
     
     @staticmethod
     def generate_from_str(input_str):

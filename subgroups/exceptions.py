@@ -7,6 +7,6 @@
 This file contains new exceptions used by the library.
 """
 
-class OperatorNotSupportedError(RuntimeError):
+class OperatorNotSupportedError(NotImplementedError):
     """This exception is raised when an operator is not correctly implemented in the Operator class.
     """

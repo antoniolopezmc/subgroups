@@ -9,6 +9,7 @@
 from subgroups.core.pattern import Pattern
 from subgroups.core.selector import Selector
 from subgroups.core.operator import Operator
+from pandas import Series, DataFrame
 
 def test_Pattern():
     assert (Pattern.generate_from_str("[]") == Pattern([]))
@@ -81,3 +82,14 @@ def test_Pattern():
     except IndexError:
         assert (True)
     Pattern([]).remove_selector(Selector.generate_from_str("aaaaa >= -789"))
+
+def test_Pattern_is_contained_method():
+    assert (Pattern([]).is_contained(DataFrame({"a" : [1,2,3], "b" : [7,8,9], "c" : ["a", "b", "c"]}))).all()
+    assert (Pattern.generate_from_str("[a < 25, b >= 25, c = 'b']").is_contained(DataFrame({"a" : [1,2,3], "b" : [7,8,9], "c" : ["a", "b", "c"]})) == Series([False, False, False])).all()
+    assert (Pattern.generate_from_str("[a < 25, b >= 25, c = 'b']").is_contained(DataFrame({"a" : [1,2,3], "b" : [7,125,9], "c" : ["a", "b", "c"]})) == Series([False, True, False])).all()
+    assert (Pattern.generate_from_str("[a < 25, b >= 25, c = 'b']").is_contained(DataFrame({"a" : [1,2,3], "b" : [71,125,25], "c" : ["b", "b", "b"]})) == Series([True, True, True])).all()
+    try:
+        Pattern.generate_from_str("[age < 25, name = 'name1', att2 >= 25, age > 78]").is_contained(DataFrame({"a" : [1,2,3], "b" : [7,8,9], "c" : ["a", "b", "c"]}))
+        assert (False)
+    except KeyError:
+        assert (True)

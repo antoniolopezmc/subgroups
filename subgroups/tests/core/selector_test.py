@@ -284,8 +284,12 @@ def test_Selector_match_method():
     assert not (selector2.match("a", 5))
     assert not (selector2.match("z", 5))
     assert (selector2.match("a", 30.0))
-    assert not (selector2.match("a", "30")) # The the input does not match with the selector, because we cannot apply the operator '>' between a str and an int.
     # These examples must raise an exception (the exception that appears in 'except').
+    try:
+        selector2.match("a", "30") # The method raises a TypeError exception with these parameters, because we cannot apply the operator '>' between a str and an int.
+        assert(False)
+    except TypeError:
+        assert(True)
     try:
         selector3 = Selector("attribute_name_3", Operator.EQUAL, "value_3")
         selector3.match(12, "value_3")
