@@ -53,6 +53,31 @@ class Operator(Enum):
         except TypeError: # If the operator is not supported between the two values, a TypeError exception is raised. In this case, the evaluation is always False.
             return False
     
+    def evaluate_raw(self, left_element, right_element):
+        """Method to evaluate whether the expression (left_element self right_element) is True. IMPORTANT: (1) all data types are allowed; and (2) if the operator is not supported between the both elements, a TypeError exception is raised.
+        
+        :type left_element: object
+        :param left_element: the left element of the expression.
+        :type right_element: object
+        :param right_element: the right element of the expression.
+        :rtype: bool or collection[bool]
+        :return: whether the expression (left_element self right_element) is True.
+        """
+        if self == Operator.EQUAL:
+            return left_element == right_element
+        elif self == Operator.NOT_EQUAL:
+            return left_element != right_element
+        elif self == Operator.LESS:
+            return left_element < right_element
+        elif self == Operator.GREATER:
+            return left_element > right_element
+        elif self == Operator.LESS_OR_EQUAL:
+            return left_element <= right_element
+        elif self == Operator.GREATER_OR_EQUAL:
+            return left_element >= right_element
+        else:
+            raise OperatorNotSupportedError("This operator has not been added to the method 'evaluate_raw'.")
+    
     @staticmethod
     def generate_from_str(input_str):
         """Static method to generate an Operator from a str.

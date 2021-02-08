@@ -12,6 +12,7 @@ from subgroups.tests.core.pattern_test import *
 
 if __name__ == "__main__":
     test_Operator_evaluate_method()
+    test_Operator_evaluate_raw_method()
     test_Operator_generate_from_str_method()
     test_Operator_string_representation()
     test_Selector_creation_process()

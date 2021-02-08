@@ -7,6 +7,7 @@
 """
 
 from subgroups.core.operator import Operator
+from pandas import Series
 
 def test_Operator_evaluate_method():
     # --------------------------------------------------------------
@@ -132,6 +133,15 @@ def test_Operator_evaluate_method():
     assert not (Operator.GREATER_OR_EQUAL.evaluate("120", 23.0))
     assert not (Operator.GREATER_OR_EQUAL.evaluate("23.0", 23.0))
     # --------------------------------------------------------------
+
+def test_Operator_evaluate_raw_method():
+    assert (Operator.EQUAL.evaluate_raw(Series([1,2,3,4,5]), 5) == Series([False, False, False, False, True])).all()
+    assert (Operator.EQUAL.evaluate_raw(45, Series([1,2,3,4,5])) == Series([False, False, False, False, False])).all()
+    assert (Operator.NOT_EQUAL.evaluate_raw("45", Series(["1","2","3","4","5"])) == Series([True, True, True, True, True])).all()
+    assert (Operator.NOT_EQUAL.evaluate_raw(Series(["1","2","3","4","5"]), "5") == Series([True, True, True, True, False])).all()
+    assert (Operator.EQUAL.evaluate_raw("45", Series([1,2,3,4,5])) == Series([False, False, False, False, False])).all()
+    assert (Operator.LESS.evaluate_raw(45, Series([1,2,3,4,5])) == Series([False, False, False, False, False])).all()
+    assert (Operator.GREATER.evaluate_raw(45, Series([1,2,3,4,5])) == Series([True, True, True, True, True])).all()
 
 def test_Operator_generate_from_str_method():
     assert (Operator.generate_from_str("=") == Operator.EQUAL)
