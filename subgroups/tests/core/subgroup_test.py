@@ -1,0 +1,90 @@
+# -*- coding: utf-8 -*-
+
+# Contributors:
+#    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
+
+""" Tests of the functionality contained in the file 'core/subgroup.py'.
+"""
+
+from subgroups.core.pattern import Pattern
+from subgroups.core.selector import Selector
+from subgroups.core.subgroup import Subgroup
+from subgroups.core.operator import Operator
+from pandas import DataFrame
+
+def test_Subgroup():
+    subgroup1 = Subgroup.generate_from_str("Condition: [], Target: age = 34")
+    assert (subgroup1.condition == Pattern([]))
+    assert (subgroup1.target == Selector.generate_from_str("age = 34"))
+    subgroup2 = Subgroup.generate_from_str("Condition: [at1 = 'a', at2 >= 78], Target: age = 34")
+    subgroup3 = subgroup2.copy()
+    assert (id(subgroup2) != id(subgroup3))
+    assert (id(subgroup2.condition) != id(subgroup3.condition))
+    assert (id(subgroup2.target) == id(subgroup3.target))
+    subgroup4 = Subgroup(Pattern([Selector("at1", Operator.EQUAL, 'a'), Selector("at2", Operator.GREATER_OR_EQUAL, 78)]), Selector("age", Operator.EQUAL, 34))
+    assert (subgroup2 == subgroup4)
+    assert not (subgroup2 != subgroup4)
+    assert (str(Subgroup(Pattern([Selector("a", Operator.NOT_EQUAL, 'value'), Selector("b", Operator.GREATER_OR_EQUAL, 78)]), Selector("age", Operator.LESS, 34))) == str(Subgroup.generate_from_str("Condition: [a != value, b >= 78], Target: age < 34")))
+
+def test_Subgroup_filter():
+    df1 = DataFrame({"a" : [1,5,6,9,8,7,4,1,2,3], "b" : [55,69,85,57,51,78,98,56,54,85], "target" : [0,1,0,1,1,0,0,0,1,0]})
+    df1_filtered_use_condition_use_target = DataFrame({"a" : [8], "b" : [51], "target" : [1]}, index=[4])
+    df1_filtered_use_condition = DataFrame({"a" : [8], "b" : [51], "target" : [1]}, index=[4])
+    df1_filtered_use_target = DataFrame({"a" : [5,9,8,2], "b" : [69,57,51,54], "target" : [1,1,1,1]}, index=[1,3,4,8])
+    subgroup1 = Subgroup(Pattern.generate_from_str("[a > 5, b < 55]"), Selector("target", Operator.EQUAL, 1))
+    filter1_subgroup1_df1 = subgroup1.filter(df1, use_condition=True, use_target=True)
+    assert (type(filter1_subgroup1_df1) is tuple)
+    filter2_subgroup1_df1 = subgroup1.filter(df1, use_condition=True, use_target=False)
+    assert (type(filter2_subgroup1_df1) is tuple)
+    filter3_subgroup1_df1 = subgroup1.filter(df1, use_condition=False, use_target=True)
+    assert (type(filter3_subgroup1_df1) is tuple)
+    filter4_subgroup1_df1 = subgroup1.filter(df1, use_condition=False, use_target=False)
+    assert (type(filter4_subgroup1_df1) is tuple)
+    assert (filter1_subgroup1_df1[0] == df1_filtered_use_condition_use_target).all().all()
+    assert (filter2_subgroup1_df1[0] == df1_filtered_use_condition).all().all()
+    assert (filter3_subgroup1_df1[0] == df1_filtered_use_target).all().all()
+    assert (filter4_subgroup1_df1[0] == df1).all().all()
+    assert (filter1_subgroup1_df1[1] == 1)
+    assert (filter2_subgroup1_df1[1] == 1)
+    assert (filter3_subgroup1_df1[1] == 1)
+    assert (filter4_subgroup1_df1[1] == 1)
+    assert (filter1_subgroup1_df1[2] == 0)
+    assert (filter2_subgroup1_df1[2] == 0)
+    assert (filter3_subgroup1_df1[2] == 0)
+    assert (filter4_subgroup1_df1[2] == 0)
+    assert (filter1_subgroup1_df1[3] == 4)
+    assert (filter2_subgroup1_df1[3] == 4)
+    assert (filter3_subgroup1_df1[3] == 4)
+    assert (filter4_subgroup1_df1[3] == 4)
+    assert (filter1_subgroup1_df1[4] == 6)
+    assert (filter2_subgroup1_df1[4] == 6)
+    assert (filter3_subgroup1_df1[4] == 6)
+    assert (filter4_subgroup1_df1[4] == 6)
+    df2 = DataFrame({"a" : [9,5,6,9,8,7,4,1,2,3], "b" : [50,69,85,57,51,78,98,56,54,85], "target" : [0,1,0,1,1,0,0,0,1,0]})
+    df2_filtered_use_condition_use_target = DataFrame({"a" : [8], "b" : [51], "target" : [1]}, index=[4])
+    df2_filtered_use_condition = DataFrame({"a" : [9,8], "b" : [50,51], "target" : [0,1]}, index=[0,4])
+    df2_filtered_use_target = DataFrame({"a" : [5,9,8,2], "b" : [69,57,51,54], "target" : [1,1,1,1]}, index=[1,3,4,8])
+    filter1_subgroup1_df2 = subgroup1.filter(df2, use_condition=True, use_target=True)
+    filter2_subgroup1_df2 = subgroup1.filter(df2, use_condition=True, use_target=False)
+    filter3_subgroup1_df2 = subgroup1.filter(df2, use_condition=False, use_target=True)
+    filter4_subgroup1_df2 = subgroup1.filter(df2, use_condition=False, use_target=False)
+    assert (filter1_subgroup1_df2[0] == df2_filtered_use_condition_use_target).all().all()
+    assert (filter2_subgroup1_df2[0] == df2_filtered_use_condition).all().all()
+    assert (filter3_subgroup1_df2[0] == df2_filtered_use_target).all().all()
+    assert (filter4_subgroup1_df2[0] == df2).all().all()
+    assert (filter1_subgroup1_df2[1] == 1)
+    assert (filter2_subgroup1_df2[1] == 1)
+    assert (filter3_subgroup1_df2[1] == 1)
+    assert (filter4_subgroup1_df2[1] == 1)
+    assert (filter1_subgroup1_df2[2] == 1)
+    assert (filter2_subgroup1_df2[2] == 1)
+    assert (filter3_subgroup1_df2[2] == 1)
+    assert (filter4_subgroup1_df2[2] == 1)
+    assert (filter1_subgroup1_df2[3] == 4)
+    assert (filter2_subgroup1_df2[3] == 4)
+    assert (filter3_subgroup1_df2[3] == 4)
+    assert (filter4_subgroup1_df2[3] == 4)
+    assert (filter1_subgroup1_df2[4] == 6)
+    assert (filter2_subgroup1_df2[4] == 6)
+    assert (filter3_subgroup1_df2[4] == 6)
+    assert (filter4_subgroup1_df2[4] == 6)
