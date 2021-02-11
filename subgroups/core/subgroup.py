@@ -57,7 +57,7 @@ class Subgroup(object):
         :type use_target: bool
         :param use_target: whether the subgroup target is used in the filtering process. By default, True.
         :rtype: tuple
-        :return: a tuple of the form: (DataFrame, tp, fp, TP, FP). The first element is the DataFrame obtained after the filtering process. The other elements are the true positives tp (rows covered by the description and the target), the false positives fp (rows covered by the description but not by the target), the True Positives TP (rows covered by the target) and the False Positives FP (rows not covered by the target). IMPORTANT: These values are computed with the complete subgroup (description and target). This means that, for a given DataFrame, they are always the same no matter the values of the parameters 'use_description' and 'use_target'.
+        :return: a tuple of the form: (DataFrame, tp, fp, TP, FP). The first element is the DataFrame obtained after the filtering process. The other elements are the following subgroup parameters: the true positives tp (rows covered by the description and the target), the false positives fp (rows covered by the description but not by the target), the True Positives TP (rows covered by the target) and the False Positives FP (rows not covered by the target). IMPORTANT: the subgroup parameters are obtained with the complete subgroup (i.e., using the description and using the target). This means that, for a given DataFrame, they always have the same value no matter the values of the parameters 'use_description' and 'use_target'.
         """
         if not isinstance(pandas_dataframe, DataFrame):
             raise TypeError("The type of the parameter 'pandas_dataframe' must be 'pandas.Dataframe'.")

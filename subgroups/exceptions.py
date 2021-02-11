@@ -11,10 +11,6 @@ class OperatorNotSupportedError(NotImplementedError):
     """This exception is raised when an operator is not correctly implemented in the Operator class.
     """
 
-class AbstractClassError(NotImplementedError):
-    """Exception raised by abstract classes.
-    """
-
-class AbstractMethodError(NotImplementedError):
-    """Exception raised by abstract methods.
+class SubgroupParameterNotFoundError(KeyError):
+    """This exception is raised when a subgroup parameter in not found in the quality measure computing process.
     """
