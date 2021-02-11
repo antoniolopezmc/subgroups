@@ -10,6 +10,7 @@ from subgroups.tests.core.operator_test import *
 from subgroups.tests.core.selector_test import *
 from subgroups.tests.core.pattern_test import *
 from subgroups.tests.core.subgroup_test import *
+from subgroups.tests.quality_measures.all import *
 
 if __name__ == "__main__":
     test_Operator_evaluate_method()
@@ -26,3 +27,5 @@ if __name__ == "__main__":
     test_Pattern_is_contained_method()
     test_Subgroup()
     test_Subgroup_filter()
+    test_quality_measures()
+    test_quality_measures_compute()
