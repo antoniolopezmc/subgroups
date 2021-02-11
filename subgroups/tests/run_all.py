@@ -12,6 +12,7 @@ from subgroups.tests.core.pattern_test import *
 from subgroups.tests.core.subgroup_test import *
 from subgroups.tests.quality_measures.all_test import *
 from subgroups.tests.utils.dataframe_filters_test import *
+from subgroups.tests.data_structures.fp_tree_node_test import *
 
 if __name__ == "__main__":
     # core/operator file.
@@ -37,3 +38,5 @@ if __name__ == "__main__":
     test_quality_measures_compute()
     # utils/dataframe_filters file.
     test_dataframe_filters()
+    # data_structures/fp_tree_node file.
+    test_FPTreeNode()
