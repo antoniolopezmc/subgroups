@@ -142,20 +142,24 @@ class FPTreeNode(object):
             return None 
     
     def __str__(self):
-        final_str = "[id: " + str(id(self)) + ", selector: " + str(self._selector) + ", counters: " + str(self._counters)
+        final_str = "{id: " + str(id(self)) + ", selector: " + str(self._selector) + ", counters: " + str(self._counters)
         if self._node_link == None:
-            return final_str + ", node_link_id: None]"
-        return final_str + ", node_link_id: " + str(id(self._node_link)) + "]"
+            return final_str + ", node_link_id: None}"
+        return final_str + ", node_link_id: " + str(id(self._node_link)) + "}"
     
-    def printSubtree(self, current_depth=0):
-        """Method to print the current node and the complete subtree from the current node.
+    def print_tree_as_str(self, current_depth=0):
+        """Method to print as str the current node and the complete subtree from the current node.
         :type current_depth: int
         :param current_depth: the depth of the current node. By default, 0.
+        :rtype: str
+        :return: the printed result (the current node and the complete subtree from the current node).
         """
+        result = ""
         # Print the current node.
         if current_depth > 0:
-            print( ("    "*(current_depth-1)) + ("|---"), end="")
-        print(str(self))
+            result = result + ("    "*(current_depth-1)) + ("|--- ")
+        result = result + str(self) + "\n"
         # Recursive calls.
         for key in self._childs:
-            self._childs[key].printSubtree(current_depth+1)
+            result = result + self._childs[key].print_tree_as_str(current_depth+1)
+        return result

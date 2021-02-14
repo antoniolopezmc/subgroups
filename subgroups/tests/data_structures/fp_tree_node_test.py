@@ -17,11 +17,11 @@ def test_FPTreeNode():
     assert (node1.selector == selector1)
     assert (node1.counters == [1])
     assert (node1.node_link == None)
-    assert (str(node1) == "[id: " + str(id(node1)) + ", selector: name = 'value1', counters: [1], node_link_id: None]")
+    assert (str(node1) == "{id: " + str(id(node1)) + ", selector: name = 'value1', counters: [1], node_link_id: None}")
     node1.counters[0] = node1.counters[0] + 1
     assert (node1.counters == [2])
     assert (node1.node_link == None)
-    assert (str(node1) == "[id: " + str(id(node1)) + ", selector: name = 'value1', counters: [2], node_link_id: None]")
+    assert (str(node1) == "{id: " + str(id(node1)) + ", selector: name = 'value1', counters: [2], node_link_id: None}")
     # Childs of root.
     selector2 = Selector("att1", Operator.EQUAL, "value2")
     node2 = FPTreeNode(selector2, [2], None)
@@ -74,11 +74,11 @@ def test_FPTreeNode():
     assert (id(node6.parent) == id( node3 ))
     assert (id(node7.parent) == id( node3 ))
     # Get child nodes by selector.
-    assert ( id(node1.get_child_by_selector( selector2 )) == id(node2))
-    assert ( id(node1.get_child_by_selector( selector3 )) == id(node3))
-    assert ( id(node1.get_child_by_selector( selector5 )) == id(node5))
-    assert ( id(node3.get_child_by_selector( selector6 )) == id(node6))
-    assert ( id(node3.get_child_by_selector( selector7 )) == id(node7))
+    assert (id(node1.get_child_by_selector( selector2 )) == id(node2))
+    assert (id(node1.get_child_by_selector( selector3 )) == id(node3))
+    assert (id(node1.get_child_by_selector( selector5 )) == id(node5))
+    assert (id(node3.get_child_by_selector( selector6 )) == id(node6))
+    assert (id(node3.get_child_by_selector( selector7 )) == id(node7))
     # Delete child nodes.
     node1.delete_child(node5)
     try:
@@ -86,6 +86,16 @@ def test_FPTreeNode():
         assert (False)
     except KeyError:
         assert (True)
-    assert(node1.number_of_children == 2)
+    assert (node1.number_of_children == 2)
     node1.add_child(node5)
-    assert(node1.number_of_children == 3)
+    assert (node1.number_of_children == 3)
+    # Print the tree.
+    expected_result = str(node1) + "\n" + "|--- " + str(node2) + "\n" + "|--- " + str(node3) + "\n" + "    |--- " + str(node6) + "\n" + "    |--- " + str(node7) + "\n" + "|--- " + str(node5) + "\n"
+    expected_result_split = expected_result.split("\n")[:-1]
+    expected_result_split.sort()
+    final_expected_result = "".join(expected_result_split)
+    node1_printed = node1.print_tree_as_str()
+    node1_printed_split = node1_printed.split("\n")[:-1]
+    node1_printed_split.sort()
+    final_node1_printed = "".join(node1_printed_split)
+    assert (final_expected_result == final_node1_printed)
