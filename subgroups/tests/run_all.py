@@ -23,6 +23,7 @@ if __name__ == "__main__":
     # core/selector file.
     test_Selector_creation_process()
     test_Selector_deletion_process()
+    test_Selector_same_value_different_type()
     test_Selector_attributes()
     test_Selector_match_method()
     test_Selector_generate_from_str_method()

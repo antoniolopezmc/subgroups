@@ -36,7 +36,9 @@ class Selector(object):
         if (type(value) is str) and (operator != Operator.EQUAL) and (operator != Operator.NOT_EQUAL):
             raise ValueError("If the type of the parameter 'value' is 'str', only EQUAL and NOT EQUAL operators are available.")
         # This will be the key used in the dictionary.
-        key = attribute_name + str(operator) + str(value)
+        # IMPORTANT: we use 'repr' in order to add simple quotes to the values of type str, but not to the values of numeric types.
+        # - EXAMPLE: The selectors Selector("a", Operator.EQUAL, 23) and Selector("a", Operator.EQUAL, "23") must be different.
+        key = attribute_name + str(operator) + repr(value)
         if key in Selector._dict_of_selectors:
             return Selector._dict_of_selectors[key]
         else:

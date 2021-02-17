@@ -208,6 +208,20 @@ def test_Selector_deletion_process():
     selector1 = None
     assert (len(Selector._dict_of_selectors) == 0)
 
+def test_Selector_same_value_different_type():
+    assert (len(Selector._dict_of_selectors) == 0)
+    selector1 = Selector("a", Operator.EQUAL, 23)
+    assert (len(Selector._dict_of_selectors) == 1)
+    selector2 = Selector("a", Operator.EQUAL, "23") # The type of the value is different. For this reason, the selector must be also different.
+    assert (len(Selector._dict_of_selectors) == 2)
+    selector3 = Selector("a", Operator.EQUAL, 23)
+    selector4 = Selector("a", Operator.EQUAL, "23")
+    assert (len(Selector._dict_of_selectors) == 2)
+    assert (id(selector1) == id(selector3))
+    assert (id(selector2) == id(selector4))
+    assert (id(selector1) != id(selector2))
+    assert (id(selector3) != id(selector4))
+
 def test_Selector_attributes():
     # These examples must run ok.
     selector1 = Selector("attribute_name_1", Operator.EQUAL, "value_1")
