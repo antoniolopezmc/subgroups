@@ -1,0 +1,365 @@
+# -*- coding: utf-8 -*-
+
+# Contributors:
+#    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
+
+"""This file contains the implementation of the FPTree data structure used in the SDMap algorithm.
+"""
+
+from subgroups.data_structures.fp_tree_node import FPTreeNode
+from subgroups.core.selector import Selector
+from subgroups.core.operator import Operator
+from pandas import DataFrame
+from numpy import size, sum
+
+class FPTreeForSDMap(object):
+    """This class represents the FPTree data structure used in the SDMap algorithm.
+    """
+    
+    __slots__ = "_root_node", "_header_table", "_sorted_header_table"
+    
+    def __init__(self):
+        # The root of the tree. In this case, in each node, we have two counter: the true positives tp of the selector of the node and the false positives fp of the selector of the node.
+        self._root_node = FPTreeNode(Selector("None", Operator.EQUAL, "None"), [-1, -1], None)
+        # The header table is represented with a python dictionary, where the key is a selector and the value is a tuple with 2 elements:
+        # - The first element is a list with 2 elements:
+        #   * The summation of the true positives tp of all the nodes with that selector.
+        #   * The summation of the false positives fp of all the nodes with that selector.
+        # - The second element is a FPTreeNode (which contains that selector).
+        self._header_table = dict()
+        # IMPORTANT: THIS CRITERION HAS BEEN EXTRACTED FROM THE ORIGINAL IMPLEMENTATION OF THE SDMAP ALGORITHM (IN VIKAMINE).
+        # We have to sort the selectors of the header table according to the summation of 'n' (i.e., summation of tp + summation of fp).
+        # - We store them in a list.
+        self._sorted_header_table = []
+    
+    def _get_root_node(self):
+        return self._root_node
+    
+    def _get_header_table(self):
+        return self._header_table
+    
+    def _get_sorted_header_table(self):
+        return self._sorted_header_table
+    
+    root_node = property(_get_root_node, None, None, "The root of the tree.")
+    header_table = property(_get_header_table, None, None, "The header table.")
+    sorted_header_table = property(_get_sorted_header_table, None, None, "A list with the selectors of the header table sorted according to the summation of the 'n' (summation of the true positives tp + summation of the false positives fp).")
+    
+    def is_empty(self):
+        """Method to check whether the FPTree only has the root node.
+        
+        :rtype: bool
+        :return: whether the FPTree only has the root node.
+        """
+        return (self._root_node.number_of_children == 0)
+    
+    def there_is_a_single_path(self):
+        """Method to check whether all internal nodes only have 1 child.
+        
+        :rtype: bool
+        :return: whether all internal nodes only have 1 child.
+        """
+        # Go down while the current node has only one child.
+        current_node = self._root_node
+        while (current_node.number_of_children == 1):
+            current_node = list(current_node._childs.values())[0] # Get the unique child node.
+        # Check the number of children of the current node.
+        if (current_node.number_of_children == 0):
+            return True # If the number of children is 0, we are at the end of the tree and there is a single path.
+        else:
+            return False # If the number of children is greater than 1, there is not a single path.
+    
+    def print_tree_as_str(self):
+        """Method to print as str the complete FPTree from the root node.
+        
+        :rtype: str
+        :return: the printed FPTree.
+        """
+        return self._root_node.print_tree_as_str(current_depth=0)
+    
+    def print_header_table(self, follow_node_links=True):
+        """Method to print all the entries of the FPTree header table.
+        
+        :type follow_node_links: bool
+        :param follow_node_links: whether print all the FPTreeNode ids in the horizontal list or only the first one. By default, True.
+        """
+        if type(follow_node_links) is not bool:
+            raise TypeError("The type of the parameter 'follow_node_links' must be 'bool'.")
+        result = ""
+        for key in self._header_table:
+            current_entry = self._header_table[key]
+            result = result + "{selector: " + str(key) + ", "
+            result = result + "summations: " + str(current_entry[0]) + "} -> " + str(current_entry[1])
+            if follow_node_links:
+                current_node_in_the_horizontal_list = current_entry[1]
+                while (current_node_in_the_horizontal_list != None):
+                    current_node_in_the_horizontal_list = current_node_in_the_horizontal_list.node_link
+                    result = result + " -> " + str(current_node_in_the_horizontal_list)
+            result = result + "\n"
+        return result
+    
+    # IMPORTANT: In the original implementation of the sdmap algorithm (in Vikamine), they check the true positives tp and the 'n' (true positives + false positives) in order to prune the frequent selectors.
+    def generate_set_of_frequent_selectors(self, pandas_dataframe, target, minimum_tp, minimum_fp):
+        """Method to scan the pandas DataFrame in order to generate the set of frequent selectors. IMPORTANT: missing values are not supported yet.
+        
+        :type pandas_dataframe: pandas.DataFrame
+        :param pandas_dataframe: the DataFrame which is scanned. IMPORTANT: missing values are not supported yet.
+        :type target: tuple[str, int] or tuple[str, float] or tuple[str, str]
+        :param target: a tuple with 2 elements: the target attribute name and the target value.
+        :type minimum_tp: int
+        :param minimum_tp: the minimum true positives (tp) threshold.
+        :type minimum_fp: int
+        :param minimum_fp: the minimum false positives (fp) threshold.
+        :rtype: dict[str, tuple[Selector, list[int, int]]]
+        :return: a dictionary where the keys are strings (the concatenation of the selector attribute name and the selector value) and the values are tuples with 2 values: the selector and a list with 2 elements: the true positives tp of it and the false positives fp of it.
+        """
+        if type(pandas_dataframe) is not DataFrame:
+            raise TypeError("The type of the parameter 'pandas_dataframe' must be 'DataFrame'.")
+        if type(target) is not tuple:
+            raise TypeError("The type of the parameter 'target' must be 'tuple'.")
+        if type(minimum_tp) is not int:
+            raise TypeError("The type of the parameter 'minimum_tp' must be 'int'.")
+        if type(minimum_fp) is not int:
+            raise TypeError("The type of the parameter 'minimum_fp' must be 'int'.")
+        # Get the target column as a mask: True if the value is equal to the target value and False otherwise.
+        target_attribute_as_a_mask = (pandas_dataframe[target[0]] == target[1])
+        # Result.
+        final_dict_of_frequent_selectors = dict()
+        # Iterate through the columns (except the target).
+        for column in pandas_dataframe.columns.drop(target[0]):
+            current_Series = pandas_dataframe[column]
+            # Use the groupby method in order to obtain, for each value, the true positives tp and the false positives fp.
+            tp_and_fp_for_each_value = target_attribute_as_a_mask.groupby(current_Series).aggregate([size, sum]) # tp -> sum; fp -> size - sum.
+            # Filter the results according to 'minimum_tp' and 'minimum_fp'.
+            filtered = tp_and_fp_for_each_value[(tp_and_fp_for_each_value["sum"] >= minimum_tp) & ((tp_and_fp_for_each_value["size"] - tp_and_fp_for_each_value["sum"]) >= minimum_fp)]
+            # The corresponding values are the indexes of the DataFrame 'filtered'.
+            values = filtered.index
+            # We create the selectors and we add them to the final dict.
+            for i in values:
+                # IMPORTANT: we use 'repr' in order to add simple quotes to the values of type str, but not to the values of numeric types.
+                final_dict_of_frequent_selectors[column+repr(i)] = (Selector(column, Operator.EQUAL, i), [ filtered.loc[i,"sum"], (filtered.loc[i,"size"] - filtered.loc[i,"sum"]) ])
+        # Finally, we return the results.
+        return final_dict_of_frequent_selectors
+    
+    # IMPORTANT: in the original paper, this method is recursive. In our implementation, the method is iterative.
+    def _insert_tree(self, list_of_selectors, parent_node, target_match):
+        """Private method to insert a list of selectors from a parent node.
+        
+        :type list_of_selectors: list[Selector]
+        :param list_of_selectors: the list of selectors which is inserted in the tree. IMPORTANT: we assume that the list of selectors only contains selectors.
+        :type parent_node: FPTreeNode
+        :param parent_node: the parent node from which to start the insertion.
+        :type target_match: bool
+        :param target_match: whether we consider that the target attribute match.
+        """
+        current_parent_node = parent_node
+        for selector in list_of_selectors:
+            # Get the child node with the current selector or None if it does not exist.
+            child_node_with_this_selector = current_parent_node.get_child_by_selector(selector)
+            # Check if the node exists or not and if the parameter 'target_match' is True or False.
+            if (target_match) and (child_node_with_this_selector is not None):
+                # Increase the true positives tp in the node.
+                child_node_with_this_selector.counters[0] = child_node_with_this_selector._counters[0] + 1
+                # Increase the total number of true positives tp in the header table.
+                self._header_table[selector][0][0] = self._header_table[selector][0][0] + 1
+                # Go down in the tree (the current node will be the current parent node in the next iteration).
+                current_parent_node = child_node_with_this_selector
+            elif (not target_match) and (child_node_with_this_selector is not None):
+                # Increase the false positives fp in the node.
+                child_node_with_this_selector.counters[1] = child_node_with_this_selector._counters[1] + 1
+                # Increase the total number of false positives fp in the header table.
+                self._header_table[selector][0][1] = self._header_table[selector][0][1] + 1
+                # Go down in the tree (the current node will be the current parent node in the next iteration).
+                current_parent_node = child_node_with_this_selector
+            elif (target_match) and (child_node_with_this_selector is None):
+                # Create a new FPTree Node.
+                new_fptreenode = FPTreeNode(selector, [1, 0], None)
+                # Add it as a child of the current parent node.
+                current_parent_node.add_child(new_fptreenode)
+                # Check if the current selector is in the header table.
+                if selector in self._header_table: # If it is in the header table, iterate through the node links, add the new node at the end of the horizontal list and increase the summation of true positives tp in the header table.
+                    current_node_in_the_horizontal_list = self._header_table[selector][1]
+                    while (current_node_in_the_horizontal_list.node_link != None):
+                        current_node_in_the_horizontal_list = current_node_in_the_horizontal_list.node_link
+                    current_node_in_the_horizontal_list.node_link = new_fptreenode
+                    self._header_table[selector][0][0] = self._header_table[selector][0][0] + 1
+                else: # If not, create the entry and add it.
+                    self._header_table[selector] = ([1, 0], new_fptreenode)
+                # Go down in the tree (the current node will be the current parent node in the next iteration).
+                current_parent_node = new_fptreenode
+            elif (not target_match) and (child_node_with_this_selector is None):
+                # Create a new FPTree Node.
+                new_fptreenode = FPTreeNode(selector, [0, 1], None)
+                # Add it as a child of the current parent node.
+                current_parent_node.add_child(new_fptreenode)
+                # Check if the current selector is in the header table.
+                if selector in self._header_table: # If it is in the header table, iterate through the node links, add the new node at the end of the horizontal list and increase the summation of false positives fp in the header table.
+                    current_node_in_the_horizontal_list = self._header_table[selector][1]
+                    while (current_node_in_the_horizontal_list.node_link != None):
+                        current_node_in_the_horizontal_list = current_node_in_the_horizontal_list.node_link
+                    current_node_in_the_horizontal_list.node_link = new_fptreenode
+                    self._header_table[selector][0][1] = self._header_table[selector][0][1] + 1
+                else: # If not, create the entry and add it.
+                    self._header_table[selector] = ([0, 1], new_fptreenode)
+                # Go down in the tree (the current node will be the current parent node in the next iteration).
+                current_parent_node = new_fptreenode
+    
+    def build_tree(self, pandas_dataframe, set_of_frequent_selectors, target):
+        """Method to build the complete FPTree from a pandas DataFrame and using the set of frequent selectors. IMPORTANT: missing values are not supported yet.
+        
+        :type pandas_dataframe: pandas.DataFrame
+        :param pandas_dataframe: the DataFrame which is scanned. IMPORTANT: missing values are not supported yet.
+        :type set_of_frequent_selectors: dict[str, tuple[Selector, list[int, int]]]
+        :param set_of_frequent_selectors: the set of frequent selectors generated by the method 'generate_set_of_frequent_selectors'.
+        :type target: tuple[str, int] or tuple[str, float] or tuple[str, str]
+        :param target: a tuple with 2 elements: the target attribute name and the target value.
+        """
+        if type(pandas_dataframe) is not DataFrame:
+            raise TypeError("The type of the parameter 'pandas_dataframe' must be 'DataFrame'.")
+        if type(set_of_frequent_selectors) is not dict:
+            raise TypeError("The type of the parameter 'set_of_frequent_selectors' must be 'dict'.")
+        if type(target) is not tuple:
+            raise TypeError("The type of the parameter 'target' must be 'tuple'.")
+        # Iterate through the rows by index.
+        for row in pandas_dataframe.index:
+            target_value_in_the_current_row = pandas_dataframe.loc[row, target[0]]
+            selectors_in_the_current_row = []
+            # Iterate through the columns (except the target).
+            for column in pandas_dataframe.columns.drop(target[0]):
+                current_element = pandas_dataframe.loc[row, column]
+                # Add the corresponding selector from 'set_of_frequent_selectors' to 'selectors_in_the_current_row'.
+                # ===> IMPORTANT: the selector might not exist because it was pruned. In this case, a KeyError exception is raised.
+                try:
+                    # IMPORTANT: we use 'repr' in order to add simple quotes to the values of type str, but not to the values of numeric types.
+                    selectors_in_the_current_row.append( set_of_frequent_selectors[column+repr(current_element)][0] )
+                except KeyError:
+                    pass # If the exception is raised, we do nothing.
+            # IMPORTANT: we use 'repr' in order to add simple quotes to the values of type str, but not to the values of numeric types.
+            # We sort the current row according to the order of the selectors of the set of frequent selectors (CRITERION EXTRACTED FROM VIKAMINE).
+            selectors_in_the_current_row.sort(reverse=True, key=lambda x : (set_of_frequent_selectors[x.attribute_name+repr(x.value)][1][0]+set_of_frequent_selectors[x.attribute_name+repr(x.value)][1][1]) ) # Descending order.
+            self._insert_tree(selectors_in_the_current_row, self._root_node, (target_value_in_the_current_row == target[1]))
+        # Finally, we create the sorted header table.
+        self._sorted_header_table = []
+        for key in self._header_table:
+            self._sorted_header_table.append( key )
+        # IMPORTANT: THIS CRITERION HAS BEEN EXTRACTED FROM THE ORIGINAL IMPLEMENTATION OF THE SDMAP ALGORITHM (IN VIKAMINE).
+        # We have to sort the selectors according to the summation of 'n' (i.e., summation of tp + summation of fp).
+        self._sorted_header_table.sort(reverse=False, key=lambda x : (self._header_table[x][0][0] + self._header_table[x][0][1])) # Ascending order.
+    
+    def generate_conditional_fp_tree(self, list_of_selectors, minimum_tp, minimum_fp):
+        """Method to get the conditional FPTree with a list of selectors.
+        
+        :type list_of_selectors: list[Selector]
+        :param list_of_selectors: the list of selectors which is used. IMPORTANT: we assume that the list of selectors only contains selectors.
+        :type minimum_tp: int
+        :param minimum_tp: the minimum true positives (tp) threshold.
+        :type minimum_fp: int
+        :param minimum_fp: the minimum false positives (fp) threshold.
+        :rtype: FPTreeForSDMap
+        :return: the generated conditional FPTree.
+        """
+        if type(list_of_selectors) is not list:
+            raise TypeError("The type of the parameter 'list_of_selectors' must be 'list'.")
+        if type(minimum_tp) is not int:
+            raise TypeError("The type of the parameter 'minimum_tp' must be 'int'.")
+        if type(minimum_fp) is not int:
+            raise TypeError("The type of the parameter 'minimum_fp' must be 'int'.")
+        # We only use the first selector in the list in the creation process (the selector at the left si).
+        first_selector = list_of_selectors[0]
+        # We initialize the final result.
+        final_conditional_fp_tree = FPTreeForSDMap()
+        ### 1. Generate the conditional pattern base and a dict of frequent selectors with their selectors. ###
+        conditional_pattern_base = [] # list[list[list[Selector], int, int]]
+        dict_of_frequent_selectors = dict() # dict[str, tuple[Selector, list[int, int]]]
+        # If the first selector is not in the header table, return the current conditional FPTree.
+        if first_selector not in self._header_table:
+            return final_conditional_fp_tree
+        # Get the first node in the corresponding horizontal list.
+        current_node_in_the_horizontal_list = self._header_table[first_selector]
+        # Iterate through the horizontal list.
+        while(current_node_in_the_horizontal_list != None):
+            # Path from the root node to to the current node in the corresponding horizontal list.
+            current_path = []
+            # Go up in the tree until the root node.
+            current_node_in_the_path = current_node_in_the_horizontal_list._parent # We start from the parent.
+            while (current_node_in_the_path != self._root_node):
+                current_selector = current_node_in_the_path._selector
+                # Add the selector to 'dict_of_frequent_selectors'.
+                try:
+                    dict_of_frequent_selectors[current_selector.attribute_name+repr(current_selector.value)][1][0] = \
+                        dict_of_frequent_selectors[current_selector.attribute_name+repr(current_selector.value)][1][0] + current_node_in_the_path._counters[0]
+                    dict_of_frequent_selectors[current_selector.attribute_name+repr(current_selector.value)][1][1] = \
+                        dict_of_frequent_selectors[current_selector.attribute_name+repr(current_selector.value)][1][1] + current_node_in_the_path._counters[1]
+                except KeyError: # Try to access to the entry and if it does not exist, create a new one.
+                    dict_of_frequent_selectors[current_selector.attribute_name+repr(current_selector.value)] = \
+                        (current_selector, [current_node_in_the_path._counters[0], current_node_in_the_path._counters[1]])
+                # Insert the selector at the beginning of the current path.
+                current_path.insert(0, current_selector)
+                # Go up.
+                current_node_in_the_path = current_node_in_the_path._parent
+            # If the path is not empty.
+            if current_path:
+                # Append to 'conditional_pattern_base'. IMPORTANT: copy the current path to avoid aliasing between iterations.
+                conditional_pattern_base.append( [ current_path.copy(), current_node_in_the_horizontal_list._counters[0], current_node_in_the_horizontal_list._counters[1] ] )
+            # Finally, go the the next node in the horizontal list.
+            current_node_in_the_horizontal_list = current_node_in_the_horizontal_list._node_link
+        ### 2. Insert all the paths of the conditional pattern base in the tree. ###
+        for elem in conditional_pattern_base:
+            path = elem[0]
+            tp = elem[1]
+            fp = elem[2]
+            # Sort the path according to the dict of frequent selectors.
+            path.sort(reverse=True, key=lambda x : (dict_of_frequent_selectors[x.attribute_name+repr(x.value)][1][0]+dict_of_frequent_selectors[x.attribute_name+repr(x.value)][1][1]) )
+            # Insert.
+            final_conditional_fp_tree._insert_in_conditional_fp_tree(path, final_conditional_fp_tree._root_node, tp, fp)
+        # Finally, we create the sorted header table.
+        final_conditional_fp_tree._sorted_header_table = []
+        for key in final_conditional_fp_tree._header_table:
+            final_conditional_fp_tree._sorted_header_table.append( key )
+        # IMPORTANT: THIS CRITERION HAS BEEN EXTRACTED FROM THE ORIGINAL IMPLEMENTATION OF THE SDMAP ALGORITHM (IN VIKAMINE).
+        # We have to sort the selectors according to the summation of 'n' (i.e., summation of tp + summation of fp).
+        final_conditional_fp_tree._sorted_header_table.sort(reverse=False, key=lambda x : (final_conditional_fp_tree._header_table[x][0][0] + final_conditional_fp_tree._header_table[x][0][1])) # Ascending order.
+    
+    def _insert_in_conditional_fp_tree(self, list_of_selectors, parent_node, fixed_tp, fixed_fp):
+        """Private method to insert a list of selectors from a parent node.
+        
+        :type list_of_selectors: list[Selector]
+        :param list_of_selectors: the list of selectors which is inserted in the conditional FPTree. IMPORTANT: we assume that the list of selectors only contains selectors.
+        :type parent_node: FPTreeNode
+        :param parent_node: the parent node from which to start the insertion.
+        :type fixed_tp: int
+        :param fixed_tp: the fixed number of true positives tp which is used in the insertions and in the increments.
+        :type fixed_fp: int
+        :param fixed_fp: the fixed number of false positives fp which is used in the insertions and in the increments.
+        """
+        current_parent_node = parent_node
+        for selector in list_of_selectors:
+            # Get the child node with the current selector or None if it does not exist.
+            child_node_with_this_selector = current_parent_node.get_child_by_selector(selector)
+            # Check if the node exists or not and if the parameter 'target_match' is True or False.
+            if (child_node_with_this_selector is not None):
+                # Increase the true positives tp and the false positives fp in the node.
+                child_node_with_this_selector.counters[0] = child_node_with_this_selector._counters[0] + fixed_tp
+                child_node_with_this_selector.counters[1] = child_node_with_this_selector._counters[1] + fixed_fp
+                # Increase the total number of true positives tp and the total number of false positives fp in the header table.
+                self._header_table[selector][0][0] = self._header_table[selector][0][0] + fixed_tp
+                self._header_table[selector][0][1] = self._header_table[selector][0][1] + fixed_fp
+                # Go down in the tree (the current node will be the current parent node in the next iteration).
+                current_parent_node = child_node_with_this_selector
+            elif (child_node_with_this_selector is None):
+                # Create a new FPTree Node.
+                new_fptreenode = FPTreeNode(selector, [fixed_tp, fixed_fp], None)
+                # Add it as a child of the current parent node.
+                current_parent_node.add_child(new_fptreenode)
+                # Check if the current selector is in the header table.
+                if selector in self._header_table: # If it is in the header table, iterate through the node links, add the new node at the end of the horizontal list and increase the summation of tp and fp in the header table.
+                    current_node_in_the_horizontal_list = self._header_table[selector][1]
+                    while (current_node_in_the_horizontal_list.node_link != None):
+                        current_node_in_the_horizontal_list = current_node_in_the_horizontal_list.node_link
+                    current_node_in_the_horizontal_list.node_link = new_fptreenode
+                    self._header_table[selector][0][0] = self._header_table[selector][0][0] + fixed_tp
+                    self._header_table[selector][0][1] = self._header_table[selector][0][1] + fixed_fp
+                else: # If not, create the entry and add it.
+                    self._header_table[selector] = ([fixed_tp, fixed_fp], new_fptreenode)
+                # Go down in the tree (the current node will be the current parent node in the next iteration).
+                current_parent_node = new_fptreenode

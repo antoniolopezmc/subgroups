@@ -13,6 +13,7 @@ from subgroups.tests.core.subgroup_test import *
 from subgroups.tests.quality_measures.all_test import *
 from subgroups.tests.utils.dataframe_filters_test import *
 from subgroups.tests.data_structures.fp_tree_node_test import *
+from subgroups.tests.data_structures.fp_tree_for_sdmap_test import *
 
 if __name__ == "__main__":
     # core/operator file.
@@ -41,3 +42,6 @@ if __name__ == "__main__":
     test_dataframe_filters()
     # data_structures/fp_tree_node file.
     test_FPTreeNode()
+    # data_structures/fp_tree_for_sdmap file.
+    test_FPTreeForSDMap_generate_set_of_frequent_selectors()
+    test_FPTreeForSDMap_build_tree()
