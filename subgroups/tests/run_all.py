@@ -44,4 +44,5 @@ if __name__ == "__main__":
     test_FPTreeNode()
     # data_structures/fp_tree_for_sdmap file.
     test_FPTreeForSDMap_generate_set_of_frequent_selectors()
-    test_FPTreeForSDMap_build_tree()
+    test_FPTreeForSDMap_build_tree_1()
+    test_FPTreeForSDMap_build_tree_2()

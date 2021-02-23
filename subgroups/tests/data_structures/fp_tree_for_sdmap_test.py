@@ -98,7 +98,7 @@ def test_FPTreeForSDMap_generate_set_of_frequent_selectors():
         assert (set_of_frequent_selectors_2[key][1][0] == final_result[key][1][0])
         assert (set_of_frequent_selectors_2[key][1][1] == final_result[key][1][1])
 
-def test_FPTreeForSDMap_build_tree():
+def test_FPTreeForSDMap_build_tree_1():
     random.seed(789)
     n_rows = 500
     attribute_names = ["att1", "att2", "att3", "att4", "att5"]
@@ -131,4 +131,22 @@ def test_FPTreeForSDMap_build_tree():
     header_table_as_list = [x for x in header_table]
     header_table_as_list.sort(reverse=False, key=lambda x : (header_table[x][0][0]+header_table[x][0][1]))
     assert (sorted_header_table == header_table_as_list)
+
+def test_FPTreeForSDMap_build_tree_2():
+    df = pd.DataFrame({"a1" : ["v1", "v1", "v2", "v3", "v2", "v4"], "a2" : ["v2", "v3", "v4", "v4", "v3", "v1"],\
+                        "a3" : ["v2", "v4", "v1", "v4", "v3", "v2"], "target" : ["y", "y", "n", "y", "n", "n"]})
+    fp_tree_for_sdmap = FPTreeForSDMap()
+    target = ("target", "y")
+    set_of_frequent_selectors = fp_tree_for_sdmap.generate_set_of_frequent_selectors(df, target, 0, 0)
+    fp_tree_for_sdmap.build_tree(df, set_of_frequent_selectors, target)
+    print(fp_tree_for_sdmap.tree_as_str())
+    print(fp_tree_for_sdmap.header_table_as_str())
+    # Test the header table.
+    # Test the sorted header table.
+    #print(fp_tree_for_sdmap._sorted_header_table)
+    assert(fp_tree_for_sdmap._sorted_header_table == [Selector.generate_from_str("a1 = v3"), Selector.generate_from_str("a1 = v4"), Selector.generate_from_str("a2 = v1"), \
+                                                Selector.generate_from_str("a2 = v2"), Selector.generate_from_str("a3 = v1"), Selector.generate_from_str("a3 = v3"), 
+                                                Selector.generate_from_str("a1 = v1"), Selector.generate_from_str("a1 = v2"), Selector.generate_from_str("a2 = v3"), 
+                                                Selector.generate_from_str("a2 = v4"), Selector.generate_from_str("a3 = v2"), Selector.generate_from_str("a3 = v4")])
     # Test the complete tree.
+

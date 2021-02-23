@@ -147,7 +147,7 @@ class FPTreeNode(object):
             return final_str + ", node_link_id: None}"
         return final_str + ", node_link_id: " + str(id(self._node_link)) + "}"
     
-    def print_tree_as_str(self, current_depth=0):
+    def tree_as_str(self, current_depth=0):
         """Method to print as str the current node and the complete subtree from the current node.
         :type current_depth: int
         :param current_depth: the depth of the current node. By default, 0.
@@ -161,5 +161,5 @@ class FPTreeNode(object):
         result = result + str(self) + "\n"
         # Recursive calls.
         for key in self._childs:
-            result = result + self._childs[key].print_tree_as_str(current_depth+1)
+            result = result + self._childs[key].tree_as_str(current_depth+1)
         return result

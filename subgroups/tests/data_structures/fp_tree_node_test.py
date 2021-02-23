@@ -94,7 +94,7 @@ def test_FPTreeNode():
     expected_result_split = expected_result.split("\n")[:-1]
     expected_result_split.sort()
     final_expected_result = "".join(expected_result_split)
-    node1_printed = node1.print_tree_as_str()
+    node1_printed = node1.tree_as_str()
     node1_printed_split = node1_printed.split("\n")[:-1]
     node1_printed_split.sort()
     final_node1_printed = "".join(node1_printed_split)

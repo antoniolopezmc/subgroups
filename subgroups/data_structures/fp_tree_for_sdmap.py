@@ -69,15 +69,15 @@ class FPTreeForSDMap(object):
         else:
             return False # If the number of children is greater than 1, there is not a single path.
     
-    def print_tree_as_str(self):
+    def tree_as_str(self):
         """Method to print as str the complete FPTree from the root node.
         
         :rtype: str
         :return: the printed FPTree.
         """
-        return self._root_node.print_tree_as_str(current_depth=0)
+        return self._root_node.tree_as_str(current_depth=0)
     
-    def print_header_table(self, follow_node_links=True):
+    def header_table_as_str(self, follow_node_links=True):
         """Method to print all the entries of the FPTree header table.
         
         :type follow_node_links: bool
