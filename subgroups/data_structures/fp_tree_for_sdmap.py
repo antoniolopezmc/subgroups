@@ -236,6 +236,7 @@ class FPTreeForSDMap(object):
                     pass # If the exception is raised, we do nothing.
             # IMPORTANT: we use 'repr' in order to add simple quotes to the values of type str, but not to the values of numeric types.
             # We sort the current row according to the order of the selectors of the set of frequent selectors (CRITERION EXTRACTED FROM VIKAMINE).
+            # - In case of tie, we maintain the insertion order (the order of appearance in the dataset).
             selectors_in_the_current_row.sort(reverse=True, key=lambda x : (set_of_frequent_selectors[x.attribute_name+repr(x.value)][1][0]+set_of_frequent_selectors[x.attribute_name+repr(x.value)][1][1]) ) # Descending order.
             self._insert_tree(selectors_in_the_current_row, self._root_node, (target_value_in_the_current_row == target[1]))
         # Finally, we create the sorted header table.
@@ -244,6 +245,7 @@ class FPTreeForSDMap(object):
             self._sorted_header_table.append( key )
         # IMPORTANT: THIS CRITERION HAS BEEN EXTRACTED FROM THE ORIGINAL IMPLEMENTATION OF THE SDMAP ALGORITHM (IN VIKAMINE).
         # We have to sort the selectors according to the summation of 'n' (i.e., summation of tp + summation of fp).
+        # - In case of tie, we maintain the insertion order (the order of appearance in the dataset).
         self._sorted_header_table.sort(reverse=False, key=lambda x : (self._header_table[x][0][0] + self._header_table[x][0][1])) # Ascending order.
     
     def generate_conditional_fp_tree(self, list_of_selectors, minimum_tp, minimum_fp):
@@ -309,6 +311,7 @@ class FPTreeForSDMap(object):
             tp = elem[1]
             fp = elem[2]
             # Sort the path according to the dict of frequent selectors.
+            # - In case of tie, we maintain the insertion order (the order of appearance in the dataset).
             path.sort(reverse=True, key=lambda x : (dict_of_frequent_selectors[x.attribute_name+repr(x.value)][1][0]+dict_of_frequent_selectors[x.attribute_name+repr(x.value)][1][1]) )
             # Insert.
             final_conditional_fp_tree._insert_in_conditional_fp_tree(path, final_conditional_fp_tree._root_node, tp, fp)
@@ -318,6 +321,7 @@ class FPTreeForSDMap(object):
             final_conditional_fp_tree._sorted_header_table.append( key )
         # IMPORTANT: THIS CRITERION HAS BEEN EXTRACTED FROM THE ORIGINAL IMPLEMENTATION OF THE SDMAP ALGORITHM (IN VIKAMINE).
         # We have to sort the selectors according to the summation of 'n' (i.e., summation of tp + summation of fp).
+        # - In case of tie, we maintain the insertion order (the order of appearance in the dataset).
         final_conditional_fp_tree._sorted_header_table.sort(reverse=False, key=lambda x : (final_conditional_fp_tree._header_table[x][0][0] + final_conditional_fp_tree._header_table[x][0][1])) # Ascending order.
     
     def _insert_in_conditional_fp_tree(self, list_of_selectors, parent_node, fixed_tp, fixed_fp):

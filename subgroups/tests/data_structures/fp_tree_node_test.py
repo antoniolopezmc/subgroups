@@ -80,15 +80,17 @@ def test_FPTreeNode():
     assert (id(node3.get_child_by_selector( selector6 )) == id(node6))
     assert (id(node3.get_child_by_selector( selector7 )) == id(node7))
     # Delete child nodes.
-    node1.delete_child(node5)
+    node1.delete_child_by_selector(node5.selector)
     try:
-        node1.delete_child(node5) # This node does not exist anymore.
+        node1.delete_child_by_selector(node5.selector) # This node does not exist anymore.
         assert (False)
     except KeyError:
         assert (True)
     assert (node1.number_of_children == 2)
+    assert (node5.is_child_of( None ))
     node1.add_child(node5)
     assert (node1.number_of_children == 3)
+    assert (node5.is_child_of( node1 ))
     # Print the tree.
     expected_result = str(node1) + "\n" + "|--- " + str(node2) + "\n" + "|--- " + str(node3) + "\n" + "    |--- " + str(node6) + "\n" + "    |--- " + str(node7) + "\n" + "|--- " + str(node5) + "\n"
     expected_result_split = expected_result.split("\n")[:-1]
@@ -99,3 +101,26 @@ def test_FPTreeNode():
     node1_printed_split.sort()
     final_node1_printed = "".join(node1_printed_split)
     assert (final_expected_result == final_node1_printed)
+    # Childs with the same selector, but with different father.
+    new_node_1 = FPTreeNode(Selector("att2", Operator.EQUAL, "value3"), [6], None)
+    node3.add_child(new_node_1)
+    assert (node1.number_of_children == 3)
+    assert (node3.number_of_children == 3)
+    assert (new_node_1.number_of_children == 0)
+    assert (new_node_1.selector == node3.selector)
+    assert (not node1.has_this_child( new_node_1 ))
+    assert (node3.has_this_child( new_node_1 ))
+    assert (id(node3) != id(new_node_1))
+    new_node_2 = FPTreeNode(Selector("att2", Operator.EQUAL, "value3"), [6], None)
+    node6.add_child(new_node_2)
+    assert (node1.number_of_children == 3)
+    assert (node3.number_of_children == 3)
+    assert (new_node_2.number_of_children == 0)
+    assert (node6.number_of_children == 1)
+    assert (new_node_2.selector == node3.selector)
+    assert (new_node_1.selector == new_node_2.selector)
+    assert (not node1.has_this_child( new_node_2 ))
+    assert (not node3.has_this_child( new_node_2 ))
+    assert (node6.has_this_child( new_node_2 ))
+    assert (id(node3) != id(new_node_2))
+    assert (id(new_node_1) != id(new_node_2))

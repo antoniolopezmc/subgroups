@@ -76,33 +76,33 @@ class FPTreeNode(object):
     number_of_children = property(_get_number_of_children, None, None, "The number of children of this node.")
     parent = property(_get_parent, _set_parent, None, "The parent of this node")
     
-    def add_child(self, child):
-        """Method to add a child node to the current node. The current node will be the parent of the added child. IMPORTANT: if the child already exists, a KeyError exception is raised.
+    def add_child(self, child_node):
+        """Method to add a child node to the current node. The current node will be the parent of the added child node. IMPORTANT: if there is already a child node with the same selector, a KeyError exception is raised.
         
-        :type child: FPTreeNode
-        :param child: the child node which is added.
+        :type child_node: FPTreeNode
+        :param child_node: the child node which is added.
         """
-        if (type(child) is not FPTreeNode):
-            raise TypeError("The type of the parameter 'child' must be 'FPTreeNode'.")
-        if (child.selector in self._childs):
-            raise KeyError("This child already exists.")
+        if (type(child_node) is not FPTreeNode):
+            raise TypeError("The type of the parameter 'child_node' must be 'FPTreeNode'.")
+        if (child_node.selector in self._childs):
+            raise KeyError("There is already a child node with the same selector.")
         else:
-            child._parent = self
-            self._childs[child.selector] = child
+            child_node._parent = self
+            self._childs[child_node.selector] = child_node
     
-    def delete_child(self, child):
-        """Method to delete a child node from the current node. The current node will not be the parent of the deleted child anymore. IMPORTANT: if the child does not exist, a KeyError exception is raised.
+    def delete_child_by_selector(self, selector):
+        """Method to delete a child node from the current node by selector. The current node will not be the parent of the deleted child node anymore. IMPORTANT: if there is no child node with the selector, a KeyError exception is raised.
         
-        :type child: FPTreeNode
-        :param child: the child node which is deleted.
+        :type selector: Selector
+        :param selector: the selector which is used in order to delete the child node.
         """
-        if (type(child) is not FPTreeNode):
-            raise TypeError("The type of the parameter 'child' must be 'FPTreeNode'.")
-        if (child.selector not in self._childs):
-            raise KeyError("This child does not exist.")
+        if (type(selector) is not Selector):
+            raise TypeError("The type of the parameter 'selector' must be 'Selector'.")
+        if (selector not in self._childs):
+            raise KeyError("There is no child node with the selector.")
         else:
-            child._parent = None
-            del self._childs[child.selector]
+            self._childs[selector]._parent = None
+            del self._childs[selector]
     
     def has_this_child(self, node):
         """Method to check whether the node passed by parameter is a child of this one.
@@ -114,7 +114,7 @@ class FPTreeNode(object):
         """
         if (type(node) is not FPTreeNode):
             raise TypeError("The type of the parameter 'node' must be 'FPTreeNode'.")
-        return (node.selector in self._childs)
+        return (node.selector in self._childs) and (id(self._childs[node.selector]) == id(node))
     
     def is_child_of(self, node):
         """Method to check whether the node passed by parameter is the parent of this one or to check whether it does not exist parent (passing None by parameter).
@@ -129,13 +129,15 @@ class FPTreeNode(object):
         return (id(self._parent) == id(node))
     
     def get_child_by_selector(self, selector):
-        """Method to get the child whose selector is passed by parameter.
+        """Method to get the child whose selector is passed by parameter. IMPORTANT: if there is no child node with the selector, this method return None.
         
         :type selector: Selector
         :param selector: the selector which is checked.
         :rtype: FPTreeNode or NoneType
         :return: the child whose selector is passed by parameter or None if it does not exist.
         """
+        if (type(selector) is not Selector):
+            raise TypeError("The type of the parameter 'selector' must be 'Selector'.")
         try:
             return self._childs[selector]
         except KeyError:
