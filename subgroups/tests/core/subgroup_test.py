@@ -20,6 +20,7 @@ def test_Subgroup():
     subgroup3 = subgroup2.copy()
     assert (id(subgroup2) != id(subgroup3))
     assert (id(subgroup2.description) != id(subgroup3.description))
+    assert (id(subgroup2.description._list_of_selectors) != id(subgroup3.description._list_of_selectors))
     assert (id(subgroup2.target) == id(subgroup3.target))
     subgroup4 = Subgroup(Pattern([Selector("at1", Operator.EQUAL, 'a'), Selector("at2", Operator.GREATER_OR_EQUAL, 78)]), Selector("age", Operator.EQUAL, 34))
     assert (subgroup2 == subgroup4)

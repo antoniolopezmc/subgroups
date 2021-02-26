@@ -41,6 +41,9 @@ def test_Pattern():
     assert (pattern_1 == pattern_1.copy())
     assert (pattern_1 != pattern_2)
     assert (pattern_1 != pattern_2.copy())
+    assert (id(pattern_1._list_of_selectors) != id(pattern_1.copy()._list_of_selectors))
+    assert (id(pattern_2._list_of_selectors) != id(pattern_2.copy()._list_of_selectors))
+    assert (id(pattern_1._list_of_selectors) != id(pattern_2.copy()._list_of_selectors))
     index = 0
     for elem in pattern_2:
         assert (elem == pattern_2.get_selector(index))
