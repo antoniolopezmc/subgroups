@@ -108,6 +108,8 @@ def test_FPTreeForSDMap_build_tree_1():
         df[att_name] = [random.choice(values) for _ in range(n_rows)]
     df["target"] = [random.choice(["Y","N"]) for _ in range(n_rows)]
     fp_tree_for_sdmap = FPTreeForSDMap()
+    assert (fp_tree_for_sdmap.is_empty())
+    assert (fp_tree_for_sdmap.there_is_a_single_path())
     target = ("target", "N")
     minimum_tp = int( quantile(concatenate([df[column].value_counts().values for column in df]), 0.5) / 2 )
     minimum_fp = int( quantile(concatenate([df[column].value_counts().values for column in df]), 0.7) / 2 )
@@ -136,9 +138,25 @@ def test_FPTreeForSDMap_build_tree_2():
     df = pd.DataFrame({"a1" : ["v1", "v1", "v2", "v3", "v2", "v4"], "a2" : ["v2", "v3", "v4", "v4", "v3", "v1"],\
                         "a3" : ["v2", "v4", "v1", "v4", "v3", "v2"], "target" : ["Y", "Y", "N", "Y", "N", "N"]})
     fp_tree_for_sdmap = FPTreeForSDMap()
+    assert (fp_tree_for_sdmap.is_empty())
+    assert (fp_tree_for_sdmap.there_is_a_single_path())
     target = ("target", "Y")
     set_of_frequent_selectors = fp_tree_for_sdmap.generate_set_of_frequent_selectors(df, target, 0, 0)
+    assert (set_of_frequent_selectors["a2'v2'"][1] == [1, 0])
+    assert (set_of_frequent_selectors["a3'v1'"][1] == [0, 1])
+    assert (set_of_frequent_selectors["a1'v3'"][1] == [1, 0])
+    assert (set_of_frequent_selectors["a3'v3'"][1] == [0, 1])
+    assert (set_of_frequent_selectors["a1'v4'"][1] == [0, 1])
+    assert (set_of_frequent_selectors["a2'v1'"][1] == [0, 1])
+    assert (set_of_frequent_selectors["a1'v1'"][1] == [2, 0])
+    assert (set_of_frequent_selectors["a3'v2'"][1] == [1, 1])
+    assert (set_of_frequent_selectors["a2'v3'"][1] == [1, 1])
+    assert (set_of_frequent_selectors["a3'v4'"][1] == [2, 0])
+    assert (set_of_frequent_selectors["a1'v2'"][1] == [0, 2])
+    assert (set_of_frequent_selectors["a2'v4'"][1] == [1, 1])
     fp_tree_for_sdmap.build_tree(df, set_of_frequent_selectors, target)
+    assert not (fp_tree_for_sdmap.is_empty())
+    assert not (fp_tree_for_sdmap.there_is_a_single_path())
     # Test the header table.
     assert (len(fp_tree_for_sdmap.header_table) == 12)
     assert (fp_tree_for_sdmap.header_table[Selector.generate_from_str("a2 = v2")][0][0] == 1)
@@ -323,3 +341,156 @@ def test_FPTreeForSDMap_build_tree_4():
     assert (fp_tree_for_sdmap.root_node._childs[Selector.generate_from_str("a3 = v2")].number_of_children == 0)
     assert (fp_tree_for_sdmap.root_node._childs[Selector.generate_from_str("a2 = v3")].number_of_children == 0)
     assert (fp_tree_for_sdmap.root_node._childs[Selector.generate_from_str("a2 = v4")].number_of_children == 0)
+
+def test_FPTreeForSDMap_generate_conditional_fp_tree():
+    fp_tree_for_sd_map = FPTreeForSDMap()
+    ## The tree will be built by hand in order to test this functionality. It is a custom tree and has not been generated from any dataset.
+    # A branch from the root.
+    fp_tree_for_sd_map._insert_tree([Selector.generate_from_str("a = a"), Selector.generate_from_str("b = b"), Selector.generate_from_str("c = c"), Selector.generate_from_str("w = w")], fp_tree_for_sd_map.root_node, 0)
+    fp_tree_for_sd_map._insert_tree([Selector.generate_from_str("a = a"), Selector.generate_from_str("b = b")], fp_tree_for_sd_map.root_node, 1)
+    fp_tree_for_sd_map._insert_tree([Selector.generate_from_str("a = a")], fp_tree_for_sd_map.root_node, 1)
+    # A branch from the root.
+    fp_tree_for_sd_map._insert_tree([Selector.generate_from_str("z = z"), Selector.generate_from_str("j = j"), Selector.generate_from_str("c = c")], fp_tree_for_sd_map.root_node, 0)
+    fp_tree_for_sd_map._insert_tree([Selector.generate_from_str("z = z"), Selector.generate_from_str("j = j"), Selector.generate_from_str("c = c")], fp_tree_for_sd_map.root_node, 1)
+    for _ in range(3):
+        fp_tree_for_sd_map._insert_tree([Selector.generate_from_str("z = z")], fp_tree_for_sd_map.root_node, 1)
+    for _ in range(2):
+        fp_tree_for_sd_map._insert_tree([Selector.generate_from_str("z = z")], fp_tree_for_sd_map.root_node, 0)
+    # A branch from the root.
+    for _ in range(3):
+        fp_tree_for_sd_map._insert_tree([Selector.generate_from_str("d = d"), Selector.generate_from_str("j = j"), Selector.generate_from_str("c = c")], fp_tree_for_sd_map.root_node, 1)
+    for _ in range(2):
+        fp_tree_for_sd_map._insert_tree([Selector.generate_from_str("d = d"), Selector.generate_from_str("j = j"), Selector.generate_from_str("c = c")], fp_tree_for_sd_map.root_node, 0)
+    fp_tree_for_sd_map._insert_tree([Selector.generate_from_str("d = d"), Selector.generate_from_str("j = j")], fp_tree_for_sd_map.root_node, 1)
+    for _ in range(2):
+        fp_tree_for_sd_map._insert_tree([Selector.generate_from_str("d = d"), Selector.generate_from_str("j = j")], fp_tree_for_sd_map.root_node, 0)
+    # A branch from the root.
+    fp_tree_for_sd_map._insert_tree([Selector.generate_from_str("d = d"), Selector.generate_from_str("k = k"), Selector.generate_from_str("i = i"), Selector.generate_from_str("c = c"), Selector.generate_from_str("w = w")], fp_tree_for_sd_map.root_node, 0)
+    for _ in range(3):
+        fp_tree_for_sd_map._insert_tree([Selector.generate_from_str("d = d"), Selector.generate_from_str("k = k"), Selector.generate_from_str("i = i"), Selector.generate_from_str("c = c")], fp_tree_for_sd_map.root_node, 1)
+    for _ in range(2):
+        fp_tree_for_sd_map._insert_tree([Selector.generate_from_str("d = d"), Selector.generate_from_str("k = k"), Selector.generate_from_str("i = i"), Selector.generate_from_str("c = c")], fp_tree_for_sd_map.root_node, 0)
+    fp_tree_for_sd_map._insert_tree([Selector.generate_from_str("d = d"), Selector.generate_from_str("k = k"), Selector.generate_from_str("i = i")], fp_tree_for_sd_map.root_node, 1)
+    fp_tree_for_sd_map._insert_tree([Selector.generate_from_str("d = d"), Selector.generate_from_str("k = k"), Selector.generate_from_str("i = i")], fp_tree_for_sd_map.root_node, 0)
+    # Finally, we create the sorted header table.
+    assert (fp_tree_for_sd_map._sorted_header_table == [])
+    for key in fp_tree_for_sd_map._header_table:
+        fp_tree_for_sd_map._sorted_header_table.append( key )
+    # IMPORTANT: THIS CRITERION HAS BEEN EXTRACTED FROM THE ORIGINAL IMPLEMENTATION OF THE SDMAP ALGORITHM (IN VIKAMINE).
+    # We have to sort the selectors according to the summation of 'n' (i.e., summation of tp + summation of fp).
+    # - In case of tie, we maintain the insertion order (the order of appearance in the dataset).
+    fp_tree_for_sd_map._sorted_header_table.sort(reverse=False, \
+        key=lambda x : (fp_tree_for_sd_map._header_table[x][0][0] + fp_tree_for_sd_map._header_table[x][0][1])) # Ascending order.
+    #print(fp_tree_for_sd_map.header_table_as_str())
+    #print(fp_tree_for_sd_map.tree_as_str())
+    #print(fp_tree_for_sd_map.sorted_header_table)
+    assert (fp_tree_for_sd_map.sorted_header_table == [Selector.generate_from_str("b = b"), Selector.generate_from_str("w = w"), Selector.generate_from_str("a = a"), \
+                                                        Selector.generate_from_str("z = z"), Selector.generate_from_str("k = k"), Selector.generate_from_str("i = i"), \
+                                                        Selector.generate_from_str("j = j"), Selector.generate_from_str("c = c"), Selector.generate_from_str("d = d")])
+    ## Test the conditional FPTree with the selector "c = 'c'" and without thresholds.
+    conditional_fp_tree_c_eq_c = fp_tree_for_sd_map.generate_conditional_fp_tree([Selector.generate_from_str("c = c")], 0, 0)
+    # Test the header table.
+    assert (len(conditional_fp_tree_c_eq_c.header_table) == 7)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("a = a")][0][0] == 0)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("a = a")][0][1] == 1)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("b = b")][0][0] == 0)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("b = b")][0][1] == 1)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("d = d")][0][0] == 6)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("d = d")][0][1] == 5)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("j = j")][0][0] == 4)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("j = j")][0][1] == 3)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("k = k")][0][0] == 3)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("k = k")][0][1] == 3)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("i = i")][0][0] == 3)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("i = i")][0][1] == 3)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("z = z")][0][0] == 1)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("z = z")][0][1] == 1)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("a = a")][1]._selector == Selector.generate_from_str("a = a"))
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("a = a")][1]._counters[0] == 0)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("a = a")][1]._counters[1] == 1)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("a = a")][1]._node_link == None)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("b = b")][1]._selector == Selector.generate_from_str("b = b"))
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("b = b")][1]._counters[0] == 0)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("b = b")][1]._counters[1] == 1)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("b = b")][1]._node_link == None)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("d = d")][1]._selector == Selector.generate_from_str("d = d"))
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("d = d")][1]._counters[0] == 6)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("d = d")][1]._counters[1] == 5)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("d = d")][1]._node_link == None)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("z = z")][1]._selector == Selector.generate_from_str("z = z"))
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("z = z")][1]._counters[0] == 1)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("z = z")][1]._counters[1] == 1)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("z = z")][1]._node_link == None)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("k = k")][1]._selector == Selector.generate_from_str("k = k"))
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("k = k")][1]._counters[0] == 3)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("k = k")][1]._counters[1] == 3)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("k = k")][1]._node_link == None)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("i = i")][1]._selector == Selector.generate_from_str("i = i"))
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("i = i")][1]._counters[0] == 3)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("i = i")][1]._counters[1] == 3)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("i = i")][1]._node_link == None)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("j = j")][1]._selector == Selector.generate_from_str("j = j"))
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("j = j")][1]._counters[0] == 1)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("j = j")][1]._counters[1] == 1)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("j = j")][1]._node_link != None)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("j = j")][1]._node_link._selector == Selector.generate_from_str("j = j"))
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("j = j")][1]._node_link._counters[0] == 3)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("j = j")][1]._node_link._counters[1] == 2)
+    assert (conditional_fp_tree_c_eq_c.header_table[Selector.generate_from_str("j = j")][1]._node_link._node_link == None)
+    # Test the sorted header table.
+    assert (conditional_fp_tree_c_eq_c._sorted_header_table == [Selector.generate_from_str("a = a"), Selector.generate_from_str("b = b"), \
+                                                                Selector.generate_from_str("z = z"), Selector.generate_from_str("k = k"), \
+                                                                Selector.generate_from_str("i = i"), Selector.generate_from_str("j = j"), \
+                                                                Selector.generate_from_str("d = d")])
+    # Test the complete tree.
+    assert (conditional_fp_tree_c_eq_c.root_node.number_of_children == 3)
+    assert (conditional_fp_tree_c_eq_c.root_node._childs[Selector.generate_from_str("a = a")].number_of_children == 1)
+    assert (conditional_fp_tree_c_eq_c.root_node._childs[Selector.generate_from_str("j = j")].number_of_children == 1)
+    assert (conditional_fp_tree_c_eq_c.root_node._childs[Selector.generate_from_str("d = d")].number_of_children == 2)
+    assert (conditional_fp_tree_c_eq_c.root_node._childs[Selector.generate_from_str("a = a")]._childs[Selector.generate_from_str("b = b")].number_of_children == 0)
+    assert (conditional_fp_tree_c_eq_c.root_node._childs[Selector.generate_from_str("j = j")]._childs[Selector.generate_from_str("z = z")].number_of_children == 0)
+    assert (conditional_fp_tree_c_eq_c.root_node._childs[Selector.generate_from_str("d = d")]._childs[Selector.generate_from_str("j = j")].number_of_children == 0)
+    assert (conditional_fp_tree_c_eq_c.root_node._childs[Selector.generate_from_str("d = d")]._childs[Selector.generate_from_str("k = k")].number_of_children == 1)
+    assert (conditional_fp_tree_c_eq_c.root_node._childs[Selector.generate_from_str("d = d")]._childs[Selector.generate_from_str("k = k")]._childs[Selector.generate_from_str("i = i")].number_of_children == 0)
+    ## Test the conditional FPTree with the selector "c = 'c'" and with thresholds.
+    conditional_fp_tree_c_eq_c_3_2 = fp_tree_for_sd_map.generate_conditional_fp_tree([Selector.generate_from_str("c = c")], 3, 2)
+    # Test the header table.
+    assert (len(conditional_fp_tree_c_eq_c_3_2.header_table) == 4)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("d = d")][0][0] == 6)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("d = d")][0][1] == 5)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("j = j")][0][0] == 4)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("j = j")][0][1] == 3)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("k = k")][0][0] == 3)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("k = k")][0][1] == 3)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("i = i")][0][0] == 3)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("i = i")][0][1] == 3)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("d = d")][1]._selector == Selector.generate_from_str("d = d"))
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("d = d")][1]._counters[0] == 6)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("d = d")][1]._counters[1] == 5)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("d = d")][1]._node_link == None)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("k = k")][1]._selector == Selector.generate_from_str("k = k"))
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("k = k")][1]._counters[0] == 3)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("k = k")][1]._counters[1] == 3)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("k = k")][1]._node_link == None)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("i = i")][1]._selector == Selector.generate_from_str("i = i"))
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("i = i")][1]._counters[0] == 3)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("i = i")][1]._counters[1] == 3)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("i = i")][1]._node_link == None)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("j = j")][1]._selector == Selector.generate_from_str("j = j"))
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("j = j")][1]._counters[0] == 1)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("j = j")][1]._counters[1] == 1)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("j = j")][1]._node_link != None)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("j = j")][1]._node_link._selector == Selector.generate_from_str("j = j"))
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("j = j")][1]._node_link._counters[0] == 3)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("j = j")][1]._node_link._counters[1] == 2)
+    assert (conditional_fp_tree_c_eq_c_3_2.header_table[Selector.generate_from_str("j = j")][1]._node_link._node_link == None)
+    # Test the sorted header table.
+    assert (conditional_fp_tree_c_eq_c_3_2._sorted_header_table == [Selector.generate_from_str("k = k"), Selector.generate_from_str("i = i"), \
+                                                                    Selector.generate_from_str("j = j"), Selector.generate_from_str("d = d")])                                
+    # Test the complete tree.
+    assert (conditional_fp_tree_c_eq_c_3_2.root_node.number_of_children == 2)
+    assert (conditional_fp_tree_c_eq_c_3_2.root_node._childs[Selector.generate_from_str("j = j")].number_of_children == 0)
+    assert (conditional_fp_tree_c_eq_c_3_2.root_node._childs[Selector.generate_from_str("d = d")].number_of_children == 2)
+    assert (conditional_fp_tree_c_eq_c_3_2.root_node._childs[Selector.generate_from_str("d = d")]._childs[Selector.generate_from_str("j = j")].number_of_children == 0)
+    assert (conditional_fp_tree_c_eq_c_3_2.root_node._childs[Selector.generate_from_str("d = d")]._childs[Selector.generate_from_str("k = k")].number_of_children == 1)
+    assert (conditional_fp_tree_c_eq_c_3_2.root_node._childs[Selector.generate_from_str("d = d")]._childs[Selector.generate_from_str("k = k")]._childs[Selector.generate_from_str("i = i")].number_of_children == 0)

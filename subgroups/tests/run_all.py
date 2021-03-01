@@ -48,3 +48,4 @@ if __name__ == "__main__":
     test_FPTreeForSDMap_build_tree_2()
     test_FPTreeForSDMap_build_tree_3()
     test_FPTreeForSDMap_build_tree_4()
+    test_FPTreeForSDMap_generate_conditional_fp_tree()

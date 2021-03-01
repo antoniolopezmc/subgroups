@@ -266,18 +266,19 @@ class FPTreeForSDMap(object):
             raise TypeError("The type of the parameter 'minimum_tp' must be 'int'.")
         if type(minimum_fp) is not int:
             raise TypeError("The type of the parameter 'minimum_fp' must be 'int'.")
-        # We only use the first selector in the list in the creation process (the selector at the left si).
+        # We only use the first selector in the list in the creation process (the selector at the left side).
         first_selector = list_of_selectors[0]
         # We initialize the final result.
         final_conditional_fp_tree = FPTreeForSDMap()
         ### 1. Generate the conditional pattern base and a dict of frequent selectors with their selectors. ###
         conditional_pattern_base = [] # list[list[list[Selector], int, int]]
-        dict_of_frequent_selectors = dict() # dict[str, tuple[Selector, list[int, int]]]
         # If the first selector is not in the header table, return the current conditional FPTree.
         if first_selector not in self._header_table:
             return final_conditional_fp_tree
+        # Dictionary with all frequent selectors (before pruning).
+        dict_of_all_frequent_selectors = dict() # dict[str, tuple[Selector, list[int, int]]]
         # Get the first node in the corresponding horizontal list.
-        current_node_in_the_horizontal_list = self._header_table[first_selector]
+        current_node_in_the_horizontal_list = self._header_table[first_selector][1]
         # Iterate through the horizontal list.
         while(current_node_in_the_horizontal_list != None):
             # Path from the root node to to the current node in the corresponding horizontal list.
@@ -286,35 +287,51 @@ class FPTreeForSDMap(object):
             current_node_in_the_path = current_node_in_the_horizontal_list._parent # We start from the parent.
             while (current_node_in_the_path != self._root_node):
                 current_selector = current_node_in_the_path._selector
-                # Add the selector to 'dict_of_frequent_selectors'.
+                # Add the selector to 'dict_of_all_frequent_selectors'.
+                # IMPORTANT: the true positives tp and false positives fp of all nodes in the path are those of the current node in the horizontal list.
                 try:
-                    dict_of_frequent_selectors[current_selector.attribute_name+repr(current_selector.value)][1][0] = \
-                        dict_of_frequent_selectors[current_selector.attribute_name+repr(current_selector.value)][1][0] + current_node_in_the_path._counters[0]
-                    dict_of_frequent_selectors[current_selector.attribute_name+repr(current_selector.value)][1][1] = \
-                        dict_of_frequent_selectors[current_selector.attribute_name+repr(current_selector.value)][1][1] + current_node_in_the_path._counters[1]
+                    dict_of_all_frequent_selectors[current_selector.attribute_name+repr(current_selector.value)][1][0] = \
+                        dict_of_all_frequent_selectors[current_selector.attribute_name+repr(current_selector.value)][1][0] + current_node_in_the_horizontal_list._counters[0]
+                    dict_of_all_frequent_selectors[current_selector.attribute_name+repr(current_selector.value)][1][1] = \
+                        dict_of_all_frequent_selectors[current_selector.attribute_name+repr(current_selector.value)][1][1] + current_node_in_the_horizontal_list._counters[1]
                 except KeyError: # Try to access to the entry and if it does not exist, create a new one.
-                    dict_of_frequent_selectors[current_selector.attribute_name+repr(current_selector.value)] = \
-                        (current_selector, [current_node_in_the_path._counters[0], current_node_in_the_path._counters[1]])
+                    dict_of_all_frequent_selectors[current_selector.attribute_name+repr(current_selector.value)] = \
+                        (current_selector, [current_node_in_the_horizontal_list._counters[0], current_node_in_the_horizontal_list._counters[1]])
                 # Insert the selector at the beginning of the current path.
                 current_path.insert(0, current_selector)
                 # Go up.
                 current_node_in_the_path = current_node_in_the_path._parent
             # If the path is not empty.
             if current_path:
-                # Append to 'conditional_pattern_base'. IMPORTANT: copy the current path to avoid aliasing between iterations.
-                conditional_pattern_base.append( [ current_path.copy(), current_node_in_the_horizontal_list._counters[0], current_node_in_the_horizontal_list._counters[1] ] )
+                # Append to 'conditional_pattern_base'.
+                conditional_pattern_base.append( [ current_path, current_node_in_the_horizontal_list._counters[0], current_node_in_the_horizontal_list._counters[1] ] )
             # Finally, go the the next node in the horizontal list.
             current_node_in_the_horizontal_list = current_node_in_the_horizontal_list._node_link
-        ### 2. Insert all the paths of the conditional pattern base in the tree. ###
+        ### 2. Prune the dict of frequent selectors. ###
+        dict_of_frequent_selectors = dict() # dict[str, tuple[Selector, list[int, int]]]
+        for key in dict_of_all_frequent_selectors:
+            if (dict_of_all_frequent_selectors[key][1][0] >= minimum_tp) and (dict_of_all_frequent_selectors[key][1][1] > minimum_fp):
+                dict_of_frequent_selectors[key] = (dict_of_all_frequent_selectors[key][0], [dict_of_all_frequent_selectors[key][1][0], dict_of_all_frequent_selectors[key][1][1]])
+        ### 3. Insert all the paths of the conditional pattern base in the tree. ###
         for elem in conditional_pattern_base:
             path = elem[0]
             tp = elem[1]
             fp = elem[2]
-            # Sort the path according to the dict of frequent selectors.
+            valid_selectors_in_this_path = [] # Only the valid selectors after pruning.
+            # Iterate through the selectors in the path.
+            for selector in path:
+                # Add the selector to 'valid_selectors_in_this_path'.
+                # ===> IMPORTANT: the selector might not exist because it was pruned. In this case, a KeyError exception is raised.
+                try:
+                    # IMPORTANT: we use 'repr' in order to add simple quotes to the values of type str, but not to the values of numeric types.
+                    valid_selectors_in_this_path.append( dict_of_frequent_selectors[selector.attribute_name+repr(selector.value)][0] )
+                except KeyError:
+                    pass # If the exception is raised, we do nothing.
+            # Sort 'valid_selectors_in_this_path' according to the dict of frequent selectors.
             # - In case of tie, we maintain the insertion order (the order of appearance in the dataset).
-            path.sort(reverse=True, key=lambda x : (dict_of_frequent_selectors[x.attribute_name+repr(x.value)][1][0]+dict_of_frequent_selectors[x.attribute_name+repr(x.value)][1][1]) )
+            valid_selectors_in_this_path.sort(reverse=True, key=lambda x : (dict_of_frequent_selectors[x.attribute_name+repr(x.value)][1][0]+dict_of_frequent_selectors[x.attribute_name+repr(x.value)][1][1]) )
             # Insert.
-            final_conditional_fp_tree._insert_in_conditional_fp_tree(path, final_conditional_fp_tree._root_node, tp, fp)
+            final_conditional_fp_tree._insert_in_conditional_fp_tree(valid_selectors_in_this_path, final_conditional_fp_tree._root_node, tp, fp)
         # Finally, we create the sorted header table.
         final_conditional_fp_tree._sorted_header_table = []
         for key in final_conditional_fp_tree._header_table:
@@ -323,6 +340,8 @@ class FPTreeForSDMap(object):
         # We have to sort the selectors according to the summation of 'n' (i.e., summation of tp + summation of fp).
         # - In case of tie, we maintain the insertion order (the order of appearance in the dataset).
         final_conditional_fp_tree._sorted_header_table.sort(reverse=False, key=lambda x : (final_conditional_fp_tree._header_table[x][0][0] + final_conditional_fp_tree._header_table[x][0][1])) # Ascending order.
+        # Return the final conditional FPTree.
+        return final_conditional_fp_tree
     
     def _insert_in_conditional_fp_tree(self, list_of_selectors, parent_node, fixed_tp, fixed_fp):
         """Private method to insert a list of selectors from a parent node.
