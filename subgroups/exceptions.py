@@ -12,5 +12,9 @@ class OperatorNotSupportedError(NotImplementedError):
     """
 
 class SubgroupParameterNotFoundError(KeyError):
-    """This exception is raised when a subgroup parameter in not found in the quality measure computing process.
+    """This exception is raised when a subgroup parameter is not found in the quality measure computing process.
+    """
+
+class ParametersError(RuntimeError):
+    """This exception is raised when a method has not been called with the appropriate parameters.
     """

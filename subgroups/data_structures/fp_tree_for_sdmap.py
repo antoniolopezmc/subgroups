@@ -11,6 +11,7 @@ from subgroups.core.selector import Selector
 from subgroups.core.operator import Operator
 from pandas import DataFrame
 from numpy import size, sum
+from subgroups.exceptions import ParametersError
 
 class FPTreeForSDMap(object):
     """This class represents the FPTree data structure used in the SDMap algorithm.
@@ -98,9 +99,9 @@ class FPTreeForSDMap(object):
             result = result + "\n"
         return result
     
-    # IMPORTANT: In the original implementation of the sdmap algorithm (in Vikamine), they check the true positives tp and the 'n' (true positives + false positives) in order to prune the frequent selectors.
-    def generate_set_of_frequent_selectors(self, pandas_dataframe, target, minimum_tp, minimum_fp):
-        """Method to scan the pandas DataFrame in order to generate the set of frequent selectors. IMPORTANT: missing values are not supported yet.
+    # IMPORTANT: in the original implementation of the SDMap algorithm (in Vikamine), they check 'n' (true positives + false positives) in order to prune the frequent selectors. In our implementation, we use two threshold types: (1) the true positives (tp) and the false positives (fp) separately or (2) the subgroup description size (n).
+    def generate_set_of_frequent_selectors(self, pandas_dataframe, target, minimum_tp=None, minimum_fp=None, minimum_n=None):
+        """Method to scan the pandas DataFrame in order to generate the set of frequent selectors. Two threshold types could be used: (1) the true positives tp and the false positives fp separately or (2) the subgroup description size n (n = tp + fp). This means that: (1) if 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and (2) if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None. IMPORTANT: missing values are not supported yet.
         
         :type pandas_dataframe: pandas.DataFrame
         :param pandas_dataframe: the DataFrame which is scanned. IMPORTANT: missing values are not supported yet.
@@ -110,6 +111,8 @@ class FPTreeForSDMap(object):
         :param minimum_tp: the minimum true positives (tp) threshold.
         :type minimum_fp: int
         :param minimum_fp: the minimum false positives (fp) threshold.
+        :type minimum_n: int
+        :param minimum_n: the minimum subgroup description size (n) threshold.
         :rtype: dict[str, tuple[Selector, list[int, int]]]
         :return: a dictionary where the keys are strings (the concatenation of the selector attribute name and the selector value) and the values are tuples with 2 values: the selector and a list with 2 elements: the true positives tp of it and the false positives fp of it.
         """
@@ -117,29 +120,55 @@ class FPTreeForSDMap(object):
             raise TypeError("The type of the parameter 'pandas_dataframe' must be 'DataFrame'.")
         if type(target) is not tuple:
             raise TypeError("The type of the parameter 'target' must be 'tuple'.")
-        if type(minimum_tp) is not int:
-            raise TypeError("The type of the parameter 'minimum_tp' must be 'int'.")
-        if type(minimum_fp) is not int:
-            raise TypeError("The type of the parameter 'minimum_fp' must be 'int'.")
-        # Get the target column as a mask: True if the value is equal to the target value and False otherwise.
-        target_attribute_as_a_mask = (pandas_dataframe[target[0]] == target[1])
-        # Result.
-        final_dict_of_frequent_selectors = dict()
-        # Iterate through the columns (except the target).
-        for column in pandas_dataframe.columns.drop(target[0]):
-            current_Series = pandas_dataframe[column]
-            # Use the groupby method in order to obtain, for each value, the true positives tp and the false positives fp.
-            tp_and_fp_for_each_value = target_attribute_as_a_mask.groupby(current_Series).aggregate([size, sum]) # tp -> sum; fp -> size - sum.
-            # Filter the results according to 'minimum_tp' and 'minimum_fp'.
-            filtered = tp_and_fp_for_each_value[(tp_and_fp_for_each_value["sum"] >= minimum_tp) & ((tp_and_fp_for_each_value["size"] - tp_and_fp_for_each_value["sum"]) >= minimum_fp)]
-            # The corresponding values are the indexes of the DataFrame 'filtered'.
-            values = filtered.index
-            # We create the selectors and we add them to the final dict.
-            for i in values:
-                # IMPORTANT: we use 'repr' in order to add simple quotes to the values of type str, but not to the values of numeric types.
-                final_dict_of_frequent_selectors[column+repr(i)] = (Selector(column, Operator.EQUAL, i), [ filtered.loc[i,"sum"], (filtered.loc[i,"size"] - filtered.loc[i,"sum"]) ])
-        # Finally, we return the results.
-        return final_dict_of_frequent_selectors
+        if (type(minimum_tp) is not int) and (minimum_tp is not None):
+            raise TypeError("The type of the parameter 'minimum_tp' must be 'int' or 'NoneType'.")
+        if (type(minimum_fp) is not int) and (minimum_fp is not None):
+            raise TypeError("The type of the parameter 'minimum_fp' must be 'int' or 'NoneType'.")
+        if (type(minimum_n) is not int) and (minimum_n is not None):
+            raise TypeError("The type of the parameter 'minimum_n' must be 'int' or 'NoneType'.")
+        # Depending on the values of the parameters 'minimum_tp', 'minimum_fp' and 'minimum_n' ...
+        if (minimum_tp is not None) and (minimum_fp is not None) and (minimum_n is None):
+            # Get the target column as a mask: True if the value is equal to the target value and False otherwise.
+            target_attribute_as_a_mask = (pandas_dataframe[target[0]] == target[1])
+            # Result.
+            final_dict_of_frequent_selectors = dict()
+            # Iterate through the columns (except the target).
+            for column in pandas_dataframe.columns.drop(target[0]):
+                current_Series = pandas_dataframe[column]
+                # Use the 'groupby' method in order to obtain, for each value, the true positives tp and the false positives fp.
+                tp_and_fp_for_each_value = target_attribute_as_a_mask.groupby(current_Series).aggregate([size, sum]) # tp -> sum; fp -> size - sum; n -> size.
+                # Filter the results according to 'minimum_tp' and 'minimum_fp'.
+                filtered = tp_and_fp_for_each_value[(tp_and_fp_for_each_value["sum"] >= minimum_tp) & ((tp_and_fp_for_each_value["size"] - tp_and_fp_for_each_value["sum"]) >= minimum_fp)]
+                # The corresponding values are the indexes of the DataFrame 'filtered'.
+                values = filtered.index
+                # We create the selectors and we add them to the final dict.
+                for i in values:
+                    # IMPORTANT: we use 'repr' in order to add simple quotes to the values of type str, but not to the values of numeric types.
+                    final_dict_of_frequent_selectors[column+repr(i)] = (Selector(column, Operator.EQUAL, i), [ filtered.loc[i,"sum"], (filtered.loc[i,"size"] - filtered.loc[i,"sum"]) ])
+            # Finally, we return the results.
+            return final_dict_of_frequent_selectors
+        elif (minimum_tp is None) and (minimum_fp is None) and (minimum_n is not None):
+            # Get the target column as a mask: True if the value is equal to the target value and False otherwise.
+            target_attribute_as_a_mask = (pandas_dataframe[target[0]] == target[1])
+            # Result.
+            final_dict_of_frequent_selectors = dict()
+            # Iterate through the columns (except the target).
+            for column in pandas_dataframe.columns.drop(target[0]):
+                current_Series = pandas_dataframe[column]
+                # Use the 'groupby' method in order to obtain, for each value, the true positives tp and the false positives fp.
+                tp_and_fp_for_each_value = target_attribute_as_a_mask.groupby(current_Series).aggregate([size, sum]) # tp -> sum; fp -> size - sum; n -> size.
+                # Filter the results according to 'minimum_tp' and 'minimum_fp'.
+                filtered = tp_and_fp_for_each_value[tp_and_fp_for_each_value["size"] >= minimum_n]
+                # The corresponding values are the indexes of the DataFrame 'filtered'.
+                values = filtered.index
+                # We create the selectors and we add them to the final dict.
+                for i in values:
+                    # IMPORTANT: we use 'repr' in order to add simple quotes to the values of type str, but not to the values of numeric types.
+                    final_dict_of_frequent_selectors[column+repr(i)] = (Selector(column, Operator.EQUAL, i), [ filtered.loc[i,"sum"], (filtered.loc[i,"size"] - filtered.loc[i,"sum"]) ])
+            # Finally, we return the results.
+            return final_dict_of_frequent_selectors
+        else:
+            raise ParametersError("If 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.")
     
     # IMPORTANT: in the original paper, this method is recursive. In our implementation, the method is iterative.
     def _insert_tree(self, list_of_selectors, parent_node, target_match):
@@ -248,8 +277,8 @@ class FPTreeForSDMap(object):
         # - In case of tie, we maintain the insertion order (the order of appearance in the dataset).
         self._sorted_header_table.sort(reverse=False, key=lambda x : (self._header_table[x][0][0] + self._header_table[x][0][1])) # Ascending order.
     
-    def generate_conditional_fp_tree(self, list_of_selectors, minimum_tp, minimum_fp):
-        """Method to get the conditional FPTree with a list of selectors.
+    def generate_conditional_fp_tree(self, list_of_selectors, minimum_tp=None, minimum_fp=None, minimum_n=None):
+        """Method to get the conditional FPTree with a list of selectors. Two threshold types could be used: (1) the true positives tp and the false positives fp separately or (2) the subgroup description size n (n = tp + fp). This means that: (1) if 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and (2) if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.
         
         :type list_of_selectors: list[Selector]
         :param list_of_selectors: the list of selectors which is used. IMPORTANT: we assume that the list of selectors only contains selectors.
@@ -257,15 +286,26 @@ class FPTreeForSDMap(object):
         :param minimum_tp: the minimum true positives (tp) threshold.
         :type minimum_fp: int
         :param minimum_fp: the minimum false positives (fp) threshold.
+        :type minimum_n: int
+        :param minimum_n: the minimum subgroup description size (n) threshold.
         :rtype: FPTreeForSDMap
         :return: the generated conditional FPTree.
         """
         if type(list_of_selectors) is not list:
             raise TypeError("The type of the parameter 'list_of_selectors' must be 'list'.")
-        if type(minimum_tp) is not int:
-            raise TypeError("The type of the parameter 'minimum_tp' must be 'int'.")
-        if type(minimum_fp) is not int:
-            raise TypeError("The type of the parameter 'minimum_fp' must be 'int'.")
+        if (type(minimum_tp) is not int) and (minimum_tp is not None):
+            raise TypeError("The type of the parameter 'minimum_tp' must be 'int' or 'NoneType'.")
+        if (type(minimum_fp) is not int) and (minimum_fp is not None):
+            raise TypeError("The type of the parameter 'minimum_fp' must be 'int' or 'NoneType'.")
+        if (type(minimum_n) is not int) and (minimum_n is not None):
+            raise TypeError("The type of the parameter 'minimum_n' must be 'int' or 'NoneType'.")
+        # Depending on the values of the parameters 'minimum_tp', 'minimum_fp' and 'minimum_n' ...
+        if (minimum_tp is not None) and (minimum_fp is not None) and (minimum_n is None):
+            use_tp_and_fp = True
+        elif (minimum_tp is None) and (minimum_fp is None) and (minimum_n is not None):
+            use_tp_and_fp = False
+        else:
+            raise ParametersError("If 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.")
         # We only use the first selector in the list in the creation process (the selector at the left side).
         first_selector = list_of_selectors[0]
         # We initialize the final result.
@@ -275,7 +315,7 @@ class FPTreeForSDMap(object):
         # If the first selector is not in the header table, return the current conditional FPTree.
         if first_selector not in self._header_table:
             return final_conditional_fp_tree
-        # Dictionary with all frequent selectors (before pruning).
+        # Dictionary with all the frequent selectors (before pruning).
         dict_of_all_frequent_selectors = dict() # dict[str, tuple[Selector, list[int, int]]]
         # Get the first node in the corresponding horizontal list.
         current_node_in_the_horizontal_list = self._header_table[first_selector][1]
@@ -288,7 +328,7 @@ class FPTreeForSDMap(object):
             while (current_node_in_the_path != self._root_node):
                 current_selector = current_node_in_the_path._selector
                 # Add the selector to 'dict_of_all_frequent_selectors'.
-                # IMPORTANT: the true positives tp and false positives fp of all nodes in the path are those of the current node in the horizontal list.
+                # IMPORTANT: the true positives tp and the false positives fp of all the nodes in the path are those of the current node in the horizontal list.
                 try:
                     dict_of_all_frequent_selectors[current_selector.attribute_name+repr(current_selector.value)][1][0] = \
                         dict_of_all_frequent_selectors[current_selector.attribute_name+repr(current_selector.value)][1][0] + current_node_in_the_horizontal_list._counters[0]
@@ -307,11 +347,16 @@ class FPTreeForSDMap(object):
                 conditional_pattern_base.append( [ current_path, current_node_in_the_horizontal_list._counters[0], current_node_in_the_horizontal_list._counters[1] ] )
             # Finally, go the the next node in the horizontal list.
             current_node_in_the_horizontal_list = current_node_in_the_horizontal_list._node_link
-        ### 2. Prune the dict of frequent selectors. ###
+        ### 2. Prune the dict of frequent selectors (depending on the values of the parameters 'minimum_tp', 'minimum_fp' and 'minimum_n'). ###
         dict_of_frequent_selectors = dict() # dict[str, tuple[Selector, list[int, int]]]
-        for key in dict_of_all_frequent_selectors:
-            if (dict_of_all_frequent_selectors[key][1][0] >= minimum_tp) and (dict_of_all_frequent_selectors[key][1][1] > minimum_fp):
-                dict_of_frequent_selectors[key] = (dict_of_all_frequent_selectors[key][0], [dict_of_all_frequent_selectors[key][1][0], dict_of_all_frequent_selectors[key][1][1]])
+        if use_tp_and_fp:
+            for key in dict_of_all_frequent_selectors:
+                if (dict_of_all_frequent_selectors[key][1][0] >= minimum_tp) and (dict_of_all_frequent_selectors[key][1][1] > minimum_fp):
+                    dict_of_frequent_selectors[key] = (dict_of_all_frequent_selectors[key][0], [dict_of_all_frequent_selectors[key][1][0], dict_of_all_frequent_selectors[key][1][1]])
+        else:
+            for key in dict_of_all_frequent_selectors:
+                if ( (dict_of_all_frequent_selectors[key][1][0]+dict_of_all_frequent_selectors[key][1][1]) >= minimum_n):
+                    dict_of_frequent_selectors[key] = (dict_of_all_frequent_selectors[key][0], [dict_of_all_frequent_selectors[key][1][0], dict_of_all_frequent_selectors[key][1][1]]) 
         ### 3. Insert all the paths of the conditional pattern base in the tree. ###
         for elem in conditional_pattern_base:
             path = elem[0]
