@@ -351,7 +351,7 @@ class FPTreeForSDMap(object):
         dict_of_frequent_selectors = dict() # dict[str, tuple[Selector, list[int, int]]]
         if use_tp_and_fp:
             for key in dict_of_all_frequent_selectors:
-                if (dict_of_all_frequent_selectors[key][1][0] >= minimum_tp) and (dict_of_all_frequent_selectors[key][1][1] > minimum_fp):
+                if (dict_of_all_frequent_selectors[key][1][0] >= minimum_tp) and (dict_of_all_frequent_selectors[key][1][1] >= minimum_fp):
                     dict_of_frequent_selectors[key] = (dict_of_all_frequent_selectors[key][0], [dict_of_all_frequent_selectors[key][1][0], dict_of_all_frequent_selectors[key][1][1]])
         else:
             for key in dict_of_all_frequent_selectors:

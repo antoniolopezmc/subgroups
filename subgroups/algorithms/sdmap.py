@@ -10,7 +10,7 @@ from pandas import DataFrame
 from pandas.api.types import is_string_dtype
 from subgroups.algorithms._base import Algorithm
 from subgroups.quality_measures._base import QualityMeasure
-from subgroups.exceptions import ParametersError, TargetAttributeTypeError
+from subgroups.exceptions import ParametersError, AttributeTypeError
 from subgroups.data_structures.fp_tree_for_sdmap import FPTreeForSDMap
 from subgroups.core.pattern import Pattern
 from subgroups.core.operator import Operator
@@ -157,10 +157,10 @@ class SDMap(Algorithm):
             return final_result
     
     def fit(self, pandas_dataframe, target):
-        """Method to run the SDMap algorithm. The target attribute must be discrete (type 'str'). IMPORTANT: missing values are not supported yet.
+        """Method to run the SDMap algorithm. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
         
         :type pandas_dataframe: pandas.DataFrame
-        :param pandas_dataframe: the DataFrame which is scanned. IMPORTANT: missing values are not supported yet.
+        :param pandas_dataframe: the DataFrame which is scanned. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
         :type target: tuple[str, str]
         :param target: a tuple with 2 elements: the target attribute name and the target value.
         :rtype: list[tuple[Subgroup, int]] or list[tuple[Subgroup, float]]
@@ -170,9 +170,10 @@ class SDMap(Algorithm):
             raise TypeError("The type of the parameter 'pandas_dataframe' must be 'DataFrame'.")
         if type(target) is not tuple:
             raise TypeError("The type of the parameter 'target' must be 'tuple'.")
-        # IMPORTANT: SDMap algorithm only supports discrete attributes (type 'str').
-        if not is_string_dtype(pandas_dataframe[target[0]]):
-            raise TargetAttributeTypeError("SDMap algorithm only supports discrete target attributes (type 'str').")
+        # IMPORTANT: this algorithm only supports nominal attributes (i.e., type 'str').
+        for column in pandas_dataframe.columns:
+            if not is_string_dtype(pandas_dataframe[column]):
+                raise AttributeTypeError("Error in attribute '" + str(column) + "'. This algorithm only supports nominal attributes (i.e., type 'str').")
         # Create an empty FPTreeForSDMap.
         fptree = FPTreeForSDMap()
         # Generate the set of frequent selectors.
@@ -187,7 +188,7 @@ class SDMap(Algorithm):
             frequent_patterns = self._fpgrowth(fptree, None)
             # Obtain TP and FP of the dataset.
             TP = sum(pandas_dataframe[target[0]] == target[1])
-            FP = len(pandas_dataframe.index)
+            FP = len(pandas_dataframe.index) - TP
             # Iterate throughout the frequent pattern (Patterns) obtained with the adapted fpgrowth algorithm.
             for elem in frequent_patterns:
                 # Generate a subgroup.
