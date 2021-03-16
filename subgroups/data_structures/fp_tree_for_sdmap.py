@@ -22,11 +22,12 @@ class FPTreeForSDMap(object):
     def __init__(self):
         # The root of the tree. In this case, in each node, we have two counter: the true positives tp of the selector of the node and the false positives fp of the selector of the node.
         self._root_node = FPTreeNode(Selector("None", Operator.EQUAL, "None"), [-1, -1], None)
-        # The header table is represented with a python dictionary, where the key is a selector and the value is a tuple with 2 elements:
+        # The header table is represented with a python dictionary, where the key is a selector and the value is a list with 3 elements:
         # - The first element is a list with 2 elements:
         #   * The summation of the true positives tp of all the nodes with that selector.
         #   * The summation of the false positives fp of all the nodes with that selector.
-        # - The second element is a FPTreeNode (which contains that selector).
+        # - The second element is a FPTreeNode. It is the FIRST FPTreeNode of the horizontal list (the list with all the FPTreeNode with the same selector).
+        # - The third element is a FPTreeNode. It is the LAST FPTreeNode of the horizontal list (the list with all the FPTreeNode with the same selector).
         self._header_table = dict()
         # IMPORTANT: THIS CRITERION HAS BEEN EXTRACTED FROM THE ORIGINAL IMPLEMENTATION OF THE SDMAP ALGORITHM (IN VIKAMINE).
         # We have to sort the selectors of the header table according to the summation of 'n' (i.e., summation of tp + summation of fp).
@@ -206,14 +207,18 @@ class FPTreeForSDMap(object):
                 # Add it as a child of the current parent node.
                 current_parent_node.add_child(new_fptreenode)
                 # Check if the current selector is in the header table.
-                if selector in self._header_table: # If it is in the header table, iterate through the node links, add the new node at the end of the horizontal list and increase the summation of true positives tp in the header table.
-                    current_node_in_the_horizontal_list = self._header_table[selector][1]
-                    while (current_node_in_the_horizontal_list.node_link != None):
-                        current_node_in_the_horizontal_list = current_node_in_the_horizontal_list.node_link
-                    current_node_in_the_horizontal_list.node_link = new_fptreenode
+                if selector in self._header_table:
+                    ##### # If it is in the header table, iterate through the node links, add the new node at the end of the horizontal list and increase the summation of true positives tp in the header table.
+                    ##### current_node_in_the_horizontal_list = self._header_table[selector][1]
+                    ##### while (current_node_in_the_horizontal_list.node_link != None):
+                    #####     current_node_in_the_horizontal_list = current_node_in_the_horizontal_list.node_link
+                    ##### current_node_in_the_horizontal_list.node_link = new_fptreenode
+                    # If it is in the header table, add the new node at the end of the horizontal list and increase the summation of true positives tp in the header table.
+                    self._header_table[selector][2]._node_link = new_fptreenode
+                    self._header_table[selector][2] = new_fptreenode
                     self._header_table[selector][0][0] = self._header_table[selector][0][0] + 1
                 else: # If not, create the entry and add it.
-                    self._header_table[selector] = ([1, 0], new_fptreenode)
+                    self._header_table[selector] = [ [1, 0], new_fptreenode, new_fptreenode ]
                 # Go down in the tree (the current node will be the current parent node in the next iteration).
                 current_parent_node = new_fptreenode
             elif (not target_match) and (child_node_with_this_selector is None):
@@ -222,14 +227,18 @@ class FPTreeForSDMap(object):
                 # Add it as a child of the current parent node.
                 current_parent_node.add_child(new_fptreenode)
                 # Check if the current selector is in the header table.
-                if selector in self._header_table: # If it is in the header table, iterate through the node links, add the new node at the end of the horizontal list and increase the summation of false positives fp in the header table.
-                    current_node_in_the_horizontal_list = self._header_table[selector][1]
-                    while (current_node_in_the_horizontal_list.node_link != None):
-                        current_node_in_the_horizontal_list = current_node_in_the_horizontal_list.node_link
-                    current_node_in_the_horizontal_list.node_link = new_fptreenode
+                if selector in self._header_table:
+                    ##### # If it is in the header table, iterate through the node links, add the new node at the end of the horizontal list and increase the summation of false positives fp in the header table.
+                    ##### current_node_in_the_horizontal_list = self._header_table[selector][1]
+                    ##### while (current_node_in_the_horizontal_list.node_link != None):
+                    #####     current_node_in_the_horizontal_list = current_node_in_the_horizontal_list.node_link
+                    ##### current_node_in_the_horizontal_list.node_link = new_fptreenode
+                    # If it is in the header table, add the new node at the end of the horizontal list and increase the summation of false positives fp in the header table.
+                    self._header_table[selector][2]._node_link = new_fptreenode
+                    self._header_table[selector][2] = new_fptreenode
                     self._header_table[selector][0][1] = self._header_table[selector][0][1] + 1
                 else: # If not, create the entry and add it.
-                    self._header_table[selector] = ([0, 1], new_fptreenode)
+                    self._header_table[selector] = [ [0, 1], new_fptreenode, new_fptreenode ]
                 # Go down in the tree (the current node will be the current parent node in the next iteration).
                 current_parent_node = new_fptreenode
     
@@ -420,14 +429,18 @@ class FPTreeForSDMap(object):
                 # Add it as a child of the current parent node.
                 current_parent_node.add_child(new_fptreenode)
                 # Check if the current selector is in the header table.
-                if selector in self._header_table: # If it is in the header table, iterate through the node links, add the new node at the end of the horizontal list and increase the summation of tp and fp in the header table.
-                    current_node_in_the_horizontal_list = self._header_table[selector][1]
-                    while (current_node_in_the_horizontal_list.node_link != None):
-                        current_node_in_the_horizontal_list = current_node_in_the_horizontal_list.node_link
-                    current_node_in_the_horizontal_list.node_link = new_fptreenode
+                if selector in self._header_table:
+                    ##### # If it is in the header table, iterate through the node links, add the new node at the end of the horizontal list and increase the summation of tp and fp in the header table.
+                    ##### current_node_in_the_horizontal_list = self._header_table[selector][1]
+                    ##### while (current_node_in_the_horizontal_list.node_link != None):
+                    #####     current_node_in_the_horizontal_list = current_node_in_the_horizontal_list.node_link
+                    ##### current_node_in_the_horizontal_list.node_link = new_fptreenode
+                    # If it is in the header table, add the new node at the end of the horizontal list and increase the summation of tp and fp in the header table.
+                    self._header_table[selector][2]._node_link = new_fptreenode
+                    self._header_table[selector][2] = new_fptreenode
                     self._header_table[selector][0][0] = self._header_table[selector][0][0] + fixed_tp
                     self._header_table[selector][0][1] = self._header_table[selector][0][1] + fixed_fp
                 else: # If not, create the entry and add it.
-                    self._header_table[selector] = ([fixed_tp, fixed_fp], new_fptreenode)
+                    self._header_table[selector] = [ [fixed_tp, fixed_fp], new_fptreenode, new_fptreenode ]
                 # Go down in the tree (the current node will be the current parent node in the next iteration).
                 current_parent_node = new_fptreenode
