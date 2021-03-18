@@ -94,7 +94,7 @@ class FPTreeForSDMap(object):
             result = result + "summations: " + str(current_entry[0]) + "} -> " + str(current_entry[1])
             if follow_node_links:
                 current_node_in_the_horizontal_list = current_entry[1]
-                while (current_node_in_the_horizontal_list != None):
+                while (current_node_in_the_horizontal_list is not None):
                     current_node_in_the_horizontal_list = current_node_in_the_horizontal_list.node_link
                     result = result + " -> " + str(current_node_in_the_horizontal_list)
             result = result + "\n"
@@ -115,7 +115,7 @@ class FPTreeForSDMap(object):
         :type minimum_n: int
         :param minimum_n: the minimum subgroup description size (n) threshold.
         :rtype: dict[str, tuple[Selector, list[int, int]]]
-        :return: a dictionary where the keys are strings (the concatenation of the selector attribute name and the selector value) and the values are tuples with 2 values: the selector and a list with 2 elements: the true positives tp of it and the false positives fp of it.
+        :return: a dictionary where the keys are strings (the concatenation of the selector attribute name and the selector value) and the values are tuples with 3 values: (1) the selector, (2) a list with 2 elements: the true positives tp of it and the false positives fp of it, and (3) a number indicating the insertion order in this dictionary (starting from 0).
         """
         if type(pandas_dataframe) is not DataFrame:
             raise TypeError("The type of the parameter 'pandas_dataframe' must be 'DataFrame'.")
@@ -134,6 +134,7 @@ class FPTreeForSDMap(object):
             # Result.
             final_dict_of_frequent_selectors = dict()
             # Iterate through the columns (except the target).
+            insertion_order = 0 # The insertion order is necessary later in order to sort the elements which have the same 'n' in a same row.
             for column in pandas_dataframe.columns.drop(target[0]):
                 current_Series = pandas_dataframe[column]
                 # Use the 'groupby' method in order to obtain, for each value, the true positives tp and the false positives fp.
@@ -145,7 +146,8 @@ class FPTreeForSDMap(object):
                 # We create the selectors and we add them to the final dict.
                 for i in values:
                     # IMPORTANT: we use 'repr' in order to add simple quotes to the values of type str, but not to the values of numeric types.
-                    final_dict_of_frequent_selectors[column+repr(i)] = (Selector(column, Operator.EQUAL, i), [ filtered.loc[i,"sum"], (filtered.loc[i,"size"] - filtered.loc[i,"sum"]) ])
+                    final_dict_of_frequent_selectors[column+repr(i)] = (Selector(column, Operator.EQUAL, i), [ filtered.loc[i,"sum"], (filtered.loc[i,"size"] - filtered.loc[i,"sum"]) ], insertion_order)
+                    insertion_order = insertion_order + 1
             # Finally, we return the results.
             return final_dict_of_frequent_selectors
         elif (minimum_tp is None) and (minimum_fp is None) and (minimum_n is not None):
@@ -154,6 +156,7 @@ class FPTreeForSDMap(object):
             # Result.
             final_dict_of_frequent_selectors = dict()
             # Iterate through the columns (except the target).
+            insertion_order = 0 # The insertion order is necessary later in order to sort the elements which have the same 'n' in a same row.
             for column in pandas_dataframe.columns.drop(target[0]):
                 current_Series = pandas_dataframe[column]
                 # Use the 'groupby' method in order to obtain, for each value, the true positives tp and the false positives fp.
@@ -165,7 +168,8 @@ class FPTreeForSDMap(object):
                 # We create the selectors and we add them to the final dict.
                 for i in values:
                     # IMPORTANT: we use 'repr' in order to add simple quotes to the values of type str, but not to the values of numeric types.
-                    final_dict_of_frequent_selectors[column+repr(i)] = (Selector(column, Operator.EQUAL, i), [ filtered.loc[i,"sum"], (filtered.loc[i,"size"] - filtered.loc[i,"sum"]) ])
+                    final_dict_of_frequent_selectors[column+repr(i)] = (Selector(column, Operator.EQUAL, i), [ filtered.loc[i,"sum"], (filtered.loc[i,"size"] - filtered.loc[i,"sum"]) ], insertion_order)
+                    insertion_order = insertion_order + 1
             # Finally, we return the results.
             return final_dict_of_frequent_selectors
         else:
@@ -210,7 +214,7 @@ class FPTreeForSDMap(object):
                 if selector in self._header_table:
                     ##### # If it is in the header table, iterate through the node links, add the new node at the end of the horizontal list and increase the summation of true positives tp in the header table.
                     ##### current_node_in_the_horizontal_list = self._header_table[selector][1]
-                    ##### while (current_node_in_the_horizontal_list.node_link != None):
+                    ##### while (current_node_in_the_horizontal_list.node_link is not None):
                     #####     current_node_in_the_horizontal_list = current_node_in_the_horizontal_list.node_link
                     ##### current_node_in_the_horizontal_list.node_link = new_fptreenode
                     # If it is in the header table, add the new node at the end of the horizontal list and increase the summation of true positives tp in the header table.
@@ -230,7 +234,7 @@ class FPTreeForSDMap(object):
                 if selector in self._header_table:
                     ##### # If it is in the header table, iterate through the node links, add the new node at the end of the horizontal list and increase the summation of false positives fp in the header table.
                     ##### current_node_in_the_horizontal_list = self._header_table[selector][1]
-                    ##### while (current_node_in_the_horizontal_list.node_link != None):
+                    ##### while (current_node_in_the_horizontal_list.node_link is not None):
                     #####     current_node_in_the_horizontal_list = current_node_in_the_horizontal_list.node_link
                     ##### current_node_in_the_horizontal_list.node_link = new_fptreenode
                     # If it is in the header table, add the new node at the end of the horizontal list and increase the summation of false positives fp in the header table.
@@ -272,10 +276,12 @@ class FPTreeForSDMap(object):
                     selectors_in_the_current_row.append( set_of_frequent_selectors[column+repr(current_element)][0] )
                 except KeyError:
                     pass # If the exception is raised, we do nothing.
+            # We sort 'selectors_in_the_current_row' according to the value of 'n' (tp+fp) in the set of frequent selectors (CRITERION EXTRACTED FROM VIKAMINE).
+            # - In case of tie, we NEED TO MAINTAIN the order of the selectors according to the order in the set of frequent selectors. For this reason, it is necessary to sort twice.
             # IMPORTANT: we use 'repr' in order to add simple quotes to the values of type str, but not to the values of numeric types.
-            # We sort the current row according to the order of the selectors of the set of frequent selectors (CRITERION EXTRACTED FROM VIKAMINE).
-            # - In case of tie, we maintain the insertion order (the order of appearance in the dataset).
-            selectors_in_the_current_row.sort(reverse=True, key=lambda x : (set_of_frequent_selectors[x.attribute_name+repr(x.value)][1][0]+set_of_frequent_selectors[x.attribute_name+repr(x.value)][1][1]) ) # Descending order.
+            selectors_in_the_current_row = sorted(selectors_in_the_current_row, key = lambda x : set_of_frequent_selectors[x.attribute_name+repr(x.value)][2], reverse=False) # key -> [2] : the insertion order in the dictionary.
+            selectors_in_the_current_row = sorted(selectors_in_the_current_row, key = lambda x : (set_of_frequent_selectors[x.attribute_name+repr(x.value)][1][0]+set_of_frequent_selectors[x.attribute_name+repr(x.value)][1][1]), reverse=True) # key -> 'n' : sum of tp and fp.
+            # Insert.
             self._insert_tree(selectors_in_the_current_row, self._root_node, (target_value_in_the_current_row == target[1]))
         # Finally, we create the sorted header table.
         self._sorted_header_table = []
@@ -283,7 +289,7 @@ class FPTreeForSDMap(object):
             self._sorted_header_table.append( key )
         # IMPORTANT: THIS CRITERION HAS BEEN EXTRACTED FROM THE ORIGINAL IMPLEMENTATION OF THE SDMAP ALGORITHM (IN VIKAMINE).
         # We have to sort the selectors according to the summation of 'n' (i.e., summation of tp + summation of fp).
-        # - In case of tie, we maintain the insertion order (the order of appearance in the dataset).
+        # - In case of tie, we maintain the insertion order in the dictionary 'header_table'.
         self._sorted_header_table.sort(reverse=False, key=lambda x : (self._header_table[x][0][0] + self._header_table[x][0][1])) # Ascending order.
     
     def generate_conditional_fp_tree(self, list_of_selectors, minimum_tp=None, minimum_fp=None, minimum_n=None):
@@ -329,7 +335,7 @@ class FPTreeForSDMap(object):
         # Get the first node in the corresponding horizontal list.
         current_node_in_the_horizontal_list = self._header_table[first_selector][1]
         # Iterate through the horizontal list.
-        while(current_node_in_the_horizontal_list != None):
+        while(current_node_in_the_horizontal_list is not None):
             # Path from the root node to to the current node in the corresponding horizontal list.
             current_path = []
             # Go up in the tree until the root node.
@@ -357,15 +363,19 @@ class FPTreeForSDMap(object):
             # Finally, go the the next node in the horizontal list.
             current_node_in_the_horizontal_list = current_node_in_the_horizontal_list._node_link
         ### 2. Prune the dict of frequent selectors (depending on the values of the parameters 'minimum_tp', 'minimum_fp' and 'minimum_n'). ###
-        dict_of_frequent_selectors = dict() # dict[str, tuple[Selector, list[int, int]]]
+        dict_of_frequent_selectors = dict() # dict[str, tuple[Selector, list[int, int]], int]
         if use_tp_and_fp:
+            insertion_order = 0
             for key in dict_of_all_frequent_selectors:
                 if (dict_of_all_frequent_selectors[key][1][0] >= minimum_tp) and (dict_of_all_frequent_selectors[key][1][1] >= minimum_fp):
-                    dict_of_frequent_selectors[key] = (dict_of_all_frequent_selectors[key][0], [dict_of_all_frequent_selectors[key][1][0], dict_of_all_frequent_selectors[key][1][1]])
+                    dict_of_frequent_selectors[key] = (dict_of_all_frequent_selectors[key][0], [dict_of_all_frequent_selectors[key][1][0], dict_of_all_frequent_selectors[key][1][1]], insertion_order)
+                    insertion_order = insertion_order - 1 # IMPORTANT: in this case, the insertion order decreases (we use negative numbers) because, when we created the conditional pattern base, we iterated from the bottom to the top in the FPTree.
         else:
+            insertion_order = 0
             for key in dict_of_all_frequent_selectors:
                 if ( (dict_of_all_frequent_selectors[key][1][0]+dict_of_all_frequent_selectors[key][1][1]) >= minimum_n):
-                    dict_of_frequent_selectors[key] = (dict_of_all_frequent_selectors[key][0], [dict_of_all_frequent_selectors[key][1][0], dict_of_all_frequent_selectors[key][1][1]]) 
+                    dict_of_frequent_selectors[key] = (dict_of_all_frequent_selectors[key][0], [dict_of_all_frequent_selectors[key][1][0], dict_of_all_frequent_selectors[key][1][1]], insertion_order) 
+                    insertion_order = insertion_order - 1 # IMPORTANT: in this case, the insertion order decreases (we use negative numbers) because, when we created the conditional pattern base, we iterated from the bottom to the top in the FPTree.
         ### 3. Insert all the paths of the conditional pattern base in the tree. ###
         for elem in conditional_pattern_base:
             path = elem[0]
@@ -381,9 +391,11 @@ class FPTreeForSDMap(object):
                     valid_selectors_in_this_path.append( dict_of_frequent_selectors[selector.attribute_name+repr(selector.value)][0] )
                 except KeyError:
                     pass # If the exception is raised, we do nothing.
-            # Sort 'valid_selectors_in_this_path' according to the dict of frequent selectors.
-            # - In case of tie, we maintain the insertion order (the order of appearance in the dataset).
-            valid_selectors_in_this_path.sort(reverse=True, key=lambda x : (dict_of_frequent_selectors[x.attribute_name+repr(x.value)][1][0]+dict_of_frequent_selectors[x.attribute_name+repr(x.value)][1][1]) )
+            # We sort 'valid_selectors_in_this_path' according to the value of 'n' (tp+fp) in the set of frequent selectors (CRITERION EXTRACTED FROM VIKAMINE).
+            # - In case of tie, we NEED TO MAINTAIN the order of the selectors according to the order in the set of frequent selectors. For this reason, it is necessary to sort twice.
+            # IMPORTANT: we use 'repr' in order to add simple quotes to the values of type str, but not to the values of numeric types.
+            valid_selectors_in_this_path = sorted(valid_selectors_in_this_path, key = lambda x : dict_of_frequent_selectors[x.attribute_name+repr(x.value)][2], reverse=False) # key -> [2] : the insertion order in the dictionary.
+            valid_selectors_in_this_path = sorted(valid_selectors_in_this_path, key = lambda x : (dict_of_frequent_selectors[x.attribute_name+repr(x.value)][1][0]+dict_of_frequent_selectors[x.attribute_name+repr(x.value)][1][1]), reverse=True) # key -> 'n' : sum of tp and fp.
             # Insert.
             final_conditional_fp_tree._insert_in_conditional_fp_tree(valid_selectors_in_this_path, final_conditional_fp_tree._root_node, tp, fp)
         # Finally, we create the sorted header table.
@@ -392,7 +404,7 @@ class FPTreeForSDMap(object):
             final_conditional_fp_tree._sorted_header_table.append( key )
         # IMPORTANT: THIS CRITERION HAS BEEN EXTRACTED FROM THE ORIGINAL IMPLEMENTATION OF THE SDMAP ALGORITHM (IN VIKAMINE).
         # We have to sort the selectors according to the summation of 'n' (i.e., summation of tp + summation of fp).
-        # - In case of tie, we maintain the insertion order (the order of appearance in the dataset).
+        # - In case of tie, we maintain the insertion order in the dictionary 'header_table'.
         final_conditional_fp_tree._sorted_header_table.sort(reverse=False, key=lambda x : (final_conditional_fp_tree._header_table[x][0][0] + final_conditional_fp_tree._header_table[x][0][1])) # Ascending order.
         # Return the final conditional FPTree.
         return final_conditional_fp_tree
@@ -432,7 +444,7 @@ class FPTreeForSDMap(object):
                 if selector in self._header_table:
                     ##### # If it is in the header table, iterate through the node links, add the new node at the end of the horizontal list and increase the summation of tp and fp in the header table.
                     ##### current_node_in_the_horizontal_list = self._header_table[selector][1]
-                    ##### while (current_node_in_the_horizontal_list.node_link != None):
+                    ##### while (current_node_in_the_horizontal_list.node_link is not None):
                     #####     current_node_in_the_horizontal_list = current_node_in_the_horizontal_list.node_link
                     ##### current_node_in_the_horizontal_list.node_link = new_fptreenode
                     # If it is in the header table, add the new node at the end of the horizontal list and increase the summation of tp and fp in the header table.

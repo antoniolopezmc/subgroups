@@ -16,11 +16,11 @@ def test_FPTreeNode():
     node1 = FPTreeNode(selector1, [1], None)
     assert (node1.selector == selector1)
     assert (node1.counters == [1])
-    assert (node1.node_link == None)
+    assert (node1.node_link is None)
     assert (str(node1) == "{id: " + str(id(node1)) + ", selector: name = 'value1', counters: [1], node_link_id: None}")
     node1.counters[0] = node1.counters[0] + 1
     assert (node1.counters == [2])
-    assert (node1.node_link == None)
+    assert (node1.node_link is None)
     assert (str(node1) == "{id: " + str(id(node1)) + ", selector: name = 'value1', counters: [2], node_link_id: None}")
     # Childs of root.
     selector2 = Selector("att1", Operator.EQUAL, "value2")

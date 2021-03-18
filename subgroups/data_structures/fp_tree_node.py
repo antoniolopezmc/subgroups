@@ -145,7 +145,7 @@ class FPTreeNode(object):
     
     def __str__(self):
         final_str = "{id: " + str(id(self)) + ", selector: " + str(self._selector) + ", counters: " + str(self._counters)
-        if self._node_link == None:
+        if self._node_link is None:
             return final_str + ", node_link_id: None}"
         return final_str + ", node_link_id: " + str(id(self._node_link)) + "}"
     

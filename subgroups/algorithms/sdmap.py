@@ -115,16 +115,16 @@ class SDMap(Algorithm):
                     pattern = Pattern(beta + alpha)
                 else:
                     pattern = Pattern(beta)
-                # The values of the counters tp and fp of 'pattern' will be those of the selector in beta with the less values of the counters tp and fp in the fptree.
-                tp = fptree.header_table[beta[0]][0][0]
-                fp = fptree.header_table[beta[0]][0][1]
-                for selector in beta[1:]:
-                    current_tp = fptree.header_table[selector][0][0]
-                    current_fp = fptree.header_table[selector][0][1]
-                    # According to the original implementation of the SDMap algorithm (in Vikamine), we use 'n' (tp+fp) to compare.
-                    if ((current_tp+current_fp) < (tp+fp)):
-                        tp = current_tp
-                        fp = current_fp
+                # The values of the counters tp and fp of 'pattern' will be those of the selector in beta with the less values of the counters tp and fp in the fptree (in the header table of the fptree).
+                most_unfrequent_selector = None
+                index = 0
+                # IMPORTANT: this is not an infinite loop because ALL the selectors in beta are always also in the header table (because all the combinations had generated from the header table).
+                while (most_unfrequent_selector is None):
+                    if (fptree._sorted_header_table[index] in beta): # This comparison has been extracted from the SDMap implementation in Vikamine.
+                        most_unfrequent_selector = fptree._sorted_header_table[index]
+                    index = index + 1
+                tp = fptree.header_table[most_unfrequent_selector][0][0]
+                fp = fptree.header_table[most_unfrequent_selector][0][1]
                 # Add it to the final result.
                 final_result.append( (pattern, [tp, fp]) )
             # Return the result.
