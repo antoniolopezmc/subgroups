@@ -331,10 +331,11 @@ class FPTreeForSDMap(object):
         if first_selector not in self._header_table:
             return final_conditional_fp_tree
         # Dictionary with all the frequent selectors (before pruning).
-        dict_of_all_frequent_selectors = dict() # dict[str, tuple[Selector, list[int, int]]]
+        dict_of_all_frequent_selectors = dict() # dict[str, tuple[Selector, list[int, int], int]]
         # Get the first node in the corresponding horizontal list.
         current_node_in_the_horizontal_list = self._header_table[first_selector][1]
         # Iterate through the horizontal list.
+        insertion_order = 0 # The insertion order is necessary later in order to sort the elements which have the same 'n' in a same path.
         while(current_node_in_the_horizontal_list is not None):
             # Path from the root node to to the current node in the corresponding horizontal list.
             current_path = []
@@ -351,7 +352,8 @@ class FPTreeForSDMap(object):
                         dict_of_all_frequent_selectors[current_selector.attribute_name+repr(current_selector.value)][1][1] + current_node_in_the_horizontal_list._counters[1]
                 except KeyError: # Try to access to the entry and if it does not exist, create a new one.
                     dict_of_all_frequent_selectors[current_selector.attribute_name+repr(current_selector.value)] = \
-                        (current_selector, [current_node_in_the_horizontal_list._counters[0], current_node_in_the_horizontal_list._counters[1]])
+                        (current_selector, [current_node_in_the_horizontal_list._counters[0], current_node_in_the_horizontal_list._counters[1]], insertion_order)
+                    insertion_order = insertion_order - 1 # IMPORTANT: in this case, the insertion order decreases (we use negative numbers) because, when we create the conditional pattern base, we iterate from the bottom to the top in the FPTree.
                 # Insert the selector at the beginning of the current path.
                 current_path.insert(0, current_selector)
                 # Go up.
@@ -363,19 +365,15 @@ class FPTreeForSDMap(object):
             # Finally, go the the next node in the horizontal list.
             current_node_in_the_horizontal_list = current_node_in_the_horizontal_list._node_link
         ### 2. Prune the dict of frequent selectors (depending on the values of the parameters 'minimum_tp', 'minimum_fp' and 'minimum_n'). ###
-        dict_of_frequent_selectors = dict() # dict[str, tuple[Selector, list[int, int]], int]
+        dict_of_frequent_selectors = dict() # dict[str, tuple[Selector, list[int, int], int]]
         if use_tp_and_fp:
-            insertion_order = 0
             for key in dict_of_all_frequent_selectors:
                 if (dict_of_all_frequent_selectors[key][1][0] >= minimum_tp) and (dict_of_all_frequent_selectors[key][1][1] >= minimum_fp):
-                    dict_of_frequent_selectors[key] = (dict_of_all_frequent_selectors[key][0], [dict_of_all_frequent_selectors[key][1][0], dict_of_all_frequent_selectors[key][1][1]], insertion_order)
-                    insertion_order = insertion_order - 1 # IMPORTANT: in this case, the insertion order decreases (we use negative numbers) because, when we created the conditional pattern base, we iterated from the bottom to the top in the FPTree.
+                    dict_of_frequent_selectors[key] = (dict_of_all_frequent_selectors[key][0], [dict_of_all_frequent_selectors[key][1][0], dict_of_all_frequent_selectors[key][1][1]], dict_of_all_frequent_selectors[key][2])
         else:
-            insertion_order = 0
             for key in dict_of_all_frequent_selectors:
                 if ( (dict_of_all_frequent_selectors[key][1][0]+dict_of_all_frequent_selectors[key][1][1]) >= minimum_n):
-                    dict_of_frequent_selectors[key] = (dict_of_all_frequent_selectors[key][0], [dict_of_all_frequent_selectors[key][1][0], dict_of_all_frequent_selectors[key][1][1]], insertion_order) 
-                    insertion_order = insertion_order - 1 # IMPORTANT: in this case, the insertion order decreases (we use negative numbers) because, when we created the conditional pattern base, we iterated from the bottom to the top in the FPTree.
+                    dict_of_frequent_selectors[key] = (dict_of_all_frequent_selectors[key][0], [dict_of_all_frequent_selectors[key][1][0], dict_of_all_frequent_selectors[key][1][1]], dict_of_all_frequent_selectors[key][2]) 
         ### 3. Insert all the paths of the conditional pattern base in the tree. ###
         for elem in conditional_pattern_base:
             path = elem[0]
