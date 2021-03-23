@@ -67,3 +67,4 @@ if __name__ == "__main__":
     test_SDMap_fit_method_6()
     test_SDMap_fit_method_7()
     test_SDMap_fit_method_8()
+    test_SDMap_visited_and_pruned_nodes()

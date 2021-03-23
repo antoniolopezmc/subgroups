@@ -44,7 +44,7 @@ class SDMap(Algorithm):
     :param minimum_n: the minimum subgroup description size (n) threshold.
     """
     
-    __slots__ = ("_quality_measure", "_minimum_quality_measure_value", "_minimum_tp", "_minimum_fp", "_minimum_n")
+    __slots__ = "_quality_measure", "_minimum_quality_measure_value", "_minimum_tp", "_minimum_fp", "_minimum_n", "_visited_nodes", "_pruned_nodes"
     
     def __init__(self, quality_measure, minimum_quality_measure_value, minimum_tp=None, minimum_fp=None, minimum_n=None):
         if not isinstance(quality_measure, QualityMeasure):
@@ -65,6 +65,8 @@ class SDMap(Algorithm):
             self._minimum_tp = minimum_tp
             self._minimum_fp = minimum_fp
             self._minimum_n = minimum_n
+            self._visited_nodes = 0
+            self._pruned_nodes = 0
         else:
             raise ParametersError("If 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.")
     
@@ -88,6 +90,15 @@ class SDMap(Algorithm):
     minimum_tp = property(_get_minimum_tp, None, None, "The minimum true positives (tp) threshold.")
     minimum_fp = property(_get_minimum_fp, None, None, "The minimum false positives (fp) threshold.")
     minimum_n = property(_get_minimum_n, None, None, "The minimum subgroup description size (n) threshold.")
+    
+    def _get_visited_nodes(self):
+        return self._visited_nodes
+    
+    def _get_pruned_nodes(self):
+        return self._pruned_nodes
+    
+    visited_nodes = property(_get_visited_nodes, None, None, "The visited nodes after executing the SDMap algorithm (before executing the 'fit' method, this attribute is 0).")
+    pruned_nodes = property(_get_pruned_nodes, None, None, "The pruned nodes after executing the SDMap algorithm (before executing the 'fit' method, this attribute is 0).")
     
     def _fpgrowth(self, fptree, alpha):
         """Private method to run the adapted FPGrowth algorithm in order to generate frequent patterns.
@@ -198,6 +209,9 @@ class SDMap(Algorithm):
                 # Add the subgroup only if the quality measure value is greater or equal than the threshold.
                 if quality_measure_value >= self._minimum_quality_measure_value:
                     final_result.append( (subgroup, quality_measure_value) )
+                    self._visited_nodes = self._visited_nodes + 1
+                else:
+                    self._pruned_nodes = self._pruned_nodes + 1
             return final_result
         else:
             return []

@@ -314,3 +314,71 @@ def test_SDMap_fit_method_8():
     assert ( (Subgroup.generate_from_str("Description: [a3 = k, a1 = c], Target: class = 'y'"), 0.125) in subgroups_qmvalue_round3 )
     assert ( (Subgroup.generate_from_str("Description: [a3 = k, a1 = c, a2 = q], Target: class = 'y'"), 0.125) in subgroups_qmvalue_round3 )
     assert ( (Subgroup.generate_from_str("Description: [a3 = k, a2 = q], Target: class = 'y'"), 0.125) in subgroups_qmvalue_round3 )
+
+def test_SDMap_visited_and_pruned_nodes():
+    df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
+    target = ("class", "y")
+    # ---------------------------------------
+    sdmap = SDMap(WRAcc(), -1, minimum_n=0) # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
+    assert (sdmap.visited_nodes == 0)
+    assert (sdmap.pruned_nodes == 0)
+    subgroups = sdmap.fit(df, target)
+    assert (sdmap.visited_nodes == 25)
+    assert (sdmap.pruned_nodes == 0)
+    # ---------------------------------------
+    sdmap = SDMap(WRAcc(), -1, minimum_n=2) # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
+    assert (sdmap.visited_nodes == 0)
+    assert (sdmap.pruned_nodes == 0)
+    subgroups = sdmap.fit(df, target)
+    assert (sdmap.visited_nodes == 2)
+    assert (sdmap.pruned_nodes == 0)
+    # ---------------------------------------
+    sdmap = SDMap(WRAcc(), -1, minimum_tp=1, minimum_fp=1) # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
+    assert (sdmap.visited_nodes == 0)
+    assert (sdmap.pruned_nodes == 0)
+    subgroups = sdmap.fit(df, target)
+    assert (sdmap.visited_nodes == 2)
+    assert (sdmap.pruned_nodes == 0)
+    # ---------------------------------------
+    sdmap = SDMap(WRAcc(), -1, minimum_tp=1, minimum_fp=0) # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
+    assert (sdmap.visited_nodes == 0)
+    assert (sdmap.pruned_nodes == 0)
+    subgroups = sdmap.fit(df, target)
+    assert (sdmap.visited_nodes == 13)
+    assert (sdmap.pruned_nodes == 0)
+    # ---------------------------------------
+    sdmap = SDMap(WRAcc(), 0, minimum_tp=1, minimum_fp=0) # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
+    assert (sdmap.visited_nodes == 0)
+    assert (sdmap.pruned_nodes == 0)
+    subgroups = sdmap.fit(df, target)
+    assert (sdmap.visited_nodes == 13)
+    assert (sdmap.pruned_nodes == 0)
+    # ---------------------------------------
+    sdmap = SDMap(WRAcc(), 0.1, minimum_tp=1, minimum_fp=0) # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
+    assert (sdmap.visited_nodes == 0)
+    assert (sdmap.pruned_nodes == 0)
+    subgroups = sdmap.fit(df, target)
+    assert (sdmap.visited_nodes == 12)
+    assert (sdmap.pruned_nodes == 1)
+    # ---------------------------------------
+    sdmap = SDMap(WRAcc(), 0.1, minimum_n=0) # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
+    assert (sdmap.visited_nodes == 0)
+    assert (sdmap.pruned_nodes == 0)
+    subgroups = sdmap.fit(df, target)
+    assert (sdmap.visited_nodes == 12)
+    assert (sdmap.pruned_nodes == 13)
+    # ---------------------------------------
+    # ---------------------------------------
+    sdmap = SDMap(WRAcc(), 0.2, minimum_n=2) # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
+    assert (sdmap.visited_nodes == 0)
+    assert (sdmap.pruned_nodes == 0)
+    subgroups = sdmap.fit(df, target)
+    assert (sdmap.visited_nodes == 0)
+    assert (sdmap.pruned_nodes == 2)
+    # ---------------------------------------
+    sdmap = SDMap(WRAcc(), 0.2, minimum_n=0) # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
+    assert (sdmap.visited_nodes == 0)
+    assert (sdmap.pruned_nodes == 0)
+    subgroups = sdmap.fit(df, target)
+    assert (sdmap.visited_nodes == 0)
+    assert (sdmap.pruned_nodes == 25)
