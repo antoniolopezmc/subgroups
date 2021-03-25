@@ -6,7 +6,7 @@
 """ Tests of the functionality contained in the file 'data_structures/fp_tree_for_sdmap.py'.
 """
 
-import pandas as pd
+from pandas import DataFrame
 from subgroups.data_structures.fp_tree_for_sdmap import FPTreeForSDMap
 from subgroups.core.operator import Operator
 from subgroups.core.selector import Selector
@@ -20,7 +20,7 @@ def test_FPTreeForSDMap_generate_set_of_frequent_selectors_1():
     n_rows = 500
     attribute_names = ["att1", "att2", "att3", "att4", "att5"]
     values = ["value1", "value2", "value3", "value4", "value5", "value6"]
-    df = pd.DataFrame()
+    df = DataFrame()
     for att_name in attribute_names:
         df[att_name] = [random.choice(values) for _ in range(n_rows)]
     df["target"] = [random.choice(["Y","N"]) for _ in range(n_rows)]
@@ -100,8 +100,8 @@ def test_FPTreeForSDMap_generate_set_of_frequent_selectors_1():
         assert (set_of_frequent_selectors_2[key][1][1] == final_result[key][1][1])
 
 def test_FPTreeForSDMap_generate_set_of_frequent_selectors_2():
-    df = pd.DataFrame({"a1" : ["v1", "v1", "v2", "v3", "v2", "v4"], "a2" : ["v2", "v3", "v4", "v4", "v3", "v1"],\
-                        "a3" : ["v2", "v4", "v1", "v4", "v3", "v2"], "target" : ["Y", "Y", "N", "Y", "N", "N"]})
+    df = DataFrame({"a1" : ["v1", "v1", "v2", "v3", "v2", "v4"], "a2" : ["v2", "v3", "v4", "v4", "v3", "v1"],\
+                    "a3" : ["v2", "v4", "v1", "v4", "v3", "v2"], "target" : ["Y", "Y", "N", "Y", "N", "N"]})
     target = ("target", "Y")
     fp_tree_for_sdmap = FPTreeForSDMap()
     set_of_frequent_selectors = fp_tree_for_sdmap.generate_set_of_frequent_selectors(df, target, minimum_n=2)
@@ -126,8 +126,8 @@ def test_FPTreeForSDMap_generate_set_of_frequent_selectors_2():
     assert (set_of_frequent_selectors["a3'v4'"][1][1] == 0)
 
 def test_FPTreeForSDMap_generate_set_of_frequent_selectors_3():
-    df = pd.DataFrame({"a1" : ["v1", "v1", "v2", "v3", "v2", "v4"], "a2" : ["v2", "v3", "v4", "v4", "v3", "v1"],\
-                        "a3" : ["v2", "v4", "v1", "v4", "v3", "v2"], "target" : ["Y", "Y", "N", "Y", "N", "N"]})
+    df = DataFrame({"a1" : ["v1", "v1", "v2", "v3", "v2", "v4"], "a2" : ["v2", "v3", "v4", "v4", "v3", "v1"],\
+                    "a3" : ["v2", "v4", "v1", "v4", "v3", "v2"], "target" : ["Y", "Y", "N", "Y", "N", "N"]})
     target = ("target", "Y")
     fp_tree_for_sdmap = FPTreeForSDMap()
     try:
@@ -166,7 +166,7 @@ def test_FPTreeForSDMap_build_tree_1():
     n_rows = 500
     attribute_names = ["att1", "att2", "att3", "att4", "att5"]
     values = ["value1", "value2", "value3", "value4", "value5", "value6"]
-    df = pd.DataFrame()
+    df = DataFrame()
     for att_name in attribute_names:
         df[att_name] = [random.choice(values) for _ in range(n_rows)]
     df["target"] = [random.choice(["Y","N"]) for _ in range(n_rows)]
@@ -194,8 +194,8 @@ def test_FPTreeForSDMap_build_tree_1():
     assert (sorted_header_table == header_table_as_list)
 
 def test_FPTreeForSDMap_build_tree_2():
-    df = pd.DataFrame({"a1" : ["v1", "v1", "v2", "v3", "v2", "v4"], "a2" : ["v2", "v3", "v4", "v4", "v3", "v1"],\
-                        "a3" : ["v2", "v4", "v1", "v4", "v3", "v2"], "target" : ["Y", "Y", "N", "Y", "N", "N"]})
+    df = DataFrame({"a1" : ["v1", "v1", "v2", "v3", "v2", "v4"], "a2" : ["v2", "v3", "v4", "v4", "v3", "v1"],\
+                    "a3" : ["v2", "v4", "v1", "v4", "v3", "v2"], "target" : ["Y", "Y", "N", "Y", "N", "N"]})
     fp_tree_for_sdmap = FPTreeForSDMap()
     assert (fp_tree_for_sdmap.is_empty())
     assert (fp_tree_for_sdmap.there_is_a_single_path())
@@ -336,8 +336,8 @@ def test_FPTreeForSDMap_build_tree_2():
     assert (id(fp_tree_for_sdmap.root_node._childs[Selector.generate_from_str("a2 = v4")]._childs[Selector.generate_from_str("a3 = v4")]) == id(fp_tree_for_sdmap.root_node._childs[Selector.generate_from_str("a2 = v4")]._childs[Selector.generate_from_str("a3 = v4")]._childs[Selector.generate_from_str("a1 = v3")].parent))
 
 def test_FPTreeForSDMap_build_tree_3():
-    df = pd.DataFrame({"a1" : ["v1", "v1", "v2", "v3", "v2", "v4"], "a2" : ["v2", "v3", "v4", "v4", "v3", "v1"],\
-                        "a3" : ["v2", "v4", "v1", "v4", "v3", "v2"], "target" : ["Y", "Y", "N", "Y", "N", "N"]})
+    df = DataFrame({"a1" : ["v1", "v1", "v2", "v3", "v2", "v4"], "a2" : ["v2", "v3", "v4", "v4", "v3", "v1"],\
+                    "a3" : ["v2", "v4", "v1", "v4", "v3", "v2"], "target" : ["Y", "Y", "N", "Y", "N", "N"]})
     fp_tree_for_sdmap = FPTreeForSDMap()
     target = ("target", "Y")
     set_of_frequent_selectors = fp_tree_for_sdmap.generate_set_of_frequent_selectors(df, target, minimum_tp=2, minimum_fp=0)
@@ -375,8 +375,8 @@ def test_FPTreeForSDMap_build_tree_3():
     assert (fp_tree_for_sdmap.root_node._childs[Selector.generate_from_str("a1 = v1")]._childs[Selector.generate_from_str("a3 = v4")].number_of_children == 0)
 
 def test_FPTreeForSDMap_build_tree_4():
-    df = pd.DataFrame({"a1" : ["v1", "v1", "v2", "v3", "v2", "v4"], "a2" : ["v2", "v3", "v4", "v4", "v3", "v1"],\
-                        "a3" : ["v2", "v4", "v1", "v4", "v3", "v2"], "target" : ["Y", "Y", "N", "Y", "N", "N"]})
+    df = DataFrame({"a1" : ["v1", "v1", "v2", "v3", "v2", "v4"], "a2" : ["v2", "v3", "v4", "v4", "v3", "v1"],\
+                    "a3" : ["v2", "v4", "v1", "v4", "v3", "v2"], "target" : ["Y", "Y", "N", "Y", "N", "N"]})
     fp_tree_for_sdmap = FPTreeForSDMap()
     target = ("target", "Y")
     set_of_frequent_selectors = fp_tree_for_sdmap.generate_set_of_frequent_selectors(df, target, minimum_tp=1, minimum_fp=1)
