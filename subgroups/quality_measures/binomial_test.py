@@ -9,7 +9,6 @@
 from subgroups.quality_measures._base import QualityMeasure
 from subgroups.exceptions import SubgroupParameterNotFoundError
 from math import sqrt
-from subgroups.quality_measures.binomial_test_upper_bound_1 import BinomialTestUpperBound1
 
 class BinomialTest(QualityMeasure):
     """This class defines the Binomial Test quality measure.
@@ -58,13 +57,13 @@ class BinomialTest(QualityMeasure):
         """
         return "BinomialTest"
     
-    def get_upper_bounds(self):
-        """Method to get a python dictionary with quality measures which are an Upper Bound of this one. The dictionary keys are the quality measure names and the dictionary values are the instances of those quality measures.
+    def upper_bound_of(self):
+        """Method to get a python dictionary with quality measures of which this one is Upper Bound.
         
         :rtype: dict[str, QualityMeasure]
-        :return: a python dictionary where the keys are the upper bound names and the values are the instances of those upper bounds.
+        :return: a python dictionary where the keys are the quality measure names and the values are the instances of those quality measures.
         """
-        return dict({BinomialTestUpperBound1().get_name() : BinomialTestUpperBound1()})
+        return dict()
     
     def __call__(self, dict_of_parameters):
         """Compute the BinomialTest quality measure.

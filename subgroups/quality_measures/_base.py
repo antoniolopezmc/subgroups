@@ -15,13 +15,13 @@ class QualityMeasure(ABC):
     __slots__ = ()
     
     ## We consider the following subgroup parameters. We can compute all the quality measures using these general elements. ##
-    # true positives tp (rows covered by the condition and the target).
+    # true positives tp (rows covered by the subgroup description and by the subgroup target).
     SUBGROUP_PARAMETER_tp = "tp"
-    # false positives fp (rows covered by the condition but not by the target).
+    # false positives fp (rows covered by the subgroup description but not by the subgroup target).
     SUBGROUP_PARAMETER_fp = "fp"
-    # True Positives TP (rows covered by the target).
+    # True Positives TP (rows covered by the subgroup target).
     SUBGROUP_PARAMETER_TP = "TP"
-    # False Positives FP (rows not covered by the target).
+    # False Positives FP (rows not covered by the subgroup target).
     SUBGROUP_PARAMETER_FP = "FP"
     
     ### IMPORTANT ###
@@ -34,6 +34,11 @@ class QualityMeasure(ABC):
     # tn = FP - fp
     # fn = TP - tp
     #
+    ## At the same time, we can also define the following equivalences:
+    #
+    # tp = p * n
+    # TP = p0 * N
+    #  
     
     @abstractmethod
     def compute(self, dict_of_parameters):
@@ -44,7 +49,7 @@ class QualityMeasure(ABC):
         pass
     
     @abstractmethod
-    def get_upper_bounds(self):
+    def upper_bound_of(self):
         pass
     
     @abstractmethod

@@ -8,7 +8,6 @@
 
 from subgroups.quality_measures._base import QualityMeasure
 from subgroups.exceptions import SubgroupParameterNotFoundError
-from subgroups.quality_measures.wracc_upper_bound_1 import WRAccUpperBound1
 
 class WRAcc(QualityMeasure):
     """This class defines the Weighted Relative Accuracy (WRAcc) quality measure.
@@ -53,13 +52,13 @@ class WRAcc(QualityMeasure):
         """
         return "WRAcc"
     
-    def get_upper_bounds(self):
-        """Method to get a python dictionary with quality measures which are an Upper Bound of this one. The dictionary keys are the quality measure names and the dictionary values are the instances of those quality measures.
+    def upper_bound_of(self):
+        """Method to get a python dictionary with quality measures of which this one is Upper Bound.
         
         :rtype: dict[str, QualityMeasure]
-        :return: a python dictionary where the keys are the upper bound names and the values are the instances of those upper bounds.
+        :return: a python dictionary where the keys are the quality measure names and the values are the instances of those quality measures.
         """
-        return dict({WRAccUpperBound1().get_name() : WRAccUpperBound1()})
+        return dict()
     
     def __call__(self, dict_of_parameters):
         """Compute the WRAcc quality measure.

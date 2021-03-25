@@ -46,11 +46,11 @@ class PPV(QualityMeasure):
         """
         return "PPV"
     
-    def get_upper_bounds(self):
-        """Method to get a python dictionary with quality measures which are an Upper Bound of this one. The dictionary keys are the quality measure names and the dictionary values are the instances of those quality measures.
+    def upper_bound_of(self):
+        """Method to get a python dictionary with quality measures of which this one is Upper Bound.
         
         :rtype: dict[str, QualityMeasure]
-        :return: a python dictionary where the keys are the upper bound names and the values are the instances of those upper bounds.
+        :return: a python dictionary where the keys are the quality measure names and the values are the instances of those quality measures.
         """
         return dict()
     
