@@ -143,7 +143,7 @@ class FPTreeForSDMap(object):
                 filtered = tp_and_fp_for_each_value[(tp_and_fp_for_each_value["sum"] >= minimum_tp) & ((tp_and_fp_for_each_value["size"] - tp_and_fp_for_each_value["sum"]) >= minimum_fp)]
                 # The corresponding values are the indexes of the DataFrame 'filtered'.
                 values = filtered.index
-                # We create the selectors and we add them to the final dict.
+                # We create the selectors and we add them to the final dictionary.
                 for i in values:
                     # IMPORTANT: we use 'repr' in order to add simple quotes to the values of type str, but not to the values of numeric types.
                     final_dict_of_frequent_selectors[column+repr(i)] = (Selector(column, Operator.EQUAL, i), [ filtered.loc[i,"sum"], (filtered.loc[i,"size"] - filtered.loc[i,"sum"]) ], insertion_order)
@@ -165,7 +165,7 @@ class FPTreeForSDMap(object):
                 filtered = tp_and_fp_for_each_value[tp_and_fp_for_each_value["size"] >= minimum_n]
                 # The corresponding values are the indexes of the DataFrame 'filtered'.
                 values = filtered.index
-                # We create the selectors and we add them to the final dict.
+                # We create the selectors and we add them to the final dictionary.
                 for i in values:
                     # IMPORTANT: we use 'repr' in order to add simple quotes to the values of type str, but not to the values of numeric types.
                     final_dict_of_frequent_selectors[column+repr(i)] = (Selector(column, Operator.EQUAL, i), [ filtered.loc[i,"sum"], (filtered.loc[i,"size"] - filtered.loc[i,"sum"]) ], insertion_order)

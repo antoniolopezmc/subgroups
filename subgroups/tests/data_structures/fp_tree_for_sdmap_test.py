@@ -40,7 +40,7 @@ def test_FPTreeForSDMap_generate_set_of_frequent_selectors_1():
     minimum_tp = 0
     minimum_fp = 0
     set_of_frequent_selectors_1 = fp_tree_for_sdmap.generate_set_of_frequent_selectors(df, target, minimum_tp=minimum_tp, minimum_fp=minimum_fp)
-    test_set_of_frequent_selectors_1 = dict() # We generate the dict by hand in order to compare it with 'set_of_frequent_selectors_1'.
+    test_set_of_frequent_selectors_1 = dict() # We generate the dictionary by hand in order to compare it with 'set_of_frequent_selectors_1'.
     for row in df.itertuples(index=False):
         if row.target == target[1]:
             column_index = 0
@@ -69,7 +69,7 @@ def test_FPTreeForSDMap_generate_set_of_frequent_selectors_1():
     minimum_tp = int( quantile(concatenate([df[column].value_counts().values for column in df]), 0.5) / 2 )
     minimum_fp = int( quantile(concatenate([df[column].value_counts().values for column in df]), 0.7) / 2 )
     set_of_frequent_selectors_2 = fp_tree_for_sdmap.generate_set_of_frequent_selectors(df, target, minimum_tp=minimum_tp, minimum_fp=minimum_fp)
-    test_set_of_frequent_selectors_2 = dict() # We generate the dict by hand in order to compare it with 'set_of_frequent_selectors_2'.
+    test_set_of_frequent_selectors_2 = dict() # We generate the dictionary by hand in order to compare it with 'set_of_frequent_selectors_2'.
     for row in df.itertuples(index=False):
         if row.target == target[1]:
             column_index = 0
