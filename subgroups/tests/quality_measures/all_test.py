@@ -16,6 +16,7 @@ from subgroups.quality_measures.sensitivity import Sensitivity
 from subgroups.quality_measures.ppv import PPV
 from subgroups.quality_measures.wracc_upper_bound_1 import WRAccUpperBound1
 from subgroups.quality_measures.binomial_test_upper_bound_1 import BinomialTestUpperBound1
+from subgroups.quality_measures.piatetsky_shapiro import PiatetskyShapiro
 from math import sqrt
 
 def test_quality_measures():
@@ -28,6 +29,7 @@ def test_quality_measures():
     ppv = PPV()
     wracc_upper_bound_1 = WRAccUpperBound1()
     binomial_test_upper_bound_1 = BinomialTestUpperBound1()
+    piatetsky_shapiro = PiatetskyShapiro()
     assert (id(support) == id(Support()))
     assert (id(coverage) == id(Coverage()))
     assert (id(wracc) == id(WRAcc()))
@@ -37,6 +39,7 @@ def test_quality_measures():
     assert (id(ppv) == id(PPV()))
     assert (id(wracc_upper_bound_1) == id(WRAccUpperBound1()))
     assert (id(binomial_test_upper_bound_1) == id(BinomialTestUpperBound1()))
+    assert (id(piatetsky_shapiro) == id(PiatetskyShapiro()))
     assert (support.get_name() == "Support")
     assert (coverage.get_name() == "Coverage")
     assert (wracc.get_name() == "WRAcc")
@@ -46,6 +49,7 @@ def test_quality_measures():
     assert (ppv.get_name() == "PPV")
     assert (wracc_upper_bound_1.get_name() == "WRAccUpperBound1")
     assert (binomial_test_upper_bound_1.get_name() == "BinomialTestUpperBound1")
+    assert (piatetsky_shapiro.get_name() == "PiatetskyShapiro")
     assert (len(support.upper_bound_of()) == 0)
     assert (len(coverage.upper_bound_of()) == 0)
     assert (len(wracc.upper_bound_of()) == 0)
@@ -55,6 +59,7 @@ def test_quality_measures():
     assert (len(ppv.upper_bound_of()) == 0)
     assert (len(wracc_upper_bound_1.upper_bound_of()) == 1)
     assert (len(binomial_test_upper_bound_1.upper_bound_of()) == 1)
+    assert (len(piatetsky_shapiro.upper_bound_of()) == 0)
 
 def test_quality_measures_compute():
     tp = 3
@@ -76,6 +81,7 @@ def test_quality_measures_compute():
     assert (PPV()(dict_of_parameters) == (tp / ( tp + fp )))
     assert (WRAccUpperBound1()(dict_of_parameters) == ( (tp*tp)/(tp+fp) ) * ( 1 - ( TP/(TP+FP) ) ))
     assert (BinomialTestUpperBound1()(dict_of_parameters) == (( sqrt(tp) ) * ( 1 - ( (TP)/(TP+FP) ) )))
+    assert (PiatetskyShapiro()(dict_of_parameters) == n*(p-p0))
     assert (Support()(dict_of_parameters) == Support().compute(dict_of_parameters))
     assert (Coverage()(dict_of_parameters) == Coverage().compute(dict_of_parameters))
     assert (WRAcc()(dict_of_parameters) == WRAcc().compute(dict_of_parameters))
@@ -85,3 +91,4 @@ def test_quality_measures_compute():
     assert (PPV()(dict_of_parameters) == PPV().compute(dict_of_parameters))
     assert (WRAccUpperBound1()(dict_of_parameters) == WRAccUpperBound1().compute(dict_of_parameters))
     assert (BinomialTestUpperBound1()(dict_of_parameters) == BinomialTestUpperBound1().compute(dict_of_parameters))
+    assert (PiatetskyShapiro()(dict_of_parameters) == PiatetskyShapiro().compute(dict_of_parameters))
