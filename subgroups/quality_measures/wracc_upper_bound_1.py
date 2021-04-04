@@ -69,4 +69,6 @@ class WRAccUpperBound1(QualityMeasure):
         :rtype: float
         :return: the computed value for the WRAccUpperBound1 quality measure.
         """
+        if type(dict_of_parameters) is not dict:
+            raise TypeError("The type of the parameter 'dict_of_parameters' must be 'dict'.")
         return self.compute(dict_of_parameters)

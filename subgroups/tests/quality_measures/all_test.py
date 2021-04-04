@@ -106,3 +106,123 @@ def test_quality_measures_compute():
     assert (PiatetskyShapiro()(dict_of_parameters) == PiatetskyShapiro().compute(dict_of_parameters))
     assert (PiatetskyShapiroUpperBound1()(dict_of_parameters) == PiatetskyShapiroUpperBound1().compute(dict_of_parameters))
     assert (PiatetskyShapiroUpperBound2()(dict_of_parameters) == PiatetskyShapiroUpperBound2().compute(dict_of_parameters))
+    try:
+        Support()(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        Support().compute(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        Coverage()(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        Coverage().compute(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        WRAcc()(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        WRAcc().compute(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        BinomialTest()(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        BinomialTest().compute(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        Qg()(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        Qg().compute(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        Sensitivity()(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        Sensitivity().compute(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        PPV()(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        PPV().compute(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        WRAccUpperBound1()(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        WRAccUpperBound1().compute(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        BinomialTestUpperBound1()(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        BinomialTestUpperBound1().compute(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        PiatetskyShapiro()(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        PiatetskyShapiro().compute(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        PiatetskyShapiroUpperBound1()(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        PiatetskyShapiroUpperBound1().compute(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        PiatetskyShapiroUpperBound2()(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        PiatetskyShapiroUpperBound2().compute(3)
+        assert (False)
+    except TypeError:
+        assert (True)
