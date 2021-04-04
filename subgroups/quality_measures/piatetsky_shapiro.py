@@ -26,7 +26,7 @@ class PiatetskyShapiro(QualityMeasure):
     def compute(self, dict_of_parameters):
         """Method to compute the PiatetskyShapiro quality measure (you can also call to the instance for this purpose).
         
-        :type dict_of_parameters: dict[str, int] or dict[str, float]
+        :type dict_of_parameters: dict[str, int or float]
         :param dict_of_parameters: python dictionary which contains all the necessary parameters used to compute this quality measure.
         :rtype: float
         :return: the computed value for the PiatetskyShapiro quality measure.
@@ -63,7 +63,7 @@ class PiatetskyShapiro(QualityMeasure):
     def __call__(self, dict_of_parameters):
         """Compute the PiatetskyShapiro quality measure.
         
-        :type dict_of_parameters: dict[str, int] or dict[str, float]
+        :type dict_of_parameters: dict[str, int or float]
         :param dict_of_parameters: python dictionary which contains all the needed parameters with wich compute this quality measure.
         :rtype: float
         :return: the computed value for the PiatetskyShapiro quality measure.
