@@ -10,7 +10,7 @@ from pandas import DataFrame
 from pandas.api.types import is_string_dtype
 from subgroups.algorithms._base import Algorithm
 from subgroups.quality_measures._base import QualityMeasure
-from subgroups.exceptions import ParametersError, AttributeTypeError
+from subgroups.exceptions import SubgroupParametersError, DatasetAttributeTypeError
 from subgroups.data_structures.fp_tree_for_sdmap import FPTreeForSDMap
 from subgroups.core.pattern import Pattern
 from subgroups.core.operator import Operator
@@ -68,7 +68,7 @@ class SDMap(Algorithm):
             self._visited_nodes = 0
             self._pruned_nodes = 0
         else:
-            raise ParametersError("If 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.")
+            raise SubgroupParametersError("If 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.")
     
     def _get_quality_measure(self):
         return self._quality_measure
@@ -184,7 +184,7 @@ class SDMap(Algorithm):
         # IMPORTANT: this algorithm only supports nominal attributes (i.e., type 'str').
         for column in pandas_dataframe.columns:
             if not is_string_dtype(pandas_dataframe[column]):
-                raise AttributeTypeError("Error in attribute '" + str(column) + "'. This algorithm only supports nominal attributes (i.e., type 'str').")
+                raise DatasetAttributeTypeError("Error in attribute '" + str(column) + "'. This algorithm only supports nominal attributes (i.e., type 'str').")
         # Create an empty FPTreeForSDMap.
         fptree = FPTreeForSDMap()
         # Generate the set of frequent selectors.

@@ -62,7 +62,7 @@ class Qg(QualityMeasure):
         """Compute the Qg quality measure. IMPORTANT: the generalisation parameter 'g' is needed in order to compute this quality measure. It also has to be in the dict of parameters.
         
         :type dict_of_parameters: dict[str, int or float]
-        :param dict_of_parameters: python dictionary which contains all the needed parameters with wich compute this quality measure. IMPORTANT: the generalisation parameter 'g' needs to be included.
+        :param dict_of_parameters: python dictionary which contains all the needed parameters with which to compute this quality measure. IMPORTANT: the generalisation parameter 'g' needs to be included.
         :rtype: float
         :return: the computed value for the Qg quality measure.
         """

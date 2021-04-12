@@ -9,7 +9,7 @@
 from pandas import DataFrame
 from subgroups.algorithms.sdmap import SDMap
 from subgroups.quality_measures.wracc import WRAcc
-from subgroups.exceptions import ParametersError, AttributeTypeError
+from subgroups.exceptions import SubgroupParametersError, DatasetAttributeTypeError
 from subgroups.data_structures.fp_tree_for_sdmap import FPTreeForSDMap
 from subgroups.core.subgroup import Pattern, Subgroup
 
@@ -27,32 +27,32 @@ def test_SDMap_init_method():
     try:
         SDMap(WRAcc(), 0.85)
         assert (False)
-    except ParametersError:
+    except SubgroupParametersError:
         assert (True)
     try:
         SDMap(WRAcc(), 0.85, minimum_tp=0)
         assert (False)
-    except ParametersError:
+    except SubgroupParametersError:
         assert (True)
     try:
         SDMap(WRAcc(), 0.85, minimum_fp=0)
         assert (False)
-    except ParametersError:
+    except SubgroupParametersError:
         assert (True)
     try:
         SDMap(WRAcc(), 0.85, minimum_tp=0, minimum_n=0)
         assert (False)
-    except ParametersError:
+    except SubgroupParametersError:
         assert (True)
     try:
         SDMap(WRAcc(), 0.85, minimum_fp=0, minimum_n=0)
         assert (False)
-    except ParametersError:
+    except SubgroupParametersError:
         assert (True)
     try:
         SDMap(WRAcc(), 0.85, minimum_tp=0, minimum_fp=0, minimum_n=0)
         assert (False)
-    except ParametersError:
+    except SubgroupParametersError:
         assert (True)
 
 def test_SDMap_fpgrowth_method_1():
@@ -149,21 +149,21 @@ def test_SDMap_fit_method_1():
         sdmap = SDMap(WRAcc(), 0.85, minimum_tp=0, minimum_fp=0)
         sdmap.fit(df, ("class", 0))
         assert (False)
-    except AttributeTypeError:
+    except DatasetAttributeTypeError:
         assert (True)
     try:
         df = DataFrame({"class" : [0,1,2,2]}) # The class must be nominal (type 'str').
         sdmap = SDMap(WRAcc(), 0.85, minimum_tp=0, minimum_fp=0)
         sdmap.fit(df, ("class", "0"))
         assert (False)
-    except AttributeTypeError:
+    except DatasetAttributeTypeError:
         assert (True)
     try:
         df = DataFrame({"att1" : [4,5,2,6], "class" : ["0","1","2","2"]}) # All the attributes must be nominal (type 'str').
         sdmap = SDMap(WRAcc(), 0.85, minimum_tp=0, minimum_fp=0)
         sdmap.fit(df, ("class", "0"))
         assert (False)
-    except AttributeTypeError:
+    except DatasetAttributeTypeError:
         assert (True)
 
 def test_SDMap_fit_method_2():

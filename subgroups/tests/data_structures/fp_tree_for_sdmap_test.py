@@ -13,7 +13,7 @@ from subgroups.core.selector import Selector
 import string
 import random
 from numpy import concatenate, quantile
-from subgroups.exceptions import ParametersError
+from subgroups.exceptions import SubgroupParametersError
 
 def test_FPTreeForSDMap_generate_set_of_frequent_selectors_1():
     random.seed(123)
@@ -133,32 +133,32 @@ def test_FPTreeForSDMap_generate_set_of_frequent_selectors_3():
     try:
         fp_tree_for_sdmap.generate_set_of_frequent_selectors(df, target)
         assert (False)
-    except ParametersError:
+    except SubgroupParametersError:
         assert (True)
     try:
         fp_tree_for_sdmap.generate_set_of_frequent_selectors(df, target, minimum_tp=0)
         assert (False)
-    except ParametersError:
+    except SubgroupParametersError:
         assert (True)
     try:
         fp_tree_for_sdmap.generate_set_of_frequent_selectors(df, target, minimum_fp=0)
         assert (False)
-    except ParametersError:
+    except SubgroupParametersError:
         assert (True)
     try:
         fp_tree_for_sdmap.generate_set_of_frequent_selectors(df, target, minimum_tp=0, minimum_n=0)
         assert (False)
-    except ParametersError:
+    except SubgroupParametersError:
         assert (True)
     try:
         fp_tree_for_sdmap.generate_set_of_frequent_selectors(df, target, minimum_fp=0, minimum_n=0)
         assert (False)
-    except ParametersError:
+    except SubgroupParametersError:
         assert (True)
     try:
         fp_tree_for_sdmap.generate_set_of_frequent_selectors(df, target, minimum_tp=0, minimum_fp=0, minimum_n=0)
         assert (False)
-    except ParametersError:
+    except SubgroupParametersError:
         assert (True)
 
 def test_FPTreeForSDMap_build_tree_1():
@@ -713,30 +713,30 @@ def test_FPTreeForSDMap_generate_conditional_fp_tree_2():
     try:
         fp_tree_for_sdmap.generate_conditional_fp_tree([Selector.generate_from_str("c = c")])
         assert (False)
-    except ParametersError:
+    except SubgroupParametersError:
         assert (True)
     try:
         fp_tree_for_sdmap.generate_conditional_fp_tree([Selector.generate_from_str("c = c")], minimum_tp=0)
         assert (False)
-    except ParametersError:
+    except SubgroupParametersError:
         assert (True)
     try:
         fp_tree_for_sdmap.generate_conditional_fp_tree([Selector.generate_from_str("c = c")], minimum_fp=0)
         assert (False)
-    except ParametersError:
+    except SubgroupParametersError:
         assert (True)
     try:
         fp_tree_for_sdmap.generate_conditional_fp_tree([Selector.generate_from_str("c = c")], minimum_tp=0, minimum_n=0)
         assert (False)
-    except ParametersError:
+    except SubgroupParametersError:
         assert (True)
     try:
         fp_tree_for_sdmap.generate_conditional_fp_tree([Selector.generate_from_str("c = c")], minimum_fp=0, minimum_n=0)
         assert (False)
-    except ParametersError:
+    except SubgroupParametersError:
         assert (True)
     try:
         fp_tree_for_sdmap.generate_conditional_fp_tree([Selector.generate_from_str("c = c")], minimum_tp=0, minimum_fp=0, minimum_n=0)
         assert (False)
-    except ParametersError:
+    except SubgroupParametersError:
         assert (True)

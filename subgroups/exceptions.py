@@ -15,10 +15,10 @@ class SubgroupParameterNotFoundError(KeyError):
     """This exception is raised when a subgroup parameter is not found in the quality measure computing process.
     """
 
-class ParametersError(RuntimeError):
-    """This exception is raised when a method has not been called with the appropriate parameters.
+class SubgroupParametersError(RuntimeError):
+    """This exception is raised when a method has not been called with the appropriate subgroup parameters.
     """
 
-class AttributeTypeError(TypeError):
-    """This exception is raised when the type of an attribute is not supported by a Subgroup Discovery (SD) algorithm.
+class DatasetAttributeTypeError(TypeError):
+    """This exception is raised when the type of an attribute in a dataset is not supported by a Subgroup Discovery (SD) algorithm.
     """

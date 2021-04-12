@@ -63,7 +63,7 @@ class BinomialTestUpperBound1(QualityMeasure):
         """Compute the BinomialTestUpperBound1 quality measure.
         
         :type dict_of_parameters: dict[str, int or float]
-        :param dict_of_parameters: python dictionary which contains all the needed parameters with wich compute this quality measure.
+        :param dict_of_parameters: python dictionary which contains all the needed parameters with which to compute this quality measure.
         :rtype: float
         :return: the computed value for the BinomialTestUpperBound1 quality measure.
         """
