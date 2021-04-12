@@ -15,6 +15,7 @@ from subgroups.tests.utils.dataframe_filters_test import *
 from subgroups.tests.data_structures.fp_tree_node_test import *
 from subgroups.tests.data_structures.fp_tree_for_sdmap_test import *
 from subgroups.tests.algorithms.sdmap_test import *
+from subgroups.tests.data_structures.vertical_list_test import *
 
 if __name__ == "__main__":
     # core/operator_test file.
@@ -68,3 +69,5 @@ if __name__ == "__main__":
     test_SDMap_fit_method_7()
     test_SDMap_fit_method_8()
     test_SDMap_visited_and_pruned_nodes()
+    # data_structures/vertical_list_test file.
+    test_vertical_list()
