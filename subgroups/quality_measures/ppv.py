@@ -37,8 +37,8 @@ class PPV(QualityMeasure):
             raise SubgroupParameterNotFoundError("The subgroup parameter 'tp' is not in 'dict_of_parameters'.")
         if (QualityMeasure.SUBGROUP_PARAMETER_fp not in dict_of_parameters):
             raise SubgroupParameterNotFoundError("The subgroup parameter 'fp' is not in 'dict_of_parameters'.")
-        tp = dict_of_parameters["tp"]
-        fp = dict_of_parameters["fp"]
+        tp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp]
+        fp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp]
         return tp / ( tp + fp ) # tp / ( tp + fp )
     
     def get_name(self):

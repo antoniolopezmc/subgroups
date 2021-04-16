@@ -37,8 +37,8 @@ class Sensitivity(QualityMeasure):
             raise SubgroupParameterNotFoundError("The subgroup parameter 'tp' is not in 'dict_of_parameters'.")
         if (QualityMeasure.SUBGROUP_PARAMETER_TP not in dict_of_parameters):
             raise SubgroupParameterNotFoundError("The subgroup parameter 'TP' is not in 'dict_of_parameters'.")
-        tp = dict_of_parameters["tp"]
-        TP = dict_of_parameters["TP"]
+        tp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp]
+        TP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_TP]
         return tp / TP # tp / TP
     
     def get_name(self):

@@ -42,10 +42,10 @@ class BinomialTest(QualityMeasure):
             raise SubgroupParameterNotFoundError("The subgroup parameter 'TP' is not in 'dict_of_parameters'.")
         if (QualityMeasure.SUBGROUP_PARAMETER_FP not in dict_of_parameters):
             raise SubgroupParameterNotFoundError("The subgroup parameter 'FP' is not in 'dict_of_parameters'.")
-        tp = dict_of_parameters["tp"]
-        fp = dict_of_parameters["fp"]
-        TP = dict_of_parameters["TP"]
-        FP = dict_of_parameters["FP"]
+        tp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp]
+        fp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp]
+        TP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_TP]
+        FP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_FP]
         n = tp + fp
         N = TP + FP
         p = tp / n # p = tp / ( tp + fp )

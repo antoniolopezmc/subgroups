@@ -40,8 +40,8 @@ class Qg(QualityMeasure):
         # This quality measure also needs the generalisation parameter 'g'.
         if ("g" not in dict_of_parameters):
             raise SubgroupParameterNotFoundError("The generalisation parameter 'g' is not in 'dict_of_parameters'.")
-        tp = dict_of_parameters["tp"]
-        fp = dict_of_parameters["fp"]
+        tp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp]
+        fp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp]
         g = dict_of_parameters["g"]
         return tp / ( fp + g ) # tp / ( fp + g )
     
