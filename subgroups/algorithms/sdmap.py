@@ -29,6 +29,29 @@ def _generate_all_combinations(list_of_selectors):
     x = _generate_all_combinations(list_of_selectors[1:])
     return x + [[list_of_selectors[0]] + y for y in x]
 
+def _delete_subgroup_parameters_from_a_dictionary(dict_of_parameters):
+    """Private method to delete the parameters tp, fp, TP and FP from a dictionary of parameters.
+    
+    :type dict_of_parameters: dict[str, int or float]
+    :param dict_of_parameters: the dictionary of parameters which is modified.
+    """
+    try:
+        del dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp]
+    except KeyError:
+        pass
+    try:
+        del dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp]
+    except KeyError:
+        pass
+    try:
+        del dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_TP]
+    except KeyError:
+        pass
+    try:
+        del dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_FP]
+    except KeyError:
+        pass
+
 class SDMap(Algorithm):
     """This class represents the SDMap algorithm. Two threshold types could be used: (1) the true positives tp and the false positives fp separately or (2) the subgroup description size n (n = tp + fp). This means that: (1) if 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and (2) if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.
     
@@ -42,11 +65,13 @@ class SDMap(Algorithm):
     :param minimum_fp: the minimum false positives (fp) threshold.
     :type minimum_n: int
     :param minimum_n: the minimum subgroup description size (n) threshold.
+    :type additional_parameters_for_the_quality_measure: dict
+    :param additional_parameters_for_the_quality_measure: if the quality measure passed by parameter needs more parameters apart from tp, fp, TP and FP to be computed, they need to be specified here.
     """
     
-    __slots__ = "_quality_measure", "_minimum_quality_measure_value", "_minimum_tp", "_minimum_fp", "_minimum_n", "_visited_nodes", "_pruned_nodes"
+    __slots__ = "_quality_measure", "_minimum_quality_measure_value", "_minimum_tp", "_minimum_fp", "_minimum_n", "_additional_parameters_for_the_quality_measure", "_visited_nodes", "_pruned_nodes"
     
-    def __init__(self, quality_measure, minimum_quality_measure_value, minimum_tp=None, minimum_fp=None, minimum_n=None):
+    def __init__(self, quality_measure, minimum_quality_measure_value, minimum_tp=None, minimum_fp=None, minimum_n=None, additional_parameters_for_the_quality_measure=dict()):
         if not isinstance(quality_measure, QualityMeasure):
             raise TypeError("The parameter 'quality_measure' must be a subclass of QualityMeasure.")
         if (type(minimum_quality_measure_value) is not int) and (type(minimum_quality_measure_value) is not float):
@@ -57,6 +82,8 @@ class SDMap(Algorithm):
             raise TypeError("The type of the parameter 'minimum_fp' must be 'int' or 'NoneType'.")
         if (type(minimum_n) is not int) and (minimum_n is not None):
             raise TypeError("The type of the parameter 'minimum_n' must be 'int' or 'NoneType'.")
+        if (type(additional_parameters_for_the_quality_measure) is not dict):
+            raise TypeError("The type of the parameter 'additional_parameters_for_the_quality_measure' must be 'dict'")
         # Depending on the values of the parameters 'minimum_tp', 'minimum_fp' and 'minimum_n' ...
         if ( (minimum_tp is not None) and (minimum_fp is not None) and (minimum_n is None) ) or \
             ( (minimum_tp is None) and (minimum_fp is None) and (minimum_n is not None) ):
@@ -67,6 +94,8 @@ class SDMap(Algorithm):
             self._minimum_n = minimum_n
             self._visited_nodes = 0
             self._pruned_nodes = 0
+            self._additional_parameters_for_the_quality_measure = additional_parameters_for_the_quality_measure.copy()
+            _delete_subgroup_parameters_from_a_dictionary(self._additional_parameters_for_the_quality_measure)
         else:
             raise SubgroupParametersError("If 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.")
     
@@ -85,11 +114,15 @@ class SDMap(Algorithm):
     def _get_minimum_n(self):
         return self._minimum_n
     
+    def _get_additional_parameters_for_the_quality_measure(self):
+        return self._additional_parameters_for_the_quality_measure
+    
     quality_measure = property(_get_quality_measure, None, None, "The quality measure which is used.")
     minimum_quality_measure_value = property(_get_minimum_quality_measure_value, None, None, "The minimum quality measure value threshold.")
     minimum_tp = property(_get_minimum_tp, None, None, "The minimum true positives (tp) threshold.")
     minimum_fp = property(_get_minimum_fp, None, None, "The minimum false positives (fp) threshold.")
     minimum_n = property(_get_minimum_n, None, None, "The minimum subgroup description size (n) threshold.")
+    additional_parameters_for_the_quality_measure = property(_get_additional_parameters_for_the_quality_measure, None, None, "The additional needed parameters in order to compute the quality measure.")
     
     def _get_visited_nodes(self):
         return self._visited_nodes
@@ -205,7 +238,9 @@ class SDMap(Algorithm):
                 # Generate a subgroup.
                 subgroup = Subgroup(elem[0], Selector(target[0], Operator.EQUAL, target[1]))
                 # Compute the quality measure.
-                quality_measure_value = self._quality_measure.compute({QualityMeasure.SUBGROUP_PARAMETER_tp : elem[1][0], QualityMeasure.SUBGROUP_PARAMETER_fp : elem[1][1], QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP})
+                dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_tp : elem[1][0], QualityMeasure.SUBGROUP_PARAMETER_fp : elem[1][1], QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
+                dict_of_parameters.update(self._additional_parameters_for_the_quality_measure)
+                quality_measure_value = self._quality_measure.compute(dict_of_parameters)
                 # Add the subgroup only if the quality measure value is greater or equal than the threshold.
                 if quality_measure_value >= self._minimum_quality_measure_value:
                     final_result.append( (subgroup, quality_measure_value) )

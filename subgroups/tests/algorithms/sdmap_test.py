@@ -9,7 +9,8 @@
 from pandas import DataFrame
 from subgroups.algorithms.sdmap import SDMap
 from subgroups.quality_measures.wracc import WRAcc
-from subgroups.exceptions import SubgroupParametersError, DatasetAttributeTypeError
+from subgroups.quality_measures.qg import Qg
+from subgroups.exceptions import SubgroupParametersError, DatasetAttributeTypeError, SubgroupParameterNotFoundError
 from subgroups.data_structures.fp_tree_for_sdmap import FPTreeForSDMap
 from subgroups.core.subgroup import Pattern, Subgroup
 
@@ -54,6 +55,16 @@ def test_SDMap_init_method():
         assert (False)
     except SubgroupParametersError:
         assert (True)
+    sdmap = SDMap(WRAcc(), -1, minimum_n=0, additional_parameters_for_the_quality_measure=dict())
+    assert (len(sdmap.additional_parameters_for_the_quality_measure) == 0)
+    assert (sdmap.additional_parameters_for_the_quality_measure == dict())
+    assert (id(sdmap.additional_parameters_for_the_quality_measure) != id(dict()))
+    dictionary = dict({"g" : 0.5})
+    sdmap = SDMap(WRAcc(), -1, minimum_n=0, additional_parameters_for_the_quality_measure=dictionary)
+    assert (len(sdmap.additional_parameters_for_the_quality_measure) == 1)
+    assert (sdmap.additional_parameters_for_the_quality_measure == dictionary)
+    assert (id(sdmap.additional_parameters_for_the_quality_measure) != id(dictionary))
+    assert (sdmap.additional_parameters_for_the_quality_measure["g"] == 0.5)
 
 def test_SDMap_fpgrowth_method_1():
     df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
@@ -314,6 +325,39 @@ def test_SDMap_fit_method_8():
     assert ( (Subgroup.generate_from_str("Description: [a3 = k, a1 = c], Target: class = 'y'"), 0.125) in subgroups_qmvalue_round3 )
     assert ( (Subgroup.generate_from_str("Description: [a3 = k, a1 = c, a2 = q], Target: class = 'y'"), 0.125) in subgroups_qmvalue_round3 )
     assert ( (Subgroup.generate_from_str("Description: [a3 = k, a2 = q], Target: class = 'y'"), 0.125) in subgroups_qmvalue_round3 )
+
+def test_SDMap_fit_method_9():
+    df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
+    target = ("class", "y")
+    sdmap = SDMap(WRAcc(), -1, minimum_tp=1, minimum_fp=1, additional_parameters_for_the_quality_measure={"TP" : 100000, "g" : 0.5}) # IMPORTANT: the subgroup parameter TP must be deleted in the __init__ method.
+    assert (len(sdmap.additional_parameters_for_the_quality_measure) == 1)
+    subgroups = sdmap.fit(df, target)
+    subgroups_qmvalue_round3 = []
+    for elem in subgroups:
+        subgroups_qmvalue_round3.append( (elem[0],round(elem[1], 3)) )
+    assert (len(subgroups) == 2)
+    assert ( (Subgroup.generate_from_str("Description: [a1 = c], Target: class = 'y'"), 0.0) in subgroups_qmvalue_round3 )
+    assert ( (Subgroup.generate_from_str("Description: [a2 = q], Target: class = 'y'"), 0.125) in subgroups_qmvalue_round3 )
+
+def test_SDMap_fit_method_10():
+    df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
+    target = ("class", "y")
+    sdmap = SDMap(Qg(), -1, minimum_tp=1, minimum_fp=1, additional_parameters_for_the_quality_measure={"TP" : 100000}) # IMPORTANT: the subgroup parameter TP must be deleted in the __init__ method.
+    try:
+        subgroups = sdmap.fit(df, target)
+        assert (False)
+    except SubgroupParameterNotFoundError:
+        assert (True)
+
+def test_SDMap_fit_method_11():
+    df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
+    target = ("class", "y")
+    sdmap = SDMap(Qg(), -1, minimum_tp=1, minimum_fp=1, additional_parameters_for_the_quality_measure={"TP" : 100000, "g" : 0.5}) # IMPORTANT: the subgroup parameter TP must be deleted in the __init__ method.
+    subgroups = sdmap.fit(df, target)
+    subgroups_qmvalue_round3 = []
+    for elem in subgroups:
+        subgroups_qmvalue_round3.append( (elem[0],round(elem[1], 3)) )
+    assert (len(subgroups) == 2)
 
 def test_SDMap_visited_and_pruned_nodes():
     df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
