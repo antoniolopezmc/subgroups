@@ -7,7 +7,7 @@
 """
 
 from subgroups.quality_measures._base import QualityMeasure
-from subgroups.exceptions import SubgroupParameterNotFoundError
+from subgroups.exceptions import ParameterNotFoundError, SubgroupParameterNotFoundError
 
 class Qg(QualityMeasure):
     """This class defines the Qg quality measure.
@@ -39,7 +39,7 @@ class Qg(QualityMeasure):
             raise SubgroupParameterNotFoundError("The subgroup parameter 'fp' is not in 'dict_of_parameters'.")
         # This quality measure also needs the generalisation parameter 'g'.
         if ("g" not in dict_of_parameters):
-            raise SubgroupParameterNotFoundError("The generalisation parameter 'g' is not in 'dict_of_parameters'.")
+            raise ParameterNotFoundError("The generalisation parameter 'g' is not in 'dict_of_parameters'.")
         tp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp]
         fp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp]
         g = dict_of_parameters["g"]

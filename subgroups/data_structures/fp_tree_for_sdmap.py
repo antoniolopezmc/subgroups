@@ -11,7 +11,7 @@ from subgroups.core.selector import Selector
 from subgroups.core.operator import Operator
 from pandas import DataFrame
 from numpy import size, sum
-from subgroups.exceptions import SubgroupParametersError
+from subgroups.exceptions import InconsistentMethodParametersError
 
 class FPTreeForSDMap(object):
     """This class represents the FPTree data structure used in the SDMap algorithm.
@@ -173,7 +173,7 @@ class FPTreeForSDMap(object):
             # Finally, we return the results.
             return final_dict_of_frequent_selectors
         else:
-            raise SubgroupParametersError("If 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.")
+            raise InconsistentMethodParametersError("If 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.")
     
     # IMPORTANT: in the original paper, this method is recursive. In our implementation, the method is iterative.
     def _insert_tree(self, list_of_selectors, parent_node, target_match):
@@ -320,7 +320,7 @@ class FPTreeForSDMap(object):
         elif (minimum_tp is None) and (minimum_fp is None) and (minimum_n is not None):
             use_tp_and_fp = False
         else:
-            raise SubgroupParametersError("If 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.")
+            raise InconsistentMethodParametersError("If 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.")
         # We only use the first selector in the list in the creation process (the selector at the left side).
         first_selector = list_of_selectors[0]
         # We initialize the final result.

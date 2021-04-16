@@ -11,12 +11,16 @@ class OperatorNotSupportedError(NotImplementedError):
     """This exception is raised when an operator is not correctly implemented in the Operator class.
     """
 
-class SubgroupParameterNotFoundError(KeyError):
-    """This exception is raised when a subgroup parameter is not found in the quality measure computing process.
+class ParameterNotFoundError(KeyError):
+    """This exception is raised when a needed parameter is not found in the quality measure computing process.
     """
 
-class SubgroupParametersError(RuntimeError):
-    """This exception is raised when a method has not been called with the appropriate subgroup parameters.
+class SubgroupParameterNotFoundError(ParameterNotFoundError):
+    """This exception is raised when a subgroup parameter (i.e., tp, fp, TP or FP) is not found in the quality measure computing process.
+    """
+
+class InconsistentMethodParametersError(RuntimeError):
+    """This exception is raised when a method has not been called with the appropriate parameters.
     """
 
 class DatasetAttributeTypeError(TypeError):

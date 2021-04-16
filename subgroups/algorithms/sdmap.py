@@ -10,7 +10,7 @@ from pandas import DataFrame
 from pandas.api.types import is_string_dtype
 from subgroups.algorithms._base import Algorithm
 from subgroups.quality_measures._base import QualityMeasure
-from subgroups.exceptions import SubgroupParametersError, DatasetAttributeTypeError
+from subgroups.exceptions import InconsistentMethodParametersError, DatasetAttributeTypeError
 from subgroups.data_structures.fp_tree_for_sdmap import FPTreeForSDMap
 from subgroups.core.pattern import Pattern
 from subgroups.core.operator import Operator
@@ -97,7 +97,7 @@ class SDMap(Algorithm):
             self._additional_parameters_for_the_quality_measure = additional_parameters_for_the_quality_measure.copy()
             _delete_subgroup_parameters_from_a_dictionary(self._additional_parameters_for_the_quality_measure)
         else:
-            raise SubgroupParametersError("If 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.")
+            raise InconsistentMethodParametersError("If 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.")
     
     def _get_quality_measure(self):
         return self._quality_measure

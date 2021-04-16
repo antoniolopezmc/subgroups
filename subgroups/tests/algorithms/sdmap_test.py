@@ -10,7 +10,7 @@ from pandas import DataFrame
 from subgroups.algorithms.sdmap import SDMap
 from subgroups.quality_measures.wracc import WRAcc
 from subgroups.quality_measures.qg import Qg
-from subgroups.exceptions import SubgroupParametersError, DatasetAttributeTypeError, SubgroupParameterNotFoundError
+from subgroups.exceptions import InconsistentMethodParametersError, DatasetAttributeTypeError, ParameterNotFoundError, SubgroupParameterNotFoundError
 from subgroups.data_structures.fp_tree_for_sdmap import FPTreeForSDMap
 from subgroups.core.subgroup import Pattern, Subgroup
 
@@ -28,32 +28,32 @@ def test_SDMap_init_method():
     try:
         SDMap(WRAcc(), 0.85)
         assert (False)
-    except SubgroupParametersError:
+    except InconsistentMethodParametersError:
         assert (True)
     try:
         SDMap(WRAcc(), 0.85, minimum_tp=0)
         assert (False)
-    except SubgroupParametersError:
+    except InconsistentMethodParametersError:
         assert (True)
     try:
         SDMap(WRAcc(), 0.85, minimum_fp=0)
         assert (False)
-    except SubgroupParametersError:
+    except InconsistentMethodParametersError:
         assert (True)
     try:
         SDMap(WRAcc(), 0.85, minimum_tp=0, minimum_n=0)
         assert (False)
-    except SubgroupParametersError:
+    except InconsistentMethodParametersError:
         assert (True)
     try:
         SDMap(WRAcc(), 0.85, minimum_fp=0, minimum_n=0)
         assert (False)
-    except SubgroupParametersError:
+    except InconsistentMethodParametersError:
         assert (True)
     try:
         SDMap(WRAcc(), 0.85, minimum_tp=0, minimum_fp=0, minimum_n=0)
         assert (False)
-    except SubgroupParametersError:
+    except InconsistentMethodParametersError:
         assert (True)
     dictionary = dict()
     sdmap = SDMap(WRAcc(), -1, minimum_n=0, additional_parameters_for_the_quality_measure=dictionary)
@@ -347,7 +347,7 @@ def test_SDMap_fit_method_10():
     try:
         subgroups = sdmap.fit(df, target)
         assert (False)
-    except SubgroupParameterNotFoundError:
+    except ParameterNotFoundError:
         assert (True)
 
 def test_SDMap_fit_method_11():
