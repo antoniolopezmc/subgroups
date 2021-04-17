@@ -30,7 +30,7 @@ def _generate_all_combinations(list_of_selectors):
     return x + [[list_of_selectors[0]] + y for y in x]
 
 def _delete_subgroup_parameters_from_a_dictionary(dict_of_parameters):
-    """Private method to delete the parameters tp, fp, TP and FP from a dictionary of parameters.
+    """Private method to delete the subgroup parameters (i.e., tp, fp, TP and FP) from a dictionary of parameters.
     
     :type dict_of_parameters: dict[str, int or float]
     :param dict_of_parameters: the dictionary of parameters which is modified.
@@ -122,7 +122,7 @@ class SDMap(Algorithm):
     minimum_tp = property(_get_minimum_tp, None, None, "The minimum true positives (tp) threshold.")
     minimum_fp = property(_get_minimum_fp, None, None, "The minimum false positives (fp) threshold.")
     minimum_n = property(_get_minimum_n, None, None, "The minimum subgroup description size (n) threshold.")
-    additional_parameters_for_the_quality_measure = property(_get_additional_parameters_for_the_quality_measure, None, None, "The additional needed parameters in order to compute the quality measure.")
+    additional_parameters_for_the_quality_measure = property(_get_additional_parameters_for_the_quality_measure, None, None, "The additional needed parameters with which to compute the quality measure.")
     
     def _get_visited_nodes(self):
         return self._visited_nodes
