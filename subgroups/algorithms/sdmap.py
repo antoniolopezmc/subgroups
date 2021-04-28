@@ -235,17 +235,19 @@ class SDMap(Algorithm):
             FP = len(pandas_dataframe.index) - TP
             # Iterate throughout the frequent pattern (Patterns) obtained with the adapted fpgrowth algorithm.
             for elem in frequent_patterns:
-                # Generate a subgroup.
-                subgroup = Subgroup(elem[0], Selector(target[0], Operator.EQUAL, target[1]))
-                # Compute the quality measure.
+                # Compute the quality measure of the frequent pattern along with the target (i.e., the quality measure of the subgroup).
                 dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_tp : elem[1][0], QualityMeasure.SUBGROUP_PARAMETER_fp : elem[1][1], QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
                 dict_of_parameters.update(self._additional_parameters_for_the_quality_measure)
                 quality_measure_value = self._quality_measure.compute(dict_of_parameters)
                 # Add the subgroup only if the quality measure value is greater or equal than the threshold.
                 if quality_measure_value >= self._minimum_quality_measure_value:
+                    # Create the subgroup.
+                    subgroup = Subgroup(elem[0], Selector(target[0], Operator.EQUAL, target[1]))
+                    # Add it to the final list.
                     final_result.append( (subgroup, quality_measure_value) )
+                    # Increment the number of visited nodes.
                     self._visited_nodes = self._visited_nodes + 1
-                else:
+                else: # If the quality measure is not greater or equal, increment the number of pruned nodes.
                     self._pruned_nodes = self._pruned_nodes + 1
             return final_result
         else:
