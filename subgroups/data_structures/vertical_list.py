@@ -120,3 +120,17 @@ class VerticalList(object):
         new_quality_value = quality_measure.compute(new_dict_of_parameters)
         # Return the new vertical list.
         return VerticalList(new_list_of_selectors, new_sequence_of_instances_tp, new_sequence_of_instances_fp, new_quality_value)
+    
+    def __str__(self):
+        list_of_selectors_as_str = "["
+        for e in self._list_of_selectors:
+            list_of_selectors_as_str = list_of_selectors_as_str + str(e) + ", "
+        if len(self._list_of_selectors) == 0:
+            list_of_selectors_as_str = list_of_selectors_as_str + "]"
+        else:
+            list_of_selectors_as_str = list_of_selectors_as_str[:-2]
+            list_of_selectors_as_str = list_of_selectors_as_str + "]"
+        return "List of selectors: " + list_of_selectors_as_str + \
+            ", Sequence of instances (tp): " + str(self._sequence_of_instances_tp.to_list()) + \
+            ", Sequence of instances (fp): " + str(self._sequence_of_instances_fp.to_list()) + \
+            ", Quality value: " + str(self._quality_value)

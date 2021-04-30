@@ -76,3 +76,17 @@ def test_vertical_list():
     assert (union_3.fp == 0)
     assert (union_3.n == 0)
     assert (union_3.quality_value == 0)
+
+def test_vertical_list_str_method():
+    vl_1 = VerticalList([Selector("at1", Operator.EQUAL, "a")], Index([]), Index([]), 20)
+    vl_2 = VerticalList([Selector("at2", Operator.EQUAL, "b"), Selector("at3", Operator.NOT_EQUAL, "c")], Index([0,1]), Index([]), -45)
+    vl_3 = VerticalList([Selector("at2", Operator.EQUAL, "b")], Index([1]), Index([]), 100)
+    vl_4 = VerticalList([Selector("at2", Operator.EQUAL, "z")], Index([]), Index([2]), 0)
+    vl_5 = VerticalList([], Index([]), Index([1,2]), 1)
+    vl_6 = VerticalList([Selector("at1", Operator.EQUAL, "a"), Selector("at2", Operator.EQUAL, "b"), Selector("at3", Operator.NOT_EQUAL, "c")], Index([1]), Index([0,3]), 5)
+    assert (str(vl_1) == "List of selectors: [at1 = 'a'], Sequence of instances (tp): [], Sequence of instances (fp): [], Quality value: 20")
+    assert (str(vl_2) == "List of selectors: [" + str(Selector("at2", Operator.EQUAL, "b")) + ", " + str(Selector("at3", Operator.NOT_EQUAL, "c")) + "], Sequence of instances (tp): [0, 1], Sequence of instances (fp): [], Quality value: -45")
+    assert (str(vl_3) == "List of selectors: [" + str(Selector("at2", Operator.EQUAL, "b")) + "], Sequence of instances (tp): [1], Sequence of instances (fp): [], Quality value: 100")
+    assert (str(vl_4) == "List of selectors: [" + str(Selector("at2", Operator.EQUAL, "z")) + "], Sequence of instances (tp): [], Sequence of instances (fp): [2], Quality value: 0")
+    assert (str(vl_5) == "List of selectors: [], Sequence of instances (tp): [], Sequence of instances (fp): [1, 2], Quality value: 1")
+    assert (str(vl_6) == "List of selectors: [" + str(Selector("at1", Operator.EQUAL, "a")) + ", " + str(Selector("at2", Operator.EQUAL, "b")) + ", " + str(Selector("at3", Operator.NOT_EQUAL, "c")) + "], Sequence of instances (tp): [1], Sequence of instances (fp): [0, 3], Quality value: 5")
