@@ -85,8 +85,8 @@ class VerticalList(object):
         if type(dict_of_parameters) is not dict:
             raise TypeError("The type of the parameter 'dict_of_parameters' must be 'dict'.")
         new_dict_of_parameters = dict_of_parameters.copy()
-        new_dict_of_parameters["tp"] = self._get_tp() 
-        new_dict_of_parameters["fp"] = self._get_fp()
+        new_dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp] = self._get_tp() 
+        new_dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp] = self._get_fp()
         return quality_measure.compute(new_dict_of_parameters)
     
     def union(self, other_vertical_list, quality_measure, dict_of_parameters):
@@ -115,8 +115,8 @@ class VerticalList(object):
         new_fp = len(new_sequence_of_instances_fp)
         # Finally, obtain the quality value.
         new_dict_of_parameters = dict_of_parameters.copy()
-        new_dict_of_parameters["tp"] = new_tp 
-        new_dict_of_parameters["fp"] = new_fp
+        new_dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp] = new_tp 
+        new_dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp] = new_fp
         new_quality_value = quality_measure.compute(new_dict_of_parameters)
         # Return the new vertical list.
         return VerticalList(new_list_of_selectors, new_sequence_of_instances_tp, new_sequence_of_instances_fp, new_quality_value)
