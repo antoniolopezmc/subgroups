@@ -65,7 +65,7 @@ class SDMap(Algorithm):
     :param minimum_fp: the minimum false positives (fp) threshold.
     :type minimum_n: int
     :param minimum_n: the minimum subgroup description size (n) threshold.
-    :type additional_parameters_for_the_quality_measure: dict
+    :type additional_parameters_for_the_quality_measure: dict[str, int or float]
     :param additional_parameters_for_the_quality_measure: if the quality measure passed by parameter needs more parameters apart from tp, fp, TP and FP to be computed, they need to be specified here.
     """
     
@@ -207,7 +207,7 @@ class SDMap(Algorithm):
         :param pandas_dataframe: the DataFrame which is scanned. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
         :type target: tuple[str, str]
         :param target: a tuple with 2 elements: the target attribute name and the target value.
-        :rtype: list[tuple[Subgroup, int]] or list[tuple[Subgroup, float]]
+        :rtype: list[tuple[Subgroup, int or float]]
         :return: a list of tuples in which each element has a subgroup and its quality measures value.
         """
         if type(pandas_dataframe) is not DataFrame:
