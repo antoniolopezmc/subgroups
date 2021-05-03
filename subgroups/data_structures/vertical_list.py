@@ -89,7 +89,8 @@ class VerticalList(object):
         new_dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp] = self._get_fp()
         return quality_measure.compute(new_dict_of_parameters)
     
-    def union(self, other_vertical_list, quality_measure, dict_of_parameters):
+
+    def union(self, other_vertical_list, quality_measure, dict_of_parameters, return_None_if_n_is_0 = False):
         """Method to create a new vertical list as a result of the union of two vertical lists. The union of two vertical lists implies the following: (1) the last selector of the list of selectors of the second vertical list is added to the end of the list of selectors of the first vertical list, and (2) the new sequences of IDs (both) are the intersection of the corresponding original ones.
         
         :type other_vertical_list: VerticalList
@@ -98,6 +99,8 @@ class VerticalList(object):
         :param quality_measure: the quality measure which is used to compute the quality value of the created vertical list.
         :type dict_of_parameters: dict[str, int or float]
         :param dict_of_parameters: python dictionary which contains all the needed parameters with which to compute the vertical list quality value. IMPORTANT: this method uses the 'tp' and 'fp' parameters of the vertical list, not of the dictionary of parameters passed by parameter.
+        :type return_None_if_n_is_0: bool
+        :param return_None_if_n_is_0: if the subgroup parameter n (i.e., tp + fp) of the resulting vertical list (i.e., the union) is 0, this means that both sequence of instances are empty and, therefore, this means that the pattern represented by the vertical list is not in any instance in the dataset. If this parameter is True, None will be returned instead of a vertical list object. By default, this parameter is False.
         :rtype: VerticalList
         :return: a new vertical list as a result of the union of this vertical list (self) and 'other_vertical_list'.
         """
@@ -105,21 +108,31 @@ class VerticalList(object):
             raise TypeError("The type of the parameter 'other_vertical_list' must be 'VerticalList'.")
         if not isinstance(quality_measure, QualityMeasure):
             raise TypeError("The parameter 'quality_measure' must be a subclass of QualityMeasure.")
-        # Add the last element of 'other_vertical_list'.
-        new_list_of_selectors = self._list_of_selectors.copy()
-        new_list_of_selectors.append(other_vertical_list._list_of_selectors[-1])
-        # Make the intersections.
+        if type(dict_of_parameters) is not dict:
+            raise TypeError("The type of the parameter 'dict_of_parameters' must be 'dict'.")
+        if type(return_None_if_n_is_0) is not bool:
+            raise TypeError("The type of the parameter 'return_None_if_n_is_0' must be 'bool'.")
+        # Initially, the result is None.
+        result = None
+        # First, make the intersection of both sequences.
         new_sequence_of_instances_tp = self._sequence_of_instances_tp.intersection(other_vertical_list._sequence_of_instances_tp, sort=False)
         new_sequence_of_instances_fp = self._sequence_of_instances_fp.intersection(other_vertical_list._sequence_of_instances_fp, sort=False)
         new_tp = len(new_sequence_of_instances_tp)
         new_fp = len(new_sequence_of_instances_fp)
-        # Finally, obtain the quality value.
-        new_dict_of_parameters = dict_of_parameters.copy()
-        new_dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp] = new_tp 
-        new_dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp] = new_fp
-        new_quality_value = quality_measure.compute(new_dict_of_parameters)
-        # Return the new vertical list.
-        return VerticalList(new_list_of_selectors, new_sequence_of_instances_tp, new_sequence_of_instances_fp, new_quality_value)
+        # Continue if the parameter 'return_None_if_n_is_0' is False OR n is greater than 0. In other case, return None.
+        if (not return_None_if_n_is_0) or ((new_tp + new_fp) > 0):
+            # Second, add the last element of 'other_vertical_list'.
+            new_list_of_selectors = self._list_of_selectors.copy()
+            new_list_of_selectors.append(other_vertical_list._list_of_selectors[-1])
+            # Third, obtain the quality value.
+            new_dict_of_parameters = dict_of_parameters.copy()
+            new_dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp] = new_tp 
+            new_dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp] = new_fp
+            new_quality_value = quality_measure.compute(new_dict_of_parameters)
+            # Finally, create the object.
+            result = VerticalList(new_list_of_selectors, new_sequence_of_instances_tp, new_sequence_of_instances_fp, new_quality_value)
+        # Return the result.
+        return result
     
     def __str__(self):
         list_of_selectors_as_str = "["

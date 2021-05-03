@@ -73,5 +73,6 @@ if __name__ == "__main__":
     test_SDMap_fit_method_11()
     test_SDMap_visited_and_pruned_nodes()
     # data_structures/vertical_list_test file.
-    test_vertical_list()
+    test_vertical_list_1()
+    test_vertical_list_2()
     test_vertical_list_str_method()

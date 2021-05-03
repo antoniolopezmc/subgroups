@@ -10,8 +10,9 @@ from subgroups.data_structures.vertical_list import VerticalList
 from subgroups.core.selector import Selector, Operator
 from pandas import Index, DataFrame
 from subgroups.quality_measures.support import Support
+from subgroups.quality_measures.coverage import Coverage
 
-def test_vertical_list():
+def test_vertical_list_1():
     df = DataFrame({"at1" : ["a", "b", "c"], "at2" : ["b", "b", "z"], "at3" : ["a", "c", "c"], "target" : ["yes", "no", "no"]})
     target = ("target", "yes")
     TP = 1
@@ -52,7 +53,7 @@ def test_vertical_list():
     assert (vl_2.compute_quality_value(Support(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}) == 1/3) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
     assert (vl_3.compute_quality_value(Support(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}) == 0) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
     assert (vl_4.compute_quality_value(Support(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}) == 0) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
-    union_1 = vl_3.union(vl_4, Support(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
+    union_1 = vl_3.union(vl_4, Support(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}, return_None_if_n_is_0 = False) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
     assert (union_1.list_of_selectors == [Selector("at2", Operator.EQUAL, "z"), Selector("at3", Operator.EQUAL, "c")])
     assert ( (union_1.sequence_of_instances_tp == Index([])).all() )
     assert ( (union_1.sequence_of_instances_fp == Index([2])).all() )
@@ -60,7 +61,7 @@ def test_vertical_list():
     assert (union_1.fp == 1)
     assert (union_1.n == 1)
     assert (union_1.quality_value == 0)
-    union_2 = vl_1.union(union_1, Support(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
+    union_2 = vl_1.union(union_1, Support(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}, return_None_if_n_is_0 = False) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
     assert (union_2.list_of_selectors == [Selector("at1", Operator.EQUAL, "a"), Selector("at3", Operator.EQUAL, "c")])
     assert ( (union_2.sequence_of_instances_tp == Index([])).all() )
     assert ( (union_2.sequence_of_instances_fp == Index([])).all() )
@@ -68,7 +69,7 @@ def test_vertical_list():
     assert (union_2.fp == 0)
     assert (union_2.n == 0)
     assert (union_2.quality_value == 0)
-    union_3 = union_1.union(union_2, Support(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
+    union_3 = union_1.union(union_2, Support(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}, return_None_if_n_is_0 = False) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
     assert (union_3.list_of_selectors == [Selector("at2", Operator.EQUAL, "z"), Selector("at3", Operator.EQUAL, "c"), Selector("at3", Operator.EQUAL, "c")])
     assert ( (union_3.sequence_of_instances_tp == Index([])).all() )
     assert ( (union_3.sequence_of_instances_fp == Index([])).all() )
@@ -76,6 +77,29 @@ def test_vertical_list():
     assert (union_3.fp == 0)
     assert (union_3.n == 0)
     assert (union_3.quality_value == 0)
+    union_4 = vl_3.union(vl_4, Coverage(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}, return_None_if_n_is_0 = False) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
+    assert (union_4.list_of_selectors == [Selector("at2", Operator.EQUAL, "z"), Selector("at3", Operator.EQUAL, "c")])
+    assert ( (union_4.sequence_of_instances_tp == Index([])).all() )
+    assert ( (union_4.sequence_of_instances_fp == Index([2])).all() )
+    assert (union_4.tp == 0)
+    assert (union_4.fp == 1)
+    assert (union_4.n == 1)
+    assert (union_4.quality_value == (1/3))
+
+def test_vertical_list_2():
+    TP = 1
+    FP = 2
+    vl_1 = VerticalList([Selector("at1", Operator.EQUAL, "a")], Index([0]), Index([]), -45)
+    vl_2 = VerticalList([Selector("at2", Operator.EQUAL, "b")], Index([0]), Index([1]), -45)
+    vl_3 = VerticalList([Selector("at2", Operator.EQUAL, "z")], Index([]), Index([2]), -45)
+    vl_4 = VerticalList([Selector("at3", Operator.EQUAL, "c")], Index([]), Index([1,2]), -45)
+    vl_5 = VerticalList([Selector("at4", Operator.EQUAL, "c")], Index([0,1]), Index([2,3]), -45)
+    vl_6 = VerticalList([Selector("at5", Operator.EQUAL, "c")], Index([10,11]), Index([12,33]), -45)
+    assert (vl_1.union(vl_2, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True) is not None)
+    assert (vl_1.union(vl_3, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True) is None)
+    assert (vl_2.union(vl_4, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True) is not None)
+    assert (vl_3.union(vl_4, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True) is not None)
+    assert (vl_5.union(vl_6, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True) is None)
 
 def test_vertical_list_str_method():
     vl_1 = VerticalList([Selector("at1", Operator.EQUAL, "a")], Index([]), Index([]), 20)
