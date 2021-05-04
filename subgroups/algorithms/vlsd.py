@@ -79,6 +79,36 @@ class VLSD(Algorithm):
         self._visited_nodes = 0
         self._pruned_nodes = 0
     
+    def _get_quality_measure(self):
+        return self._quality_measure
+    
+    def _get_upper_bound(self):
+        return self._upper_bound
+    
+    def _get_minimum_threshold(self):
+        return self._minimum_threshold
+    
+    def _get_additional_parameters_for_the_quality_measure(self):
+        return self._additional_parameters_for_the_quality_measure
+    
+    def _get_additional_parameters_for_the_upper_bound(self):
+        return self._additional_parameters_for_the_upper_bound
+    
+    quality_measure = property(_get_quality_measure, None, None, "The quality measure which is used.")
+    upper_bound = property(_get_upper_bound, None, None, "The Upper Bound (a.k.a. Optimistic Estimate) of the quality measure which is used.")
+    minimum_threshold = property(_get_minimum_threshold, None, None, "The minimum quality threshold.")
+    additional_parameters_for_the_quality_measure = property(_get_additional_parameters_for_the_quality_measure, None, None, "The additional needed parameters with which to compute the quality measure.")
+    additional_parameters_for_the_upper_bound = property(_get_additional_parameters_for_the_upper_bound, None, None, "The additional needed parameters with which to compute the upper bound.")
+    
+    def _get_visited_nodes(self):
+        return self._visited_nodes
+    
+    def _get_pruned_nodes(self):
+        return self._pruned_nodes
+    
+    visited_nodes = property(_get_visited_nodes, None, None, "The visited nodes after executing the VLSD algorithm (before executing the 'fit' method, this attribute is 0).")
+    pruned_nodes = property(_get_pruned_nodes, None, None, "The pruned nodes after executing the VLSD algorithm (before executing the 'fit' method, this attribute is 0).")
+    
     # IMPORTANT: although the subgroup parameters TP and FP can be computed from 'pandas_dataframe', we also pass them by parameter in this method to avoid computing them twice (in the 'fit' method and in this method).
     def _generate_initial_list_of_vertical_lists(self, pandas_dataframe, TP, FP, target):
         """Private method to generate the initial list of vertical lists, prune it and sort it.

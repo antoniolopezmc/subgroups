@@ -16,6 +16,7 @@ from subgroups.tests.data_structures.fp_tree_node_test import *
 from subgroups.tests.data_structures.fp_tree_for_sdmap_test import *
 from subgroups.tests.algorithms.sdmap_test import *
 from subgroups.tests.data_structures.vertical_list_test import *
+from subgroups.tests.algorithms.vlsd_test import *
 
 if __name__ == "__main__":
     # core/operator_test file.
@@ -76,3 +77,5 @@ if __name__ == "__main__":
     test_vertical_list_1()
     test_vertical_list_2()
     test_vertical_list_str_method()
+    # algorithms/vlsd file.
+    test_VLSD_init_method()
