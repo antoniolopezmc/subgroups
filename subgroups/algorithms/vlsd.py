@@ -10,7 +10,6 @@ from pandas import DataFrame
 from pandas.api.types import is_string_dtype
 from pandas import Index
 from subgroups.algorithms._base import Algorithm
-from subgroups.algorithms._base import Algorithm
 from subgroups.quality_measures._base import QualityMeasure
 from subgroups.exceptions import DatasetAttributeTypeError
 from subgroups.data_structures.vertical_list import VerticalList

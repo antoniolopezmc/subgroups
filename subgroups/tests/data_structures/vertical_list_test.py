@@ -7,7 +7,8 @@
 """
 
 from subgroups.data_structures.vertical_list import VerticalList
-from subgroups.core.selector import Selector, Operator
+from subgroups.core.operator import Operator
+from subgroups.core.selector import Selector
 from pandas import Index, DataFrame
 from subgroups.quality_measures.support import Support
 from subgroups.quality_measures.coverage import Coverage

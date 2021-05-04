@@ -12,7 +12,8 @@ from subgroups.quality_measures.wracc import WRAcc
 from subgroups.quality_measures.qg import Qg
 from subgroups.exceptions import InconsistentMethodParametersError, DatasetAttributeTypeError, ParameterNotFoundError, SubgroupParameterNotFoundError
 from subgroups.data_structures.fp_tree_for_sdmap import FPTreeForSDMap
-from subgroups.core.subgroup import Pattern, Subgroup
+from subgroups.core.pattern import Pattern
+from subgroups.core.subgroup import Subgroup
 
 def test_SDMap_init_method():
     try:
