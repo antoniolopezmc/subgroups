@@ -162,10 +162,10 @@ class VLSD(Algorithm):
                         result.append(vl)
                     # Finally, add the value to 'processed_values'.
                     processed_values.add(value)
-            # Sort descending by quality value.
-            result.sort(reverse=True, key=lambda x : x.quality_value)
-            # Return the list.
-            return result
+        # Sort descending by quality value.
+        result.sort(reverse=True, key=lambda x : x.quality_value)
+        # Return the list.
+        return result
     
     def _search(self, vl, P, M, TP, FP):
         """ Private search method.
@@ -205,7 +205,7 @@ class VLSD(Algorithm):
                     # Get the last selector of Py.
                     eb = Py.list_of_selectors[-1]
                     # If (M[ea][eb] >= threshold), then ...
-                    # --> IMPORTANT: M[ea][eb] or M[ea][eb]. It is the same.
+                    # --> IMPORTANT: M[ea][eb] or M[eb][ea] (it is the same). One (or both) might not be in the dictionary.
                     try:
                         M_ea_eb = M[ea][eb]
                     except KeyError:
@@ -277,7 +277,8 @@ class VLSD(Algorithm):
                 # Check whether n (i.e., tp+fp) is 0 or greater than 0.
                 if (tp + fp) > 0:
                     # Add to the dictionary.
-                    M[ea] = dict()
+                    if ea not in M:
+                        M[ea] = dict()
                     # ---> IMPORTANT: M[ea][eb] is equal to M[eb][ea], but only one entry is added (to save memory). This will have to be kept in mind later.
                     M[ea][eb] = self._upper_bound.compute(vl_xy_dict_of_parameters)
         # Call to the search method.
@@ -296,5 +297,9 @@ class VLSD(Algorithm):
                 oe_value = vl.quality_value
                 # Add the corresponding tuple to the list R.
                 R.append( (s, q_value, oe_value) )
+                # Increment the number of visited nodes.
+                self._visited_nodes = self._visited_nodes + 1
+            else: # If the quality measure is not greater or equal, increment the number of pruned nodes.
+                self._pruned_nodes = self._pruned_nodes + 1
         # Return the result.
         return R
