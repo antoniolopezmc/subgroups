@@ -78,7 +78,8 @@ if __name__ == "__main__":
     test_vertical_list_2()
     test_vertical_list_str_method()
     # algorithms/vlsd file.
-    test_VLSD_init_method()
+    test_VLSD_init_method_1()
+    test_VLSD_init_method_2()
     test_VLSD_fit_method_1()
     test_VLSD_fit_method_2()
     test_VLSD_fit_method_3()

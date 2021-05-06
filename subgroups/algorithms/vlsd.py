@@ -63,6 +63,9 @@ class VLSD(Algorithm):
             raise TypeError("The parameter 'quality_measure' must be a subclass of QualityMeasure.")
         if not isinstance(upper_bound, QualityMeasure):
             raise TypeError("The parameter 'upper_bound' must be a subclass of QualityMeasure.")
+        # We check whether 'upper_bound' is an upper bound of 'quality_measure'.
+        if quality_measure.get_name() not in upper_bound.upper_bound_of():
+            raise ValueError("The quality measure " + upper_bound.get_name() + " is not an upper bound of the quality measure " + quality_measure.get_name() + ".")
         if (type(minimum_threshold) is not int) and (type(minimum_threshold) is not float):
             raise TypeError("The type of the parameter 'minimum_threshold' must be 'int' or 'float'.")
         if (type(additional_parameters_for_the_quality_measure) is not dict):

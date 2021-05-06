@@ -10,12 +10,13 @@ from pandas import DataFrame
 from subgroups.algorithms.vlsd import VLSD
 from subgroups.quality_measures.wracc import WRAcc
 from subgroups.quality_measures.wracc_upper_bound_1 import WRAccUpperBound1
+from subgroups.quality_measures.qg import Qg
 from subgroups.exceptions import InconsistentMethodParametersError, DatasetAttributeTypeError, ParameterNotFoundError, SubgroupParameterNotFoundError
 from subgroups.data_structures.vertical_list import VerticalList
 from subgroups.core.pattern import Pattern
 from subgroups.core.subgroup import Subgroup
 
-def test_VLSD_init_method():
+def test_VLSD_init_method_1():
     dictionary = dict()
     vlsd = VLSD(WRAcc(), WRAccUpperBound1(), -1, additional_parameters_for_the_quality_measure=dictionary, additional_parameters_for_the_upper_bound=dictionary)
     assert (len(vlsd.additional_parameters_for_the_quality_measure) == 0)
@@ -42,6 +43,14 @@ def test_VLSD_init_method():
     assert (vlsd.additional_parameters_for_the_quality_measure != vlsd.additional_parameters_for_the_upper_bound)
     assert (vlsd.additional_parameters_for_the_quality_measure["g"] == 0.5)
     assert (vlsd.additional_parameters_for_the_upper_bound["g"] == 0.1)
+
+def test_VLSD_init_method_2():
+    vlsd = VLSD(WRAcc(), WRAccUpperBound1(), -0.85)
+    try:
+        vlsd = VLSD(Qg(), WRAccUpperBound1(), -0.85, additional_parameters_for_the_quality_measure={"Qg" : 0.2})
+        assert (False)
+    except ValueError:
+        assert (True)
 
 def test_VLSD_fit_method_1():
     try:
