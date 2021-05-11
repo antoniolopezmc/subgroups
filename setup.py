@@ -15,6 +15,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=[
         'pandas>=1.1.3',
+        'bitarray>=1.6.1'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

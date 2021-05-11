@@ -6,7 +6,8 @@
 """This file contains the implementation of the Vertical List data structure used in the VLSD algorithm.
 """
 
-from pandas import Index
+from collections.abc import Iterable
+from bitarray import bitarray
 from subgroups.quality_measures._base import QualityMeasure
 
 class VerticalList(object):
@@ -14,29 +15,39 @@ class VerticalList(object):
     
     :type list_of_selectors: list[Selector]
     :param list_of_selectors: the list of selectors represented by the vertical list.
-    :type sequence_of_instances_tp: pandas.Index
+    :type sequence_of_instances_tp: collections.abc.Iterator
     :param sequence_of_instances_tp: the sequence of IDs of the dataset instances which are covered by the selectors ('list_of_selectors') and also by the target. The number of elements in this sequence would be the true positives tp of the equivalent subgroup with the same list of selectors and with the same target.
-    :type sequence_of_instances_fp: pandas.Index
+    :type sequence_of_instances_fp: collections.abc.Iterator
     :param sequence_of_instances_fp: the sequence of IDs of the dataset instances which are covered by the selectors ('list_of_selectors'), but not by the target. The number of elements in this sequence would be the false positives fp of the equivalent subgroup with the same list of selectors and with the same target.
+    :type dataset_size: int
+    :param dataset_size: the total number of instances in the dataset.
     :type quality_value: int or float.
     :param quality_value: the vertical list quality value.
     """
     
     __slots__ = "_list_of_selectors", "_sequence_of_instances_tp", "_sequence_of_instances_fp", "_quality_value"
     
-    def __init__(self, list_of_selectors, sequence_of_instances_tp, sequence_of_instances_fp, quality_value):
+    def __init__(self, list_of_selectors, sequence_of_instances_tp, sequence_of_instances_fp, dataset_size, quality_value):
         if type(list_of_selectors) is not list:
             raise TypeError("The type of the parameter 'list_of_selectors' must be 'list'.")
-        if not isinstance(sequence_of_instances_tp, Index):
-            raise TypeError("The parameter 'sequence_of_instances_tp' must be of type 'Index' or a subclass of 'Index'.")
-        if not isinstance(sequence_of_instances_fp, Index):
-            raise TypeError("The parameter 'sequence_of_instances_fp' must be of type 'Index' or a subclass of 'Index'.")
+        if not isinstance(sequence_of_instances_tp, Iterable):
+            raise TypeError("The parameter 'sequence_of_instances_tp' must be iterable.")
+        if not isinstance(sequence_of_instances_fp, Iterable):
+            raise TypeError("The parameter 'sequence_of_instances_fp' must be iterable.")
+        if (type(dataset_size) is not int):
+            raise TypeError("The type of the parameter 'dataset_size' must be 'int'.")
         if (type(quality_value) is not int) and (type(quality_value) is not float):
             raise TypeError("The type of the parameter 'quality_value' must be 'int' or 'float'.")
         self._list_of_selectors = list_of_selectors
-        self._sequence_of_instances_tp = sequence_of_instances_tp
-        self._sequence_of_instances_fp = sequence_of_instances_fp 
         self._quality_value = quality_value
+        self._sequence_of_instances_tp = bitarray(dataset_size, endian = "big")
+        self._sequence_of_instances_tp.setall(0)
+        for elem in sequence_of_instances_tp:
+            self._sequence_of_instances_tp[elem] = 1
+        self._sequence_of_instances_fp = bitarray(dataset_size, endian = "big")
+        self._sequence_of_instances_fp.setall(0)
+        for elem in sequence_of_instances_fp:
+            self._sequence_of_instances_fp[elem] = 1
     
     def _get_list_of_selectors(self):
         return self._list_of_selectors
@@ -48,13 +59,13 @@ class VerticalList(object):
         return self._sequence_of_instances_fp
     
     def _get_tp(self):
-        return len(self._sequence_of_instances_tp)
+        return self._sequence_of_instances_tp.count(1)
     
     def _get_fp(self):
-        return len(self._sequence_of_instances_fp)
+        return self._sequence_of_instances_fp.count(1)
     
     def _get_n(self):
-        return len(self._sequence_of_instances_tp) + len(self._sequence_of_instances_fp) 
+        return self._get_tp() + self._get_fp()
     
     def _get_quality_value(self):
         return self._quality_value
@@ -63,8 +74,8 @@ class VerticalList(object):
         self._quality_value = quality_value
     
     list_of_selectors = property(_get_list_of_selectors, None, None, "The list of selectors represented by the vertical list.")
-    sequence_of_instances_tp = property(_get_sequence_of_instances_tp, None, None, "The sequence of IDs of the dataset instances which are covered by the selectors ('list_of_selectors') and also by the target.")
-    sequence_of_instances_fp = property(_get_sequence_of_instances_fp, None, None, "The sequence of IDs of the dataset instances which are covered by the selectors ('list_of_selectors'), but not by the target.")
+    sequence_of_instances_tp = property(_get_sequence_of_instances_tp, None, None, "The sequence of IDs of the dataset instances which are covered by the selectors ('list_of_selectors') and also by the target. IMPORTANT: the sequence is returned as a bitarray.")
+    sequence_of_instances_fp = property(_get_sequence_of_instances_fp, None, None, "The sequence of IDs of the dataset instances which are covered by the selectors ('list_of_selectors'), but not by the target. IMPORTANT: the sequence is returned as a bitarray.")
     tp = property(_get_tp, None, None, "The number of dataset instances which are covered by the selectors ('list_of_selectors') and also by the target.")
     fp = property(_get_fp, None, None, "The number of dataset instances which are covered by the selectors ('list_of_selectors'), but not by the target.")
     n = property(_get_n, None, None, "The number of dataset instances which are covered by the selectors ('list_of_selectors') no matter the target.") 
@@ -114,9 +125,9 @@ class VerticalList(object):
             raise TypeError("The type of the parameter 'return_None_if_n_is_0' must be 'bool'.")
         # Initially, the result is None.
         result = None
-        # First, make the intersection of both sequences.
-        new_sequence_of_instances_tp = self._sequence_of_instances_tp.intersection(other_vertical_list._sequence_of_instances_tp, sort=False)
-        new_sequence_of_instances_fp = self._sequence_of_instances_fp.intersection(other_vertical_list._sequence_of_instances_fp, sort=False)
+        # First, make the intersection of both sequences (using the AND operator, because both sequences are bitarrays).
+        new_sequence_of_instances_tp = self._sequence_of_instances_tp & other_vertical_list._sequence_of_instances_tp
+        new_sequence_of_instances_fp = self._sequence_of_instances_fp & other_vertical_list._sequence_of_instances_fp
         new_tp = len(new_sequence_of_instances_tp)
         new_fp = len(new_sequence_of_instances_fp)
         # Continue if the parameter 'return_None_if_n_is_0' is False OR n is greater than 0. In other case, return None.
@@ -130,11 +141,14 @@ class VerticalList(object):
             new_dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp] = new_fp
             new_quality_value = quality_measure.compute(new_dict_of_parameters)
             # Finally, create the object.
-            result = VerticalList(new_list_of_selectors, new_sequence_of_instances_tp, new_sequence_of_instances_fp, new_quality_value)
+            result = VerticalList(new_list_of_selectors, [], [], 0, new_quality_value)
+            result._sequence_of_instances_tp = new_sequence_of_instances_tp
+            result._sequence_of_instances_fp = new_sequence_of_instances_fp
         # Return the result.
         return result
     
     def __str__(self):
+        # List of selectors.
         list_of_selectors_as_str = "["
         for e in self._list_of_selectors:
             list_of_selectors_as_str = list_of_selectors_as_str + str(e) + ", "
@@ -143,7 +157,32 @@ class VerticalList(object):
         else:
             list_of_selectors_as_str = list_of_selectors_as_str[:-2]
             list_of_selectors_as_str = list_of_selectors_as_str + "]"
+        # Sequence of instances tp.
+        sequence_of_instances_tp_as_str = "["
+        index = 0
+        for bit in self._sequence_of_instances_tp:
+            if bit:
+                sequence_of_instances_tp_as_str = sequence_of_instances_tp_as_str + str(index) + ", "
+            index = index + 1
+        if (sequence_of_instances_tp_as_str[-1] == " ") and (sequence_of_instances_tp_as_str[-1] == ","):
+            sequence_of_instances_tp_as_str = sequence_of_instances_tp_as_str[:-2]
+            sequence_of_instances_tp_as_str = sequence_of_instances_tp_as_str + "]"
+        else:
+            sequence_of_instances_tp_as_str = sequence_of_instances_tp_as_str + "]"
+        # Sequence of instances fp.
+        sequence_of_instances_fp_as_str = "["
+        index = 0
+        for bit in self._sequence_of_instances_fp:
+            if bit:
+                sequence_of_instances_fp_as_str = sequence_of_instances_fp_as_str + str(index) + ", "
+            index = index + 1
+        if (sequence_of_instances_fp_as_str[-1] == " ") and (sequence_of_instances_fp_as_str[-1] == ","):
+            sequence_of_instances_fp_as_str = sequence_of_instances_fp_as_str[:-2]
+            sequence_of_instances_fp_as_str = sequence_of_instances_fp_as_str + "]"
+        else:
+            sequence_of_instances_fp_as_str = sequence_of_instances_fp_as_str + "]"
+        # Return.
         return "List of selectors: " + list_of_selectors_as_str + \
-            ", Sequence of instances (tp): " + str(self._sequence_of_instances_tp.to_list()) + \
-            ", Sequence of instances (fp): " + str(self._sequence_of_instances_fp.to_list()) + \
+            ", Sequence of instances (tp): " + sequence_of_instances_tp_as_str + \
+            ", Sequence of instances (fp): " + sequence_of_instances_fp_as_str + \
             ", Quality value: " + str(self._quality_value)
