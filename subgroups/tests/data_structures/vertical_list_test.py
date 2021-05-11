@@ -89,14 +89,14 @@ def test_vertical_list_1():
     assert (union_4.quality_value == (1/3))
 
 def test_vertical_list_2():
-    TP = 1
-    FP = 2
-    vl_1 = VerticalList([Selector("at1", Operator.EQUAL, "a")], [0], [], 3, -45)
-    vl_2 = VerticalList([Selector("at2", Operator.EQUAL, "b")], [0], [1], 3, -45)
-    vl_3 = VerticalList([Selector("at2", Operator.EQUAL, "z")], [], [2], 3, -45)
-    vl_4 = VerticalList([Selector("at3", Operator.EQUAL, "c")], [], [1,2], 3, -45)
-    vl_5 = VerticalList([Selector("at4", Operator.EQUAL, "c")], [0,1], [2,3], 3, -45)
-    vl_6 = VerticalList([Selector("at5", Operator.EQUAL, "c")], [10,11], [12,33], 3, -45)
+    TP = 24
+    FP = 26
+    vl_1 = VerticalList([Selector("at1", Operator.EQUAL, "a")], [0], [], 50, -45)
+    vl_2 = VerticalList([Selector("at2", Operator.EQUAL, "b")], [0], [1], 50, -45)
+    vl_3 = VerticalList([Selector("at2", Operator.EQUAL, "z")], [], [2], 50, -45)
+    vl_4 = VerticalList([Selector("at3", Operator.EQUAL, "c")], [], [1,2], 50, -45)
+    vl_5 = VerticalList([Selector("at4", Operator.EQUAL, "c")], [0,1], [2,3], 50, -45)
+    vl_6 = VerticalList([Selector("at5", Operator.EQUAL, "c")], [10,11], [12,33], 50, -45)
     assert (vl_1.union(vl_2, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True) is not None)
     assert (vl_1.union(vl_3, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True) is None)
     assert (vl_2.union(vl_4, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True) is not None)
@@ -104,24 +104,22 @@ def test_vertical_list_2():
     assert (vl_5.union(vl_6, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True) is None)
 
 def test_vertical_list_3():
-    TP = 1
-    FP = 2
-    vl_1 = VerticalList([Selector("at1", Operator.EQUAL, "a")], [0], [], 3, -45)
-    vl_2 = VerticalList([Selector("at2", Operator.EQUAL, "b")], [0], [1], 3, -45)
+    vl_1 = VerticalList([Selector("at1", Operator.EQUAL, "a")], [0], [], 3, -45) # dataset_size = 3
+    vl_2 = VerticalList([Selector("at2", Operator.EQUAL, "b")], [0], [1], 5, -45) # dataset_size = 5
     try:
         # The sequence of instances of the vertical lists do not have the same sizes.
-        union_1 = vl_1.union(vl2, Coverage(), {"TP" : TP, "FP" : FP})
+        union_1 = vl_1.union(vl_2, Coverage(), {"TP" : 5, "FP" : 5})
         assert(False)
     except ValueError:
         assert(True)
 
 def test_vertical_list_str_method():
-    vl_1 = VerticalList([Selector("at1", Operator.EQUAL, "a")], [], [], 3, 20)
-    vl_2 = VerticalList([Selector("at2", Operator.EQUAL, "b"), Selector("at3", Operator.NOT_EQUAL, "c")], [0,1], [], 3, -45)
-    vl_3 = VerticalList([Selector("at2", Operator.EQUAL, "b")], [1], [], 3, 100)
-    vl_4 = VerticalList([Selector("at2", Operator.EQUAL, "z")], [], [2], 3, 0)
-    vl_5 = VerticalList([], [], [1,2], 3, 1)
-    vl_6 = VerticalList([Selector("at1", Operator.EQUAL, "a"), Selector("at2", Operator.EQUAL, "b"), Selector("at3", Operator.NOT_EQUAL, "c")], [1], [0,3], 3, 5)
+    vl_1 = VerticalList([Selector("at1", Operator.EQUAL, "a")], [], [], 4, 20)
+    vl_2 = VerticalList([Selector("at2", Operator.EQUAL, "b"), Selector("at3", Operator.NOT_EQUAL, "c")], [0,1], [], 4, -45)
+    vl_3 = VerticalList([Selector("at2", Operator.EQUAL, "b")], [1], [], 4, 100)
+    vl_4 = VerticalList([Selector("at2", Operator.EQUAL, "z")], [], [2], 4, 0)
+    vl_5 = VerticalList([], [], [1,2], 4, 1)
+    vl_6 = VerticalList([Selector("at1", Operator.EQUAL, "a"), Selector("at2", Operator.EQUAL, "b"), Selector("at3", Operator.NOT_EQUAL, "c")], [1], [0,3], 4, 5)
     assert (str(vl_1) == "List of selectors: [at1 = 'a'], Sequence of instances (tp): [], Sequence of instances (fp): [], Quality value: 20")
     assert (str(vl_2) == "List of selectors: [" + str(Selector("at2", Operator.EQUAL, "b")) + ", " + str(Selector("at3", Operator.NOT_EQUAL, "c")) + "], Sequence of instances (tp): [0, 1], Sequence of instances (fp): [], Quality value: -45")
     assert (str(vl_3) == "List of selectors: [" + str(Selector("at2", Operator.EQUAL, "b")) + "], Sequence of instances (tp): [1], Sequence of instances (fp): [], Quality value: 100")

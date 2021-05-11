@@ -25,7 +25,7 @@ class VerticalList(object):
     :param quality_value: the vertical list quality value.
     """
     
-    __slots__ = "_list_of_selectors", "_sequence_of_instances_tp", "_sequence_of_instances_fp", "_quality_value"
+    __slots__ = "_list_of_selectors", "_sequence_of_instances_tp", "_tp", "_sequence_of_instances_fp", "_fp", "_quality_value"
     
     def __init__(self, list_of_selectors, sequence_of_instances_tp, sequence_of_instances_fp, dataset_size, quality_value):
         if type(list_of_selectors) is not list:
@@ -40,14 +40,18 @@ class VerticalList(object):
             raise TypeError("The type of the parameter 'quality_value' must be 'int' or 'float'.")
         self._list_of_selectors = list_of_selectors
         self._quality_value = quality_value
+        # sequence of instances tp.
         self._sequence_of_instances_tp = bitarray(dataset_size, endian = "big")
         self._sequence_of_instances_tp.setall(0)
         for elem in sequence_of_instances_tp:
             self._sequence_of_instances_tp[elem] = 1
+        self._tp = len(sequence_of_instances_tp)
+        # sequence of instances fp.
         self._sequence_of_instances_fp = bitarray(dataset_size, endian = "big")
         self._sequence_of_instances_fp.setall(0)
         for elem in sequence_of_instances_fp:
             self._sequence_of_instances_fp[elem] = 1
+        self._fp = len(sequence_of_instances_fp)
     
     def _get_list_of_selectors(self):
         return self._list_of_selectors
@@ -59,13 +63,13 @@ class VerticalList(object):
         return self._sequence_of_instances_fp
     
     def _get_tp(self):
-        return self._sequence_of_instances_tp.count(1)
+        return self._tp
     
     def _get_fp(self):
-        return self._sequence_of_instances_fp.count(1)
+        return self._fp
     
     def _get_n(self):
-        return self._get_tp() + self._get_fp()
+        return self._tp + self._fp
     
     def _get_quality_value(self):
         return self._quality_value
@@ -78,7 +82,7 @@ class VerticalList(object):
     sequence_of_instances_fp = property(_get_sequence_of_instances_fp, None, None, "The sequence of IDs of the dataset instances which are covered by the selectors ('list_of_selectors'), but not by the target. IMPORTANT: the sequence is returned as a bitarray.")
     tp = property(_get_tp, None, None, "The number of dataset instances which are covered by the selectors ('list_of_selectors') and also by the target.")
     fp = property(_get_fp, None, None, "The number of dataset instances which are covered by the selectors ('list_of_selectors'), but not by the target.")
-    n = property(_get_n, None, None, "The number of dataset instances which are covered by the selectors ('list_of_selectors') no matter the target.") 
+    n = property(_get_n, None, None, "The number of dataset instances which are covered by the selectors ('list_of_selectors'), no matter the target.") 
     quality_value = property(_get_quality_value, _set_quality_value, None, "The vertical list quality value.")
     
     def compute_quality_value(self, quality_measure, dict_of_parameters):
@@ -128,8 +132,8 @@ class VerticalList(object):
         # First, make the intersection of both sequences (using the AND operator, because both sequences are bitarrays).
         new_sequence_of_instances_tp = self._sequence_of_instances_tp & other_vertical_list._sequence_of_instances_tp
         new_sequence_of_instances_fp = self._sequence_of_instances_fp & other_vertical_list._sequence_of_instances_fp
-        new_tp = len(new_sequence_of_instances_tp)
-        new_fp = len(new_sequence_of_instances_fp)
+        new_tp = new_sequence_of_instances_tp.count(1)
+        new_fp = new_sequence_of_instances_fp.count(1)
         # Continue if the parameter 'return_None_if_n_is_0' is False OR n is greater than 0. In other case, return None.
         if (not return_None_if_n_is_0) or ((new_tp + new_fp) > 0):
             # Second, add the last element of 'other_vertical_list'.
@@ -144,6 +148,8 @@ class VerticalList(object):
             result = VerticalList(new_list_of_selectors, [], [], 0, new_quality_value)
             result._sequence_of_instances_tp = new_sequence_of_instances_tp
             result._sequence_of_instances_fp = new_sequence_of_instances_fp
+            result._tp = new_tp
+            result._fp = new_fp
         # Return the result.
         return result
     
@@ -164,7 +170,7 @@ class VerticalList(object):
             if bit:
                 sequence_of_instances_tp_as_str = sequence_of_instances_tp_as_str + str(index) + ", "
             index = index + 1
-        if (sequence_of_instances_tp_as_str[-1] == " ") and (sequence_of_instances_tp_as_str[-1] == ","):
+        if (sequence_of_instances_tp_as_str[-1] == " ") and (sequence_of_instances_tp_as_str[-2] == ","):
             sequence_of_instances_tp_as_str = sequence_of_instances_tp_as_str[:-2]
             sequence_of_instances_tp_as_str = sequence_of_instances_tp_as_str + "]"
         else:
@@ -176,7 +182,7 @@ class VerticalList(object):
             if bit:
                 sequence_of_instances_fp_as_str = sequence_of_instances_fp_as_str + str(index) + ", "
             index = index + 1
-        if (sequence_of_instances_fp_as_str[-1] == " ") and (sequence_of_instances_fp_as_str[-1] == ","):
+        if (sequence_of_instances_fp_as_str[-1] == " ") and (sequence_of_instances_fp_as_str[-2] == ","):
             sequence_of_instances_fp_as_str = sequence_of_instances_fp_as_str[:-2]
             sequence_of_instances_fp_as_str = sequence_of_instances_fp_as_str + "]"
         else:

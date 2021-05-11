@@ -10,7 +10,7 @@ from subgroups.tests.core.operator_test import *
 from subgroups.tests.core.selector_test import *
 from subgroups.tests.core.pattern_test import *
 from subgroups.tests.core.subgroup_test import *
-from subgroups.tests.quality_measures.all_test import *
+from subgroups.tests.quality_measures.all_tests import *
 from subgroups.tests.utils.dataframe_filters_test import *
 from subgroups.tests.data_structures.fp_tree_node_test import *
 from subgroups.tests.data_structures.fp_tree_for_sdmap_test import *
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     # core/subgroup_test file.
     test_Subgroup()
     test_Subgroup_filter()
-    # quality_measures/all_test file.
+    # quality_measures/all_tests file.
     test_quality_measures()
     test_quality_measures_compute()
     # utils/dataframe_filters_test file.
