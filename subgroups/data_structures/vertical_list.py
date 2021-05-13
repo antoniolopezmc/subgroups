@@ -104,7 +104,6 @@ class VerticalList(object):
         new_dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp] = self._get_fp()
         return quality_measure.compute(new_dict_of_parameters)
     
-
     def union(self, other_vertical_list, quality_measure, dict_of_parameters, return_None_if_n_is_0 = False):
         """Method to create a new vertical list as a result of the union of two vertical lists. The union of two vertical lists implies the following: (1) the last selector of the list of selectors of the second vertical list is added to the end of the list of selectors of the first vertical list, and (2) the new sequences of IDs (both) are the intersection of the corresponding original ones.
         

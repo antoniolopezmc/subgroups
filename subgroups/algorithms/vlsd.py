@@ -8,7 +8,6 @@
 
 from pandas import DataFrame
 from pandas.api.types import is_string_dtype
-from pandas import Index
 from subgroups.algorithms._base import Algorithm
 from subgroups.quality_measures._base import QualityMeasure
 from subgroups.exceptions import DatasetAttributeTypeError
@@ -134,8 +133,8 @@ class VLSD(Algorithm):
         # Iterate through the columns (except the target).
         for column in pandas_dataframe.columns.drop(target[0]):
             # Use the 'groupby' method in order to group each value depending on whether appears with the target or not.
-            # - The property 'groups' is a dictionary in which the key is the tuple "(column, target_attribute_as_a_mask)" and the value is a sequence of registers in which that combination appears.
-            values_and_target_grouped = pandas_dataframe.groupby([column, target_attribute_as_a_mask]).groups
+            # - The property 'groups' is a dictionary in which the key is the tuple "(column, target_attribute_as_a_mask)" and the value is a sequence of register indices in which that combination appears.
+            values_and_target_grouped = pandas_dataframe.groupby([column, target_attribute_as_a_mask]).indices
             # Set of values which have been already processed.
             processed_values = set()
             # Iterate through the tuples returned by the groupby method.
@@ -147,12 +146,12 @@ class VLSD(Algorithm):
                     try:
                         registers_tp = values_and_target_grouped[(value,True)]
                     except KeyError:
-                        registers_tp = Index([]) # Empty sequence.
+                        registers_tp = [] # Empty sequence.
                     # Registers which do not have the target.
                     try:
                         registers_fp = values_and_target_grouped[(value,False)]
                     except KeyError:
-                        registers_fp = Index([]) # Empty sequence.
+                        registers_fp = [] # Empty sequence.
                     # Compute the upper bound.
                     dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_tp : len(registers_tp), QualityMeasure.SUBGROUP_PARAMETER_fp : len(registers_fp), QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
                     dict_of_parameters.update(self._additional_parameters_for_the_upper_bound)
@@ -160,7 +159,7 @@ class VLSD(Algorithm):
                     # Pruning: add the Vertical List only if the upper bound value is greater or equal than the threshold.
                     if upper_bound_value >= self._minimum_threshold:
                         # Create the Vertical List.
-                        vl = VerticalList([Selector(column, Operator.EQUAL, value)], registers_tp, registers_fp, upper_bound_value)
+                        vl = VerticalList([Selector(column, Operator.EQUAL, value)], registers_tp, registers_fp, TP+FP, upper_bound_value)
                         # Add it to the final list.
                         result.append(vl)
                     # Finally, add the value to 'processed_values'.
@@ -170,11 +169,9 @@ class VLSD(Algorithm):
         # Return the list.
         return result
     
-    def _search(self, vl, P, M, TP, FP):
+    def _search(self, P, M, TP, FP):
         """ Private search method.
         
-        :type vl: VerticalList
-        :param vl: a vertical list.
         :type P: list[VerticalList]
         :param P: a list of vertical lists.
         :type M: dict[VerticalList, dict[VerticalList, int or float]]
@@ -188,48 +185,50 @@ class VLSD(Algorithm):
         """
         # Final result.
         F = []
-        # Iterate through the vertical lists in P.
-        for index_x in range(len(P)):
-            Px = P[index_x]
-            # If the quality of the current element is greater or equal than the threshold, add to the final result.
-            if Px.quality_value >= self._minimum_threshold:
-                F.append(Px)
-            # Get the last selector of Px.
-            ea = Px.list_of_selectors[-1]
-            # If Px is not the last element in the list P and ((vl.quality + M[ea][ea]) >= threshold), then ...
-            vl_quality_value = 0
-            if vl is not None:
-                vl_quality_value = vl.quality_value
-            if (Px != P[-1]) and ((vl_quality_value + M[ea][ea]) >= self._minimum_threshold):
-                V = []
-                # Iterate through the vertical lists in P whose index is greater than 'index_x'.
-                for index_y in range(index_x+1, len(P)): # IMPORTANT: x < y
-                    Py = P[index_y]
-                    # Get the last selector of Py.
-                    eb = Py.list_of_selectors[-1]
-                    # If (M[ea][eb] >= threshold), then ...
-                    # --> IMPORTANT: M[ea][eb] or M[eb][ea] (it is the same). One (or both) might not be in the dictionary.
-                    try:
-                        M_ea_eb = M[ea][eb]
-                    except KeyError:
-                        # --> IMPORTANT: If the parameter n of the union was 0, there is no entry in the dictionary.
-                        try:
-                            M_ea_eb = M[eb][ea]
-                        except KeyError:
-                            M_ea_eb = None
-                    if (M_ea_eb is not None) and (M_ea_eb >= self._minimum_threshold):
-                        # In this case, it is not necessary to include the tp and fp parameters (because they will be included in the union).
-                        dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
-                        dict_of_parameters.update(self._additional_parameters_for_the_upper_bound)
-                        # Make the union.
-                        new_vl_union = Px.union(Py, self._upper_bound, dict_of_parameters, return_None_if_n_is_0=True)
-                        # Add the new vertical list to the list V.
-                        if new_vl_union is not None:
-                            V.append(new_vl_union)
-                # Check whether the list V is not empty.
-                if V:
-                    # If V is not empty, recursive call.
-                    F = F + self._search(Px, V, M, TP, FP)
+        # Initial variables.
+        depth = 0
+        s = [-1] * len(P)
+        svl = [None] * len(P)
+        # Main loop
+        while(depth > -1):
+            if (depth == 0):
+                if s[depth] == -1:
+                    s[depth] = 0
+                else:
+                    s[depth] = s[depth] + 1
+                current_vl = P[s[depth]]
+            else:
+                if s[depth] == -1:
+                    s[depth] = s[depth-1] + 1
+                else:
+                    s[depth] = s[depth] + 1
+                parent = svl[depth-1]
+                Pi = P[s[depth]]
+                oe_dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
+                oe_dict_of_parameters.update(self._additional_parameters_for_the_upper_bound)
+                current_vl = parent.union(Pi, self._upper_bound, oe_dict_of_parameters, return_None_if_n_is_0 = True)
+            svl[depth] = current_vl
+            # IMPORTANT: current_vl equal to None means that (current_vl.tp+current_vl.fp) is 0.
+            if (current_vl is not None) and (current_vl.quality_value >= self._minimum_threshold):
+                F.append(current_vl)
+            #print("#############################################################")
+            #print("Depth: " + str(depth))
+            #print("s: " + str(s))
+            #svl_as_string = ""
+            #for vl in svl:
+            #    if vl is not None:
+            #        svl_as_string = svl_as_string + str(vl.list_of_selectors) + "(" + str(vl.n) + "), "
+            #    else:
+            #        svl_as_string = svl_as_string + "None, "
+            #print(svl_as_string)
+            # IMPORTANT: current_vl equal to None means that (current_vl.tp+current_vl.fp) is 0.
+            if (current_vl is not None) and (depth < (len(P)-1)) and (s[depth] < (len(P)-1)):
+                depth = depth + 1
+            else:
+                while (not (s[depth] < (len(P)-1))) and (depth > -1):
+                    svl[depth] = None
+                    s[depth] = -1
+                    depth = depth - 1
         # Return the result.
         return F
     
@@ -271,10 +270,11 @@ class VLSD(Algorithm):
                 eb = vl_y.list_of_selectors[-1]
                 # Get the quality value of the union of vl_x and vl_y.
                 # --> IMPORTANT: we only need the quality value and, therefore, it is not necessary to create a new vertical list object.
-                vl_xy_sequence_of_instances_tp = vl_x._sequence_of_instances_tp.intersection(vl_y._sequence_of_instances_tp, sort=False)
-                vl_xy_sequence_of_instances_fp = vl_x._sequence_of_instances_fp.intersection(vl_y._sequence_of_instances_fp, sort=False)
-                tp = len(vl_xy_sequence_of_instances_tp)
-                fp = len(vl_xy_sequence_of_instances_fp)
+                # ----> REMEMBER: in a vertical list, the sequences are bitarrays.
+                vl_xy_sequence_of_instances_tp = vl_x._sequence_of_instances_tp & vl_y._sequence_of_instances_tp
+                vl_xy_sequence_of_instances_fp = vl_x._sequence_of_instances_fp & vl_y._sequence_of_instances_fp
+                tp = vl_xy_sequence_of_instances_tp.count(1)
+                fp = vl_xy_sequence_of_instances_fp.count(1)
                 vl_xy_dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_tp : tp, QualityMeasure.SUBGROUP_PARAMETER_fp : fp, QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
                 vl_xy_dict_of_parameters.update(self._additional_parameters_for_the_upper_bound)
                 # Check whether n (i.e., tp+fp) is 0 or greater than 0.
@@ -285,7 +285,7 @@ class VLSD(Algorithm):
                     # ---> IMPORTANT: M[ea][eb] is equal to M[eb][ea], but only one entry is added (to save memory). This will have to be kept in mind later.
                     M[ea][eb] = self._upper_bound.compute(vl_xy_dict_of_parameters)
         # Call to the search method.
-        F = self._search(None, P, M, TP, FP)
+        F = self._search(P, M, TP, FP)
         # Iterate through the result (list F).
         for vl in F:
             # Compute the quality meaasure q ('quality_measure' attribute).
