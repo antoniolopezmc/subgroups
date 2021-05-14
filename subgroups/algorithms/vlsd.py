@@ -45,35 +45,40 @@ class VLSD(Algorithm):
     
     :type quality_measure: QualityMeasure
     :param quality_measure: the quality measure which is used.
+    :type q_minimum_threshold: int or float
+    :param q_minimum_threshold: the minimum quality threshold for the quality measure.
     :type upper_bound: QualityMeasure
-    :param upper_bound: the Upper Bound (a.k.a. Optimistic Estimate) of the quality measure which is used.
-    :type minimum_threshold: int or float
-    :param minimum_threshold: the minimum quality threshold.
+    :param upper_bound: the upper bound (a.k.a. optimistic estimate) of the quality measure which is used.
+    :type ub_minimum_threshold: int or float
+    :param ub_minimum_threshold: the minimum quality threshold for the upper bound.
     :type additional_parameters_for_the_quality_measure: dict[str, int or float]
     :param additional_parameters_for_the_quality_measure: if the quality measure passed by parameter needs more parameters apart from tp, fp, TP and FP to be computed, they need to be specified here.
     :type additional_parameters_for_the_upper_bound: dict[str, int or float]
     :param additional_parameters_for_the_upper_bound: if the upper bound passed by parameter needs more parameters apart from tp, fp, TP and FP to be computed, they need to be specified here.
     """
     
-    __slots__ = "_quality_measure", "_upper_bound", "_minimum_threshold", "_additional_parameters_for_the_quality_measure", "_additional_parameters_for_the_upper_bound", "_visited_nodes", "_pruned_nodes"
+    __slots__ = "_quality_measure", "_q_minimum_threshold", "_upper_bound", "_ub_minimum_threshold", "_additional_parameters_for_the_quality_measure", "_additional_parameters_for_the_upper_bound", "_visited_nodes", "_pruned_nodes"
     
-    def __init__(self, quality_measure, upper_bound, minimum_threshold, additional_parameters_for_the_quality_measure=dict(), additional_parameters_for_the_upper_bound=dict()):
+    def __init__(self, quality_measure, q_minimum_threshold, upper_bound, ub_minimum_threshold, additional_parameters_for_the_quality_measure=dict(), additional_parameters_for_the_upper_bound=dict()):
         if not isinstance(quality_measure, QualityMeasure):
             raise TypeError("The parameter 'quality_measure' must be a subclass of QualityMeasure.")
+        if (type(q_minimum_threshold) is not int) and (type(q_minimum_threshold) is not float):
+            raise TypeError("The type of the parameter 'q_minimum_threshold' must be 'int' or 'float'.")
         if not isinstance(upper_bound, QualityMeasure):
             raise TypeError("The parameter 'upper_bound' must be a subclass of QualityMeasure.")
         # We check whether 'upper_bound' is an upper bound of 'quality_measure'.
         if quality_measure.get_name() not in upper_bound.upper_bound_of():
             raise ValueError("The quality measure " + upper_bound.get_name() + " is not an upper bound of the quality measure " + quality_measure.get_name() + ".")
-        if (type(minimum_threshold) is not int) and (type(minimum_threshold) is not float):
-            raise TypeError("The type of the parameter 'minimum_threshold' must be 'int' or 'float'.")
+        if (type(ub_minimum_threshold) is not int) and (type(ub_minimum_threshold) is not float):
+            raise TypeError("The type of the parameter 'ub_minimum_threshold' must be 'int' or 'float'.")
         if (type(additional_parameters_for_the_quality_measure) is not dict):
             raise TypeError("The type of the parameter 'additional_parameters_for_the_quality_measure' must be 'dict'")
         if (type(additional_parameters_for_the_upper_bound) is not dict):
             raise TypeError("The type of the parameter 'additional_parameters_for_the_upper_bound' must be 'dict'")
         self._quality_measure = quality_measure
+        self._q_minimum_threshold = q_minimum_threshold
         self._upper_bound = upper_bound
-        self._minimum_threshold = minimum_threshold
+        self._ub_minimum_threshold = ub_minimum_threshold
         self._additional_parameters_for_the_quality_measure = additional_parameters_for_the_quality_measure.copy()
         _delete_subgroup_parameters_from_a_dictionary(self._additional_parameters_for_the_quality_measure)
         self._additional_parameters_for_the_upper_bound = additional_parameters_for_the_upper_bound.copy()
@@ -83,12 +88,15 @@ class VLSD(Algorithm):
     
     def _get_quality_measure(self):
         return self._quality_measure
+
+    def _get_q_minimum_threshold(self):
+        return self._q_minimum_threshold
     
     def _get_upper_bound(self):
         return self._upper_bound
     
-    def _get_minimum_threshold(self):
-        return self._minimum_threshold
+    def _get_ub_minimum_threshold(self):
+        return self._ub_minimum_threshold
     
     def _get_additional_parameters_for_the_quality_measure(self):
         return self._additional_parameters_for_the_quality_measure
@@ -97,8 +105,9 @@ class VLSD(Algorithm):
         return self._additional_parameters_for_the_upper_bound
     
     quality_measure = property(_get_quality_measure, None, None, "The quality measure which is used.")
-    upper_bound = property(_get_upper_bound, None, None, "The Upper Bound (a.k.a. Optimistic Estimate) of the quality measure which is used.")
-    minimum_threshold = property(_get_minimum_threshold, None, None, "The minimum quality threshold.")
+    q_minimum_threshold = property(_get_q_minimum_threshold, None, None, "The minimum quality threshold for the quality measure.")
+    upper_bound = property(_get_upper_bound, None, None, "The upper bound (a.k.a. optimistic estimate) of the quality measure which is used.")
+    ub_minimum_threshold = property(_get_ub_minimum_threshold, None, None, "The minimum quality threshold for the upper uound.")
     additional_parameters_for_the_quality_measure = property(_get_additional_parameters_for_the_quality_measure, None, None, "The additional needed parameters with which to compute the quality measure.")
     additional_parameters_for_the_upper_bound = property(_get_additional_parameters_for_the_upper_bound, None, None, "The additional needed parameters with which to compute the upper bound.")
     
@@ -112,17 +121,17 @@ class VLSD(Algorithm):
     pruned_nodes = property(_get_pruned_nodes, None, None, "The pruned nodes after executing the VLSD algorithm (before executing the 'fit' method, this attribute is 0).")
     
     # IMPORTANT: although the subgroup parameters TP and FP can be computed from 'pandas_dataframe', we also pass them by parameter in this method to avoid computing them twice (in the 'fit' method and in this method).
-    def _generate_initial_list_of_vertical_lists(self, pandas_dataframe, TP, FP, target):
+    def _generate_i_list(self, pandas_dataframe, target, TP, FP):
         """Private method to generate the initial list of vertical lists, prune it and sort it.
         
         :type pandas_dataframe: pandas.DataFrame
         :param pandas_dataframe: the DataFrame which is scanned. This algorithm only supports nominal attributes (i.e., type 'str') without missing values.
+        :type target: tuple[str, str]
+        :param target: a tuple with 2 elements: the target attribute name and the target value.
         :type TP: int
         :param TP: the True Positives of the dataset. IMPORTANT: although it can be computed from 'pandas_dataframe', we pass it by parameter to avoid computing it twice (in the 'fit' method and in this method).
         :type FP: int
         :param FP: the False Positives of the dataset. IMPORTANT: although it can be computed from 'pandas_dataframe', we pass it by parameter to avoid computing it twice (in the 'fit' method and in this method).
-        :type target: tuple[str, str]
-        :param target: a tuple with 2 elements: the target attribute name and the target value.
         :rtype: list[VerticalList]
         :return: a list in which each element is a Vertical List which represents a single selector (i.e., it only has one selector in its list of selectors). The list is pruned according to the threshold and sorted descending by the quality value of each Vertical List according to the 'upper_bound' attribute.
         """
@@ -157,7 +166,7 @@ class VLSD(Algorithm):
                     dict_of_parameters.update(self._additional_parameters_for_the_upper_bound)
                     upper_bound_value = self._upper_bound.compute(dict_of_parameters)
                     # Pruning: add the Vertical List only if the upper bound value is greater or equal than the threshold.
-                    if upper_bound_value >= self._minimum_threshold:
+                    if upper_bound_value >= self._ub_minimum_threshold:
                         # Create the Vertical List.
                         vl = VerticalList([Selector(column, Operator.EQUAL, value)], registers_tp, registers_fp, TP+FP, upper_bound_value)
                         # Add it to the final list.
@@ -204,12 +213,27 @@ class VLSD(Algorithm):
                     s[depth] = s[depth] + 1
                 parent = svl[depth-1]
                 Pi = P[s[depth]]
-                oe_dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
-                oe_dict_of_parameters.update(self._additional_parameters_for_the_upper_bound)
-                current_vl = parent.union(Pi, self._upper_bound, oe_dict_of_parameters, return_None_if_n_is_0 = True)
+                # Get the last selector of parent.
+                ea = parent.list_of_selectors[-1]
+                # Get the last selector of Pi.
+                eb = Pi.list_of_selectors[-1]
+                # Get the corresponding value of in M and generate 'current_vl'.
+                try:
+                    M_ea_eb = M[ea][eb]
+                except KeyError:
+                    try:
+                        M_ea_eb = M[eb][ea]
+                    except KeyError:
+                        M_ea_eb = None
+                if (M_ea_eb is not None) and (M_ea_eb >= self._ub_minimum_threshold):
+                    oe_dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
+                    oe_dict_of_parameters.update(self._additional_parameters_for_the_upper_bound)
+                    current_vl = parent.union(Pi, self._upper_bound, oe_dict_of_parameters, return_None_if_n_is_0 = True)
+                else:
+                    current_vl = None
             svl[depth] = current_vl
             # IMPORTANT: current_vl equal to None means that (current_vl.tp+current_vl.fp) is 0.
-            if (current_vl is not None) and (current_vl.quality_value >= self._minimum_threshold):
+            if (current_vl is not None) and (current_vl.quality_value >= self._ub_minimum_threshold):
                 F.append(current_vl)
             #print("#############################################################")
             #print("Depth: " + str(depth))
@@ -222,7 +246,7 @@ class VLSD(Algorithm):
             #        svl_as_string = svl_as_string + "None, "
             #print(svl_as_string)
             # IMPORTANT: current_vl equal to None means that (current_vl.tp+current_vl.fp) is 0.
-            if (current_vl is not None) and (depth < (len(P)-1)) and (s[depth] < (len(P)-1)):
+            if (current_vl is not None) and (depth < (len(P)-1)) and (s[depth] < (len(P)-1)) and (current_vl.quality_value >= self._ub_minimum_threshold):
                 depth = depth + 1
             else:
                 while (not (s[depth] < (len(P)-1))) and (depth > -1):
@@ -256,34 +280,51 @@ class VLSD(Algorithm):
         TP = sum(pandas_dataframe[target[0]] == target[1])
         FP = len(pandas_dataframe.index) - TP
         # Get the initial list of vertical lists.
-        P = self._generate_initial_list_of_vertical_lists(pandas_dataframe, TP, FP, target)
+        I = self._generate_i_list(pandas_dataframe, target, TP, FP)
+        # Add all vertical lists from I to R.
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        R = R + I # A R SE AÑADEN SUBGRUPOS.
+        
+        
+        
+        
+        
+        
+        
+        # P list.
+        P = []
         # Create 2-dimensional empty matrix M (in this case, it is a python dictionary).
         M = dict()
-        # Double iteration through P.
-        for index_x in range(len(P)):
-            vl_x = P[index_x]
-            for index_y in range(index_x, len(P)): # IMPORTANT: x <= y
-                vl_y = P[index_y]
+        # Double iteration through I.
+        for index_x in range(len(I)):
+            vl_x = I[index_x]
+            for index_y in range(index_x+1, len(I)): # IMPORTANT: x < y
+                vl_y = I[index_y]
                 # Get the last selector of vl_x. In this point, there is only one.
                 ea = vl_x.list_of_selectors[-1]
                 # Get the last selector of vl_y. In this point, there is only one.
                 eb = vl_y.list_of_selectors[-1]
                 # Get the quality value of the union of vl_x and vl_y.
-                # --> IMPORTANT: we only need the quality value and, therefore, it is not necessary to create a new vertical list object.
-                # ----> REMEMBER: in a vertical list, the sequences are bitarrays.
-                vl_xy_sequence_of_instances_tp = vl_x._sequence_of_instances_tp & vl_y._sequence_of_instances_tp
-                vl_xy_sequence_of_instances_fp = vl_x._sequence_of_instances_fp & vl_y._sequence_of_instances_fp
-                tp = vl_xy_sequence_of_instances_tp.count(1)
-                fp = vl_xy_sequence_of_instances_fp.count(1)
-                vl_xy_dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_tp : tp, QualityMeasure.SUBGROUP_PARAMETER_fp : fp, QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
+                vl_xy_dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
                 vl_xy_dict_of_parameters.update(self._additional_parameters_for_the_upper_bound)
+                vl_xy = vl_x.union(vl_y, self._upper_bound, vl_xy_dict_of_parameters, return_None_if_n_is_0 = True)
                 # Check whether n (i.e., tp+fp) is 0 or greater than 0.
-                if (tp + fp) > 0:
+                if (vl_xy is not None) and (vl_xy.quality_value >= self._ub_minimum_threshold):
                     # Add to the dictionary.
                     if ea not in M:
                         M[ea] = dict()
                     # ---> IMPORTANT: M[ea][eb] is equal to M[eb][ea], but only one entry is added (to save memory). This will have to be kept in mind later.
-                    M[ea][eb] = self._upper_bound.compute(vl_xy_dict_of_parameters)
+                    M[ea][eb] = vl_xy.quality_value
+                    # Add the vertical list to the P list.
+                    P.append(vl_xy)
         # Call to the search method.
         F = self._search(P, M, TP, FP)
         # Iterate through the result (list F).
@@ -293,7 +334,7 @@ class VLSD(Algorithm):
             q_dict_of_parameters.update(self._additional_parameters_for_the_quality_measure)
             q_value = self._quality_measure.compute(q_dict_of_parameters)
             # Check whether the value of q is greater or equal than the threshold.
-            if (q_value >= self._minimum_threshold):
+            if (q_value >= self._q_minimum_threshold):
                 # Create the subgroup.
                 s = Subgroup(Pattern(vl.list_of_selectors), Selector(target[0], Operator.EQUAL, target[1]))
                 # Get the upper bound.
