@@ -10,7 +10,6 @@ from pandas import DataFrame
 from subgroups.data_structures.fp_tree_for_sdmap import FPTreeForSDMap
 from subgroups.core.operator import Operator
 from subgroups.core.selector import Selector
-import string
 import random
 from numpy import concatenate, quantile
 from subgroups.exceptions import InconsistentMethodParametersError

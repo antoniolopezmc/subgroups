@@ -121,7 +121,7 @@ class VLSD(Algorithm):
     pruned_nodes = property(_get_pruned_nodes, None, None, "The pruned nodes after executing the VLSD algorithm (before executing the 'fit' method, this attribute is 0).")
     
     # IMPORTANT: although the subgroup parameters TP and FP can be computed from 'pandas_dataframe', we also pass them by parameter in this method to avoid computing them twice (in the 'fit' method and in this method).
-    def _generate_i_list(self, pandas_dataframe, target, TP, FP):
+    def _generate_initial_list(self, pandas_dataframe, target, TP, FP):
         """Private method to generate the initial list of vertical lists, prune it and sort it.
         
         :type pandas_dataframe: pandas.DataFrame
@@ -225,17 +225,21 @@ class VLSD(Algorithm):
                         M_ea_eb = M[eb][ea]
                     except KeyError:
                         M_ea_eb = None
+                #print("#############################################################")
+                #print("Checking " + str(ea) + " and " + str(eb) + " in M.")
+                current_vl = None
                 if (M_ea_eb is not None) and (M_ea_eb >= self._ub_minimum_threshold):
                     oe_dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
                     oe_dict_of_parameters.update(self._additional_parameters_for_the_upper_bound)
-                    current_vl = parent.union(Pi, self._upper_bound, oe_dict_of_parameters, return_None_if_n_is_0 = True)
-                else:
-                    current_vl = None
+                    candidate_vl = parent.union(Pi, self._upper_bound, oe_dict_of_parameters, return_None_if_n_is_0 = True)
+                    # IMPORTANT: candidate_vl equal to None means that (candidate_vl.tp+candidate_vl.fp) is 0.
+                    if (candidate_vl is not None) and (candidate_vl.quality_value >= self._ub_minimum_threshold):
+                        current_vl = candidate_vl
             svl[depth] = current_vl
-            # IMPORTANT: current_vl equal to None means that (current_vl.tp+current_vl.fp) is 0.
-            if (current_vl is not None) and (current_vl.quality_value >= self._ub_minimum_threshold):
+            if (current_vl is not None):
+                #print("Adding " + str(current_vl) + " to F.")
                 F.append(current_vl)
-            #print("#############################################################")
+            # ---
             #print("Depth: " + str(depth))
             #print("s: " + str(s))
             #svl_as_string = ""
@@ -245,8 +249,9 @@ class VLSD(Algorithm):
             #    else:
             #        svl_as_string = svl_as_string + "None, "
             #print(svl_as_string)
+            # ---
             # IMPORTANT: current_vl equal to None means that (current_vl.tp+current_vl.fp) is 0.
-            if (current_vl is not None) and (depth < (len(P)-1)) and (s[depth] < (len(P)-1)) and (current_vl.quality_value >= self._ub_minimum_threshold):
+            if (current_vl is not None) and (depth < (len(P)-1)) and (s[depth] < (len(P)-1)):
                 depth = depth + 1
             else:
                 while (not (s[depth] < (len(P)-1))) and (depth > -1):
@@ -280,43 +285,26 @@ class VLSD(Algorithm):
         TP = sum(pandas_dataframe[target[0]] == target[1])
         FP = len(pandas_dataframe.index) - TP
         # Get the initial list of vertical lists.
-        I = self._generate_i_list(pandas_dataframe, target, TP, FP)
-        # Add all vertical lists from I to R.
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        R = R + I # A R SE AÑADEN SUBGRUPOS.
-        
-        
-        
-        
-        
-        
-        
-        # P list.
-        P = []
+        F = self._generate_initial_list(pandas_dataframe, target, TP, FP)
         # Create 2-dimensional empty matrix M (in this case, it is a python dictionary).
         M = dict()
-        # Double iteration through I.
-        for index_x in range(len(I)):
-            vl_x = I[index_x]
-            for index_y in range(index_x+1, len(I)): # IMPORTANT: x < y
-                vl_y = I[index_y]
-                # Get the last selector of vl_x. In this point, there is only one.
-                ea = vl_x.list_of_selectors[-1]
+        # J list.
+        J = []
+        # Double iteration through F.
+        for index_x in range(len(F)):
+            vl_x = F[index_x]
+            tmp = []
+            # Get the last selector of vl_x. In this point, there is only one.
+            ea = vl_x.list_of_selectors[-1]
+            for index_y in range(index_x+1, len(F)): # IMPORTANT: x < y
+                vl_y = F[index_y]
                 # Get the last selector of vl_y. In this point, there is only one.
                 eb = vl_y.list_of_selectors[-1]
                 # Get the quality value of the union of vl_x and vl_y.
                 vl_xy_dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
                 vl_xy_dict_of_parameters.update(self._additional_parameters_for_the_upper_bound)
                 vl_xy = vl_x.union(vl_y, self._upper_bound, vl_xy_dict_of_parameters, return_None_if_n_is_0 = True)
-                # Check whether n (i.e., tp+fp) is 0 or greater than 0.
+                # Check whether n (i.e., tp+fp) is 0 or greater than 0 (in this case, 'vl_xy' will be None) and whether 'vl_xy' has quality enough.
                 if (vl_xy is not None) and (vl_xy.quality_value >= self._ub_minimum_threshold):
                     # Add to the dictionary.
                     if ea not in M:
@@ -324,9 +312,12 @@ class VLSD(Algorithm):
                     # ---> IMPORTANT: M[ea][eb] is equal to M[eb][ea], but only one entry is added (to save memory). This will have to be kept in mind later.
                     M[ea][eb] = vl_xy.quality_value
                     # Add the vertical list to the P list.
-                    P.append(vl_xy)
-        # Call to the search method.
-        F = self._search(P, M, TP, FP)
+                    tmp.append(vl_xy)
+            if tmp: # If tmp is not empty.
+                J.append(tmp)
+        # Iterate through J (list of lists of Vertical Lists) and call to the search method.
+        for P in J:
+            F = F + self._search(P, M, TP, FP)
         # Iterate through the result (list F).
         for vl in F:
             # Compute the quality meaasure q ('quality_measure' attribute).

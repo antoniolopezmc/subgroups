@@ -7,7 +7,6 @@
 """
 
 from pandas import DataFrame, Series
-from subgroups.core.selector import Selector
 
 def filter_by_list_of_selectors(pandas_dataframe, list_of_selectors):
     """Method to filter a pandas DataFrame, retrieving only the rows covered by all selectors included in the parameter 'list_of_selectors'.

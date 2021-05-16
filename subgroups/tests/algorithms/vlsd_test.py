@@ -11,9 +11,7 @@ from subgroups.algorithms.vlsd import VLSD
 from subgroups.quality_measures.wracc import WRAcc
 from subgroups.quality_measures.wracc_upper_bound_1 import WRAccUpperBound1
 from subgroups.quality_measures.qg import Qg
-from subgroups.exceptions import InconsistentMethodParametersError, DatasetAttributeTypeError, ParameterNotFoundError, SubgroupParameterNotFoundError
-from subgroups.data_structures.vertical_list import VerticalList
-from subgroups.core.pattern import Pattern
+from subgroups.exceptions import DatasetAttributeTypeError
 from subgroups.core.subgroup import Subgroup
 
 def test_VLSD_init_method_1():
@@ -82,7 +80,6 @@ def test_VLSD_fit_method_2():
     subgroups = vlsd.fit(df, target)
     final_tuples = []
     for elem in subgroups:
-        print(elem)
         final_tuples.append( (elem[0],round(elem[1], 3)) )
     assert (len(subgroups) == 25)
     assert ( (Subgroup.generate_from_str("Description: [a1 = a], Target: class = 'y'"), -0.125) in final_tuples )

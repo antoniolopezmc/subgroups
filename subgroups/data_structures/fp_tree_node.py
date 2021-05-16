@@ -7,7 +7,6 @@
 """
 
 from subgroups.core.selector import Selector
-from pandas import DataFrame
 
 class FPTreeNode(object):
     """This class represents a generic FPTree Node.

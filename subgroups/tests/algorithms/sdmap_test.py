@@ -10,7 +10,7 @@ from pandas import DataFrame
 from subgroups.algorithms.sdmap import SDMap
 from subgroups.quality_measures.wracc import WRAcc
 from subgroups.quality_measures.qg import Qg
-from subgroups.exceptions import InconsistentMethodParametersError, DatasetAttributeTypeError, ParameterNotFoundError, SubgroupParameterNotFoundError
+from subgroups.exceptions import InconsistentMethodParametersError, DatasetAttributeTypeError, ParameterNotFoundError
 from subgroups.data_structures.fp_tree_for_sdmap import FPTreeForSDMap
 from subgroups.core.pattern import Pattern
 from subgroups.core.subgroup import Subgroup
