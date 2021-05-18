@@ -17,3 +17,7 @@ class Algorithm(ABC):
     @abstractmethod
     def fit(self, pandas_dataframe, target):
         pass
+    
+    @abstractmethod
+    def _write_single_result_in_file(self, single_result, file):
+        pass

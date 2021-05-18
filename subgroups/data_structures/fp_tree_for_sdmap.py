@@ -108,11 +108,11 @@ class FPTreeForSDMap(object):
         :param pandas_dataframe: the DataFrame which is scanned. IMPORTANT: missing values are not supported yet.
         :type target: tuple[str, int] or tuple[str, float] or tuple[str, str]
         :param target: a tuple with 2 elements: the target attribute name and the target value.
-        :type minimum_tp: int
+        :type minimum_tp: int or NoneType
         :param minimum_tp: the minimum true positives (tp) threshold.
-        :type minimum_fp: int
+        :type minimum_fp: int or NoneType
         :param minimum_fp: the minimum false positives (fp) threshold.
-        :type minimum_n: int
+        :type minimum_n: int or NoneType
         :param minimum_n: the minimum subgroup description size (n) threshold.
         :rtype: dict[str, tuple[Selector, list[int, int], int]]
         :return: a dictionary where the keys are strings (the concatenation of the selector attribute name and the selector value) and the values are tuples with 3 values: (1) the selector, (2) a list with 2 elements: the true positives tp of it and the false positives fp of it, and (3) a number indicating the insertion order in this dictionary (starting from 0).
@@ -297,11 +297,11 @@ class FPTreeForSDMap(object):
         
         :type list_of_selectors: list[Selector]
         :param list_of_selectors: the list of selectors which is used. IMPORTANT: we assume that the list of selectors only contains selectors.
-        :type minimum_tp: int
+        :type minimum_tp: int or NoneType
         :param minimum_tp: the minimum true positives (tp) threshold.
-        :type minimum_fp: int
+        :type minimum_fp: int or NoneType
         :param minimum_fp: the minimum false positives (fp) threshold.
-        :type minimum_n: int
+        :type minimum_n: int or NoneType
         :param minimum_n: the minimum subgroup description size (n) threshold.
         :rtype: FPTreeForSDMap
         :return: the generated conditional FPTree.
