@@ -3,34 +3,33 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-"""This file contains the implementation of an Upper Bound of the Piatetsky-Shapiro quality measure.
+"""This file contains the implementation of the Precision Gain quality measure.
 """
 
 from subgroups.quality_measures._base import QualityMeasure
 from subgroups.exceptions import SubgroupParameterNotFoundError
-from subgroups.quality_measures.piatetsky_shapiro import PiatetskyShapiro
 
-class PiatetskyShapiroUpperBound1(QualityMeasure): # SOURCE: https://link.springer.com/chapter/10.1007%2F978-3-540-87479-9_47
-    """This class defines an Upper Bound of the Piatetsky-Shapiro quality measure.
+class PrecisionGain(QualityMeasure):
+    """This class defines the Precision Gain quality measure.
     """
     
     _singleton = None
     __slots__ = ()
-
+    
     def __new__(cls):
-        if PiatetskyShapiroUpperBound1._singleton is None:
-            PiatetskyShapiroUpperBound1._singleton = super().__new__(cls)
-            return PiatetskyShapiroUpperBound1._singleton
+        if PrecisionGain._singleton is None:
+            PrecisionGain._singleton = super().__new__(cls)
+            return PrecisionGain._singleton
         else:
-            return PiatetskyShapiroUpperBound1._singleton
+            return PrecisionGain._singleton
     
     def compute(self, dict_of_parameters):
-        """Method to compute the PiatetskyShapiroUpperBound1 quality measure (you can also call to the instance for this purpose).
+        """Method to compute the PrecisionGain quality measure (you can also call to the instance for this purpose).
         
         :type dict_of_parameters: dict[str, int or float]
         :param dict_of_parameters: python dictionary which contains all the necessary parameters used to compute this quality measure.
         :rtype: float
-        :return: the computed value for the PiatetskyShapiroUpperBound1 quality measure.
+        :return: the computed value for the PrecisionGain quality measure.
         """
         if type(dict_of_parameters) is not dict:
             raise TypeError("The type of the parameter 'dict_of_parameters' must be 'dict'.")
@@ -46,28 +45,28 @@ class PiatetskyShapiroUpperBound1(QualityMeasure): # SOURCE: https://link.spring
         fp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp]
         TP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_TP]
         FP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_FP]
-        return (tp+fp) * ( 1 - ( TP / (TP+FP) ) ) # (tp+fp) * ( 1 - ( TP / (TP+FP) ) )
+        return ( tp / ( tp + fp ) ) - ( TP / ( TP + FP ) ) # ( tp / ( tp + fp ) ) - ( TP / ( TP + FP ) )
     
     def get_name(self):
         """Method to get the quality measure name (equal to the class name).
         """
-        return "PiatetskyShapiroUpperBound1"
+        return "PrecisionGain"
     
-    def upper_bound_of(self):
-        """Method to get a python dictionary with quality measures of which this one is Upper Bound.
+    def optimistic_estimate_of(self):
+        """Method to get a python dictionary with the quality measures of which this one is an optimistic estimate.
         
         :rtype: dict[str, QualityMeasure]
         :return: a python dictionary where the keys are the quality measure names and the values are the instances of those quality measures.
         """
-        return dict({PiatetskyShapiro().get_name() : PiatetskyShapiro()})
+        return dict()
     
     def __call__(self, dict_of_parameters):
-        """Compute the PiatetskyShapiroUpperBound1 quality measure.
+        """Compute the PrecisionGain quality measure.
         
         :type dict_of_parameters: dict[str, int or float]
         :param dict_of_parameters: python dictionary which contains all the needed parameters with which to compute this quality measure.
         :rtype: float
-        :return: the computed value for the PiatetskyShapiroUpperBound1 quality measure.
+        :return: the computed value for the PrecisionGain quality measure.
         """
         if type(dict_of_parameters) is not dict:
             raise TypeError("The type of the parameter 'dict_of_parameters' must be 'dict'.")

@@ -14,11 +14,12 @@ from subgroups.quality_measures.binomial_test import BinomialTest
 from subgroups.quality_measures.qg import Qg
 from subgroups.quality_measures.sensitivity import Sensitivity
 from subgroups.quality_measures.ppv import PPV
-from subgroups.quality_measures.wracc_upper_bound_1 import WRAccUpperBound1
-from subgroups.quality_measures.binomial_test_upper_bound_1 import BinomialTestUpperBound1
+from subgroups.quality_measures.wracc_optimistic_estimate_1 import WRAccOptimisticEstimate1
+from subgroups.quality_measures.binomial_test_optimistic_estimate_1 import BinomialTestOptimisticEstimate1
 from subgroups.quality_measures.piatetsky_shapiro import PiatetskyShapiro
-from subgroups.quality_measures.piatetsky_shapiro_upper_bound_1 import PiatetskyShapiroUpperBound1
-from subgroups.quality_measures.piatetsky_shapiro_upper_bound_2 import PiatetskyShapiroUpperBound2
+from subgroups.quality_measures.piatetsky_shapiro_optimistic_estimate_1 import PiatetskyShapiroOptimisticEstimate1
+from subgroups.quality_measures.piatetsky_shapiro_optimistic_estimate_2 import PiatetskyShapiroOptimisticEstimate2
+from subgroups.quality_measures.precision_gain import PrecisionGain
 from math import sqrt
 
 def test_quality_measures():
@@ -29,11 +30,13 @@ def test_quality_measures():
     qg = Qg()
     sensitivity = Sensitivity()
     ppv = PPV()
-    wracc_upper_bound_1 = WRAccUpperBound1()
-    binomial_test_upper_bound_1 = BinomialTestUpperBound1()
+    wracc_optimistic_estimate_1 = WRAccOptimisticEstimate1()
+    binomial_test_optimistic_estimate_1 = BinomialTestOptimisticEstimate1()
     piatetsky_shapiro = PiatetskyShapiro()
-    piatetsky_shapiro_upper_bound_1 = PiatetskyShapiroUpperBound1()
-    piatetsky_shapiro_upper_bound_2 = PiatetskyShapiroUpperBound2()
+    piatetsky_shapiro_optimistic_estimate_1 = PiatetskyShapiroOptimisticEstimate1()
+    piatetsky_shapiro_optimistic_estimate_2 = PiatetskyShapiroOptimisticEstimate2()
+    precision_gain = PrecisionGain()
+    # --------------------------------------------------
     assert (id(support) == id(Support()))
     assert (id(coverage) == id(Coverage()))
     assert (id(wracc) == id(WRAcc()))
@@ -41,11 +44,13 @@ def test_quality_measures():
     assert (id(qg) == id(Qg()))
     assert (id(sensitivity) == id(Sensitivity()))
     assert (id(ppv) == id(PPV()))
-    assert (id(wracc_upper_bound_1) == id(WRAccUpperBound1()))
-    assert (id(binomial_test_upper_bound_1) == id(BinomialTestUpperBound1()))
+    assert (id(wracc_optimistic_estimate_1) == id(WRAccOptimisticEstimate1()))
+    assert (id(binomial_test_optimistic_estimate_1) == id(BinomialTestOptimisticEstimate1()))
     assert (id(piatetsky_shapiro) == id(PiatetskyShapiro()))
-    assert (id(piatetsky_shapiro_upper_bound_1) == id(PiatetskyShapiroUpperBound1()))
-    assert (id(piatetsky_shapiro_upper_bound_2) == id(PiatetskyShapiroUpperBound2()))
+    assert (id(piatetsky_shapiro_optimistic_estimate_1) == id(PiatetskyShapiroOptimisticEstimate1()))
+    assert (id(piatetsky_shapiro_optimistic_estimate_2) == id(PiatetskyShapiroOptimisticEstimate2()))
+    assert (id(precision_gain) == id(PrecisionGain()))
+    # --------------------------------------------------
     assert (support.get_name() == "Support")
     assert (coverage.get_name() == "Coverage")
     assert (wracc.get_name() == "WRAcc")
@@ -53,23 +58,26 @@ def test_quality_measures():
     assert (qg.get_name() == "Qg")
     assert (sensitivity.get_name() == "Sensitivity")
     assert (ppv.get_name() == "PPV")
-    assert (wracc_upper_bound_1.get_name() == "WRAccUpperBound1")
-    assert (binomial_test_upper_bound_1.get_name() == "BinomialTestUpperBound1")
+    assert (wracc_optimistic_estimate_1.get_name() == "WRAccOptimisticEstimate1")
+    assert (binomial_test_optimistic_estimate_1.get_name() == "BinomialTestOptimisticEstimate1")
     assert (piatetsky_shapiro.get_name() == "PiatetskyShapiro")
-    assert (piatetsky_shapiro_upper_bound_1.get_name() == "PiatetskyShapiroUpperBound1")
-    assert (piatetsky_shapiro_upper_bound_2.get_name() == "PiatetskyShapiroUpperBound2")
-    assert (len(support.upper_bound_of()) == 0)
-    assert (len(coverage.upper_bound_of()) == 0)
-    assert (len(wracc.upper_bound_of()) == 0)
-    assert (len(binomial_test.upper_bound_of()) == 0)
-    assert (len(qg.upper_bound_of()) == 0)
-    assert (len(sensitivity.upper_bound_of()) == 0)
-    assert (len(ppv.upper_bound_of()) == 0)
-    assert (len(wracc_upper_bound_1.upper_bound_of()) == 1)
-    assert (len(binomial_test_upper_bound_1.upper_bound_of()) == 1)
-    assert (len(piatetsky_shapiro.upper_bound_of()) == 0)
-    assert (len(piatetsky_shapiro_upper_bound_1.upper_bound_of()) == 1)
-    assert (len(piatetsky_shapiro_upper_bound_2.upper_bound_of()) == 1)
+    assert (piatetsky_shapiro_optimistic_estimate_1.get_name() == "PiatetskyShapiroOptimisticEstimate1")
+    assert (piatetsky_shapiro_optimistic_estimate_2.get_name() == "PiatetskyShapiroOptimisticEstimate2")
+    assert (precision_gain.get_name() == "PrecisionGain")
+    # --------------------------------------------------
+    assert (len(support.optimistic_estimate_of()) == 0)
+    assert (len(coverage.optimistic_estimate_of()) == 0)
+    assert (len(wracc.optimistic_estimate_of()) == 0)
+    assert (len(binomial_test.optimistic_estimate_of()) == 0)
+    assert (len(qg.optimistic_estimate_of()) == 0)
+    assert (len(sensitivity.optimistic_estimate_of()) == 0)
+    assert (len(ppv.optimistic_estimate_of()) == 0)
+    assert (len(wracc_optimistic_estimate_1.optimistic_estimate_of()) == 1)
+    assert (len(binomial_test_optimistic_estimate_1.optimistic_estimate_of()) == 1)
+    assert (len(piatetsky_shapiro.optimistic_estimate_of()) == 0)
+    assert (len(piatetsky_shapiro_optimistic_estimate_1.optimistic_estimate_of()) == 1)
+    assert (len(piatetsky_shapiro_optimistic_estimate_2.optimistic_estimate_of()) == 1)
+    assert (len(precision_gain.optimistic_estimate_of()) == 0)
 
 def test_quality_measures_compute():
     tp = 3
@@ -82,6 +90,7 @@ def test_quality_measures_compute():
     p = tp / n # p = tp / ( tp + fp )
     p0 = TP / N # p0 = TP / ( TP + FP )
     dict_of_parameters = dict({QualityMeasure.SUBGROUP_PARAMETER_tp : tp, QualityMeasure.SUBGROUP_PARAMETER_fp : fp, QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP, "g" : g})
+    # --------------------------------------------------
     assert (Support()(dict_of_parameters) == (tp / ( TP + FP )))
     assert (Coverage()(dict_of_parameters) == (( tp + fp ) / ( TP + FP )))
     assert (WRAcc()(dict_of_parameters) == (( (tp+fp) / (TP+FP) ) * ( ( tp / (tp+fp) ) - ( TP / (TP+FP) ) )))
@@ -89,11 +98,13 @@ def test_quality_measures_compute():
     assert (Qg()(dict_of_parameters) == (tp / ( fp + g )))
     assert (Sensitivity()(dict_of_parameters) == (tp / TP))
     assert (PPV()(dict_of_parameters) == (tp / ( tp + fp )))
-    assert (WRAccUpperBound1()(dict_of_parameters) == ( (tp*tp)/(tp+fp) ) * ( 1 - ( TP/(TP+FP) ) ))
-    assert (BinomialTestUpperBound1()(dict_of_parameters) == (( sqrt(tp) ) * ( 1 - ( (TP)/(TP+FP) ) )))
+    assert (WRAccOptimisticEstimate1()(dict_of_parameters) == ( (tp*tp)/(tp+fp) ) * ( 1 - ( TP/(TP+FP) ) ))
+    assert (BinomialTestOptimisticEstimate1()(dict_of_parameters) == (( sqrt(tp) ) * ( 1 - ( (TP)/(TP+FP) ) )))
     assert (PiatetskyShapiro()(dict_of_parameters) == n*(p-p0))
-    assert (PiatetskyShapiroUpperBound1()(dict_of_parameters) == n*(1-p0))
-    assert (PiatetskyShapiroUpperBound2()(dict_of_parameters) == n*p*(1-p0))
+    assert (PiatetskyShapiroOptimisticEstimate1()(dict_of_parameters) == n*(1-p0))
+    assert (PiatetskyShapiroOptimisticEstimate2()(dict_of_parameters) == n*p*(1-p0))
+    assert (PrecisionGain()(dict_of_parameters) == ( tp / ( tp + fp ) ) - ( TP / ( TP + FP ) ))
+    # --------------------------------------------------
     assert (Support()(dict_of_parameters) == Support().compute(dict_of_parameters))
     assert (Coverage()(dict_of_parameters) == Coverage().compute(dict_of_parameters))
     assert (WRAcc()(dict_of_parameters) == WRAcc().compute(dict_of_parameters))
@@ -101,11 +112,13 @@ def test_quality_measures_compute():
     assert (Qg()(dict_of_parameters) == Qg().compute(dict_of_parameters))
     assert (Sensitivity()(dict_of_parameters) == Sensitivity().compute(dict_of_parameters))
     assert (PPV()(dict_of_parameters) == PPV().compute(dict_of_parameters))
-    assert (WRAccUpperBound1()(dict_of_parameters) == WRAccUpperBound1().compute(dict_of_parameters))
-    assert (BinomialTestUpperBound1()(dict_of_parameters) == BinomialTestUpperBound1().compute(dict_of_parameters))
+    assert (WRAccOptimisticEstimate1()(dict_of_parameters) == WRAccOptimisticEstimate1().compute(dict_of_parameters))
+    assert (BinomialTestOptimisticEstimate1()(dict_of_parameters) == BinomialTestOptimisticEstimate1().compute(dict_of_parameters))
     assert (PiatetskyShapiro()(dict_of_parameters) == PiatetskyShapiro().compute(dict_of_parameters))
-    assert (PiatetskyShapiroUpperBound1()(dict_of_parameters) == PiatetskyShapiroUpperBound1().compute(dict_of_parameters))
-    assert (PiatetskyShapiroUpperBound2()(dict_of_parameters) == PiatetskyShapiroUpperBound2().compute(dict_of_parameters))
+    assert (PiatetskyShapiroOptimisticEstimate1()(dict_of_parameters) == PiatetskyShapiroOptimisticEstimate1().compute(dict_of_parameters))
+    assert (PiatetskyShapiroOptimisticEstimate2()(dict_of_parameters) == PiatetskyShapiroOptimisticEstimate2().compute(dict_of_parameters))
+    assert (PrecisionGain()(dict_of_parameters) == PrecisionGain().compute(dict_of_parameters))
+    # --------------------------------------------------
     try:
         Support()(3)
         assert (False)
@@ -177,22 +190,22 @@ def test_quality_measures_compute():
     except TypeError:
         assert (True)
     try:
-        WRAccUpperBound1()(3)
+        WRAccOptimisticEstimate1()(3)
         assert (False)
     except TypeError:
         assert (True)
     try:
-        WRAccUpperBound1().compute(3)
+        WRAccOptimisticEstimate1().compute(3)
         assert (False)
     except TypeError:
         assert (True)
     try:
-        BinomialTestUpperBound1()(3)
+        BinomialTestOptimisticEstimate1()(3)
         assert (False)
     except TypeError:
         assert (True)
     try:
-        BinomialTestUpperBound1().compute(3)
+        BinomialTestOptimisticEstimate1().compute(3)
         assert (False)
     except TypeError:
         assert (True)
@@ -207,22 +220,32 @@ def test_quality_measures_compute():
     except TypeError:
         assert (True)
     try:
-        PiatetskyShapiroUpperBound1()(3)
+        PiatetskyShapiroOptimisticEstimate1()(3)
         assert (False)
     except TypeError:
         assert (True)
     try:
-        PiatetskyShapiroUpperBound1().compute(3)
+        PiatetskyShapiroOptimisticEstimate1().compute(3)
         assert (False)
     except TypeError:
         assert (True)
     try:
-        PiatetskyShapiroUpperBound2()(3)
+        PiatetskyShapiroOptimisticEstimate2()(3)
         assert (False)
     except TypeError:
         assert (True)
     try:
-        PiatetskyShapiroUpperBound2().compute(3)
+        PiatetskyShapiroOptimisticEstimate2().compute(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        PrecisionGain()(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        PrecisionGain().compute(3)
         assert (False)
     except TypeError:
         assert (True)

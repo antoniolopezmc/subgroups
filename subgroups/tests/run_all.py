@@ -15,8 +15,8 @@ from subgroups.tests.utils.dataframe_filters_test import *
 from subgroups.tests.data_structures.fp_tree_node_test import *
 from subgroups.tests.data_structures.fp_tree_for_sdmap_test import *
 from subgroups.tests.algorithms.sdmap_test import *
-from subgroups.tests.data_structures.vertical_list_test import *
-from subgroups.tests.algorithms.vlsd_test import *
+#from subgroups.tests.data_structures.vertical_list_test import *
+#from subgroups.tests.algorithms.vlsd_test import *
 
 if __name__ == "__main__":
     # core/operator_test file.

@@ -25,7 +25,7 @@ class QualityMeasure(ABC):
     SUBGROUP_PARAMETER_FP = "FP"
     
     ### IMPORTANT ###
-    ## There are other elements/parameters which are also used in the Subgroup Discovery technique. We define the following equivalences:
+    ## There are other elements/parameters which are also used in the Subgroup Discovery literature. We define the following equivalences:
     #
     # n = tp + fp
     # N = TP + FP
@@ -49,7 +49,7 @@ class QualityMeasure(ABC):
         pass
     
     @abstractmethod
-    def upper_bound_of(self):
+    def optimistic_estimate_of(self):
         pass
     
     @abstractmethod

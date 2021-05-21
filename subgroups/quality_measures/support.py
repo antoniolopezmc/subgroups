@@ -49,8 +49,8 @@ class Support(QualityMeasure):
         """
         return "Support"
     
-    def upper_bound_of(self):
-        """Method to get a python dictionary with quality measures of which this one is Upper Bound.
+    def optimistic_estimate_of(self):
+        """Method to get a python dictionary with the quality measures of which this one is an optimistic estimate.
         
         :rtype: dict[str, QualityMeasure]
         :return: a python dictionary where the keys are the quality measure names and the values are the instances of those quality measures.
