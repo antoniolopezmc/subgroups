@@ -55,38 +55,38 @@ def test_vertical_list_1():
     assert (vl_2.compute_quality_value(Support(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}) == 1/3) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
     assert (vl_3.compute_quality_value(Support(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}) == 0) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
     assert (vl_4.compute_quality_value(Support(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}) == 0) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
-    union_1 = vl_3.union(vl_4, Support(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}, return_None_if_n_is_0 = False) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
-    assert (union_1.list_of_selectors == [Selector("at2", Operator.EQUAL, "z"), Selector("at3", Operator.EQUAL, "c")])
-    assert ( union_1.sequence_of_instances_tp == bitarray("000", endian="big") )
-    assert ( union_1.sequence_of_instances_fp == bitarray("001", endian="big") )
-    assert (union_1.tp == 0)
-    assert (union_1.fp == 1)
-    assert (union_1.n == 1)
-    assert (union_1.quality_value == 0)
-    union_2 = vl_1.union(union_1, Support(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}, return_None_if_n_is_0 = False) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
-    assert (union_2.list_of_selectors == [Selector("at1", Operator.EQUAL, "a"), Selector("at3", Operator.EQUAL, "c")])
-    assert ( union_2.sequence_of_instances_tp == bitarray("000", endian="big") )
-    assert ( union_2.sequence_of_instances_fp == bitarray("000", endian="big") )
-    assert (union_2.tp == 0)
-    assert (union_2.fp == 0)
-    assert (union_2.n == 0)
-    assert (union_2.quality_value == 0)
-    union_3 = union_1.union(union_2, Support(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}, return_None_if_n_is_0 = False) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
-    assert (union_3.list_of_selectors == [Selector("at2", Operator.EQUAL, "z"), Selector("at3", Operator.EQUAL, "c"), Selector("at3", Operator.EQUAL, "c")])
-    assert ( union_3.sequence_of_instances_tp == bitarray("000", endian="big") )
-    assert ( union_3.sequence_of_instances_fp == bitarray("000", endian="big") )
-    assert (union_3.tp == 0)
-    assert (union_3.fp == 0)
-    assert (union_3.n == 0)
-    assert (union_3.quality_value == 0)
-    union_4 = vl_3.union(vl_4, Coverage(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}, return_None_if_n_is_0 = False) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
-    assert (union_4.list_of_selectors == [Selector("at2", Operator.EQUAL, "z"), Selector("at3", Operator.EQUAL, "c")])
-    assert ( union_4.sequence_of_instances_tp == bitarray("000", endian="big") )
-    assert ( union_4.sequence_of_instances_fp == bitarray("001", endian="big") )
-    assert (union_4.tp == 0)
-    assert (union_4.fp == 1)
-    assert (union_4.n == 1)
-    assert (union_4.quality_value == (1/3))
+    join_1 = vl_3.join(vl_4, Support(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}, return_None_if_n_is_0 = False) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
+    assert (join_1.list_of_selectors == [Selector("at2", Operator.EQUAL, "z"), Selector("at3", Operator.EQUAL, "c")])
+    assert ( join_1.sequence_of_instances_tp == bitarray("000", endian="big") )
+    assert ( join_1.sequence_of_instances_fp == bitarray("001", endian="big") )
+    assert (join_1.tp == 0)
+    assert (join_1.fp == 1)
+    assert (join_1.n == 1)
+    assert (join_1.quality_value == 0)
+    join_2 = vl_1.join(join_1, Support(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}, return_None_if_n_is_0 = False) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
+    assert (join_2.list_of_selectors == [Selector("at1", Operator.EQUAL, "a"), Selector("at3", Operator.EQUAL, "c")])
+    assert ( join_2.sequence_of_instances_tp == bitarray("000", endian="big") )
+    assert ( join_2.sequence_of_instances_fp == bitarray("000", endian="big") )
+    assert (join_2.tp == 0)
+    assert (join_2.fp == 0)
+    assert (join_2.n == 0)
+    assert (join_2.quality_value == 0)
+    join_3 = join_1.join(join_2, Support(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}, return_None_if_n_is_0 = False) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
+    assert (join_3.list_of_selectors == [Selector("at2", Operator.EQUAL, "z"), Selector("at3", Operator.EQUAL, "c"), Selector("at3", Operator.EQUAL, "c")])
+    assert ( join_3.sequence_of_instances_tp == bitarray("000", endian="big") )
+    assert ( join_3.sequence_of_instances_fp == bitarray("000", endian="big") )
+    assert (join_3.tp == 0)
+    assert (join_3.fp == 0)
+    assert (join_3.n == 0)
+    assert (join_3.quality_value == 0)
+    join_4 = vl_3.join(vl_4, Coverage(), {"tp" : 1000, "fp" : 1000, "TP" : TP, "FP" : FP}, return_None_if_n_is_0 = False) # The parameters "tp" and "fp" of the dictionary of parameters should not be considered in the method.
+    assert (join_4.list_of_selectors == [Selector("at2", Operator.EQUAL, "z"), Selector("at3", Operator.EQUAL, "c")])
+    assert ( join_4.sequence_of_instances_tp == bitarray("000", endian="big") )
+    assert ( join_4.sequence_of_instances_fp == bitarray("001", endian="big") )
+    assert (join_4.tp == 0)
+    assert (join_4.fp == 1)
+    assert (join_4.n == 1)
+    assert (join_4.quality_value == (1/3))
 
 def test_vertical_list_2():
     TP = 24
@@ -97,18 +97,18 @@ def test_vertical_list_2():
     vl_4 = VerticalList([Selector("at3", Operator.EQUAL, "c")], [], [1,2], 50, -45)
     vl_5 = VerticalList([Selector("at4", Operator.EQUAL, "c")], [0,1], [2,3], 50, -45)
     vl_6 = VerticalList([Selector("at5", Operator.EQUAL, "c")], [10,11], [12,33], 50, -45)
-    assert (vl_1.union(vl_2, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True) is not None)
-    assert (vl_1.union(vl_3, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True) is None)
-    assert (vl_2.union(vl_4, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True) is not None)
-    assert (vl_3.union(vl_4, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True) is not None)
-    assert (vl_5.union(vl_6, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True) is None)
+    assert (vl_1.join(vl_2, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True) is not None)
+    assert (vl_1.join(vl_3, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True) is None)
+    assert (vl_2.join(vl_4, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True) is not None)
+    assert (vl_3.join(vl_4, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True) is not None)
+    assert (vl_5.join(vl_6, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True) is None)
 
 def test_vertical_list_3():
     vl_1 = VerticalList([Selector("at1", Operator.EQUAL, "a")], [0], [], 3, -45) # dataset_size = 3
     vl_2 = VerticalList([Selector("at2", Operator.EQUAL, "b")], [0], [1], 5, -45) # dataset_size = 5
     try:
         # The sequence of instances of the vertical lists do not have the same sizes.
-        union_1 = vl_1.union(vl_2, Coverage(), {"TP" : 5, "FP" : 5})
+        join_1 = vl_1.join(vl_2, Coverage(), {"TP" : 5, "FP" : 5})
         assert(False)
     except ValueError:
         assert(True)

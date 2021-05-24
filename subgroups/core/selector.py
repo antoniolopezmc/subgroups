@@ -22,7 +22,7 @@ class Selector(object):
     """
     
     __slots__ = "_attribute_name", "_operator", "_value", "__weakref__"
-
+    
     # We implement a selector pool using Weak References.
     _dict_of_selectors = weakref.WeakValueDictionary()
     
