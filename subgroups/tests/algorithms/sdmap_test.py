@@ -3,7 +3,7 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-""" Tests of the functionality contained in the file 'algorithms/sdmap.py'.
+"""Tests of the functionality contained in the file 'algorithms/sdmap.py'.
 """
 
 from pandas import DataFrame
@@ -175,32 +175,32 @@ def test_SDMap_fit_method_2():
     file_to_read = open("./results.txt", "r")
     for line in file_to_read:
         list_of_written_results.append(line)
-    list_with_only_subgroup_and_quality_measure = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]
-    assert ( Subgroup.generate_from_str("Description: [a1 = a], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = a, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = a, a3 = f], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = a, a3 = f, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = b], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = b, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = c], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = c, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a2 = s], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a2 = s, a1 = c], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a2 = s, a3 = h], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a2 = s, a3 = h, a1 = c], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = f], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = f, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = g], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = g, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = h], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = h, a1 = c], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
+    list_of_subgroups = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]
+    assert ( Subgroup.generate_from_str("Description: [a1 = a], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = a, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = a, a3 = f], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = a, a3 = f, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = b], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = b, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = c], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = c, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a2 = s], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a2 = s, a1 = c], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a2 = s, a3 = h], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a2 = s, a3 = h, a1 = c], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = f], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = f, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = g], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = g, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = h], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = h, a1 = c], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k, a2 = q], Target: class = 'y'") in list_of_subgroups )
     file_to_read.close()
     os.remove("./results.txt")
 
@@ -215,9 +215,9 @@ def test_SDMap_fit_method_3():
     file_to_read = open("./results.txt", "r")
     for line in file_to_read:
         list_of_written_results.append(line)
-    list_with_only_subgroup_and_quality_measure = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]
-    assert ( Subgroup.generate_from_str("Description: [a1 = c], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
+    list_of_subgroups = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]
+    assert ( Subgroup.generate_from_str("Description: [a1 = c], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a2 = q], Target: class = 'y'") in list_of_subgroups )
     file_to_read.close()
     os.remove("./results.txt")
 
@@ -232,9 +232,9 @@ def test_SDMap_fit_method_4():
     file_to_read = open("./results.txt", "r")
     for line in file_to_read:
         list_of_written_results.append(line)
-    list_with_only_subgroup_and_quality_measure = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]
-    assert ( Subgroup.generate_from_str("Description: [a1 = c], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
+    list_of_subgroups = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]
+    assert ( Subgroup.generate_from_str("Description: [a1 = c], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a2 = q], Target: class = 'y'") in list_of_subgroups )
     file_to_read.close()
     os.remove("./results.txt")
 
@@ -249,20 +249,20 @@ def test_SDMap_fit_method_5():
     file_to_read = open("./results.txt", "r")
     for line in file_to_read:
         list_of_written_results.append(line)
-    list_with_only_subgroup_and_quality_measure = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]
-    assert ( Subgroup.generate_from_str("Description: [a1 = b], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = b, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = c], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = c, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = g], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = g, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
+    list_of_subgroups = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]
+    assert ( Subgroup.generate_from_str("Description: [a1 = b], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = b, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = c], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = c, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = g], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = g, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k, a2 = q], Target: class = 'y'") in list_of_subgroups )
     file_to_read.close()
     os.remove("./results.txt")
 
@@ -277,20 +277,20 @@ def test_SDMap_fit_method_6():
     file_to_read = open("./results.txt", "r")
     for line in file_to_read:
         list_of_written_results.append(line)
-    list_with_only_subgroup_and_quality_measure = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]
-    assert ( Subgroup.generate_from_str("Description: [a1 = b], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = b, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = c], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = c, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = g], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = g, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
+    list_of_subgroups = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]
+    assert ( Subgroup.generate_from_str("Description: [a1 = b], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = b, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = c], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = c, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = g], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = g, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k, a2 = q], Target: class = 'y'") in list_of_subgroups )
     file_to_read.close()
     os.remove("./results.txt")
 
@@ -305,19 +305,19 @@ def test_SDMap_fit_method_7():
     file_to_read = open("./results.txt", "r")
     for line in file_to_read:
         list_of_written_results.append(line)
-    list_with_only_subgroup_and_quality_measure = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]
-    assert ( Subgroup.generate_from_str("Description: [a1 = b], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = b, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = c, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = g], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = g, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
+    list_of_subgroups = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]
+    assert ( Subgroup.generate_from_str("Description: [a1 = b], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = b, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = c, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = g], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = g, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k, a2 = q], Target: class = 'y'") in list_of_subgroups )
     file_to_read.close()
     os.remove("./results.txt")
 
@@ -332,19 +332,19 @@ def test_SDMap_fit_method_8():
     file_to_read = open("./results.txt", "r")
     for line in file_to_read:
         list_of_written_results.append(line)
-    list_with_only_subgroup_and_quality_measure = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]
-    assert ( Subgroup.generate_from_str("Description: [a1 = b], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = b, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a1 = c, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = g], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = g, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a3 = k, a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
+    list_of_subgroups = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]
+    assert ( Subgroup.generate_from_str("Description: [a1 = b], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = b, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = b, a3 = g, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a1 = c, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = g], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = g, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k, a1 = c, a2 = q], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a3 = k, a2 = q], Target: class = 'y'") in list_of_subgroups )
     file_to_read.close()
     os.remove("./results.txt")
 
@@ -360,9 +360,9 @@ def test_SDMap_fit_method_9():
     file_to_read = open("./results.txt", "r")
     for line in file_to_read:
         list_of_written_results.append(line)
-    list_with_only_subgroup_and_quality_measure = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]
-    assert ( Subgroup.generate_from_str("Description: [a1 = c], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
-    assert ( Subgroup.generate_from_str("Description: [a2 = q], Target: class = 'y'") in list_with_only_subgroup_and_quality_measure )
+    list_of_subgroups = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]
+    assert ( Subgroup.generate_from_str("Description: [a1 = c], Target: class = 'y'") in list_of_subgroups )
+    assert ( Subgroup.generate_from_str("Description: [a2 = q], Target: class = 'y'") in list_of_subgroups )
     file_to_read.close()
     os.remove("./results.txt")
 

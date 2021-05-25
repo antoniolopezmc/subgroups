@@ -3,7 +3,7 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-""" Tests of the functionality contained in the file 'data_structures/vertical_list.py'.
+"""Tests of the functionality contained in the file 'data_structures/vertical_list.py'.
 """
 
 from subgroups.data_structures.vertical_list import VerticalList
@@ -107,7 +107,7 @@ def test_vertical_list_3():
     vl_1 = VerticalList([Selector("at1", Operator.EQUAL, "a")], [0], [], 3, -45) # dataset_size = 3
     vl_2 = VerticalList([Selector("at2", Operator.EQUAL, "b")], [0], [1], 5, -45) # dataset_size = 5
     try:
-        # The sequence of instances of the vertical lists do not have the same sizes.
+        # The sequence of instances of the Vertical Lists do not have the same sizes.
         join_1 = vl_1.join(vl_2, Coverage(), {"TP" : 5, "FP" : 5})
         assert(False)
     except ValueError:

@@ -16,7 +16,7 @@ from subgroups.tests.data_structures.fp_tree_node_test import *
 from subgroups.tests.data_structures.fp_tree_for_sdmap_test import *
 from subgroups.tests.algorithms.sdmap_test import *
 from subgroups.tests.data_structures.vertical_list_test import *
-#from subgroups.tests.algorithms.vlsd_test import *
+from subgroups.tests.algorithms.vlsd_test import *
 
 if __name__ == "__main__":
     # core/operator_test file.
@@ -80,10 +80,12 @@ if __name__ == "__main__":
     test_vertical_list_3()
     test_vertical_list_str_method()
     # algorithms/vlsd file.
-    #test_VLSD_init_method_1()
-    #test_VLSD_init_method_2()
-    #test_VLSD_fit_method_1()
-    #test_VLSD_fit_method_2()
-    #test_VLSD_fit_method_3()
-    #test_VLSD_fit_method_4()
-    #test_VLSD_fit_method_5()
+    test_VLSD_init_method_1()
+    test_VLSD_init_method_2()
+    test_VLSD_fit_method_1()
+    test_VLSD_fit_method_2()
+    test_VLSD_fit_method_3()
+    test_VLSD_fit_method_4()
+    test_VLSD_fit_method_5()
+    test_VLSD_fit_method_6()
+    test_VLSD_fit_method_7()

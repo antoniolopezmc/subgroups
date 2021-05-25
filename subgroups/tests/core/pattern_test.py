@@ -3,7 +3,7 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-""" Tests of the functionality contained in the file 'core/pattern.py'.
+"""Tests of the functionality contained in the file 'core/pattern.py'.
 """
 
 from subgroups.core.pattern import Pattern

@@ -49,13 +49,15 @@ def _query_triangular_matrix(matrix, index_a, index_b):
     :param index_a: the first index in the query.
     :type index_b: Selector
     :param index_b: the second index in the query.
+    :rtype: VerticalList or NoneType
+    :return: either the Vertical List contained in matrix[index_a][index_b], or the Vertical List contained in matrix[index_b][index_a] if the firt one was None, or None if they were both None.
     """
     try:
         return matrix[index_a][index_b]
-    except IndexError:
+    except KeyError:
         try:
             return matrix[index_b][index_a]
-        except IndexError:
+        except KeyError:
             return None
 
 class VLSD(Algorithm):
@@ -156,7 +158,7 @@ class VLSD(Algorithm):
     quality_measure = property(_get_quality_measure, None, None, "The quality measure which is used.")
     q_minimum_threshold = property(_get_q_minimum_threshold, None, None, "The minimum quality threshold for the quality measure.")
     optimistic_estimate = property(_get_optimistic_estimate, None, None, "The optimistic estimate of the quality measure which is used.")
-    oe_minimum_threshold = property(_get_oe_minimum_threshold, None, None, "The minimum quality threshold for the upper uound.")
+    oe_minimum_threshold = property(_get_oe_minimum_threshold, None, None, "The minimum quality threshold for the optimistic estimate.")
     additional_parameters_for_the_quality_measure = property(_get_additional_parameters_for_the_quality_measure, None, None, "The additional needed parameters with which to compute the quality measure.")
     additional_parameters_for_the_optimistic_estimate = property(_get_additional_parameters_for_the_optimistic_estimate, None, None, "The additional needed parameters with which to compute the optimistic estimate.")
     
@@ -171,13 +173,51 @@ class VLSD(Algorithm):
     
     def _get_sort_criterion_in_s1(self):
         return self._sort_criterion_in_s1
-
+    
     def _get_sort_criterion_in_other_sizes(self):
         return self._sort_criterion_in_other_sizes
-
+    
     sort_criterion_in_s1 = property(_get_sort_criterion_in_s1, None, None, "The criterion to use in order to sort the Vertical Lists with only one selector.")
     sort_criterion_in_other_sizes = property(_get_sort_criterion_in_other_sizes, None, None, "The criterion to use in order to sort the Vertical Lists with more than one selector.")
-
+    
+    def _write_single_result_in_file(self, single_result, file):
+        """Private method to write a single result in a file only if 'file' is not None.
+        
+        :type single_result: tuple[VerticalList, tuple[str, str], int, int]
+        :param single_result: the single result which is written in the file. In this case, it is a Vertical List, a target as a tuple and the subgroup parameters TP and FP.
+        :type file: type( open(file_path, "w") )
+        :param file: the file in which the results is written.
+        """
+        tp = single_result[0].tp
+        fp = single_result[0].fp
+        TP = single_result[2]
+        FP = single_result[3]
+        # Compute the quality measure of the frequent pattern along with the target (i.e., the quality measure of the subgroup).
+        dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_tp : tp, QualityMeasure.SUBGROUP_PARAMETER_fp : fp, QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
+        dict_of_parameters.update(self._additional_parameters_for_the_quality_measure)
+        quality_measure_value = self._quality_measure.compute(dict_of_parameters)
+        # Add the subgroup only if the quality measure value is greater or equal than the threshold.
+        if quality_measure_value >= self._q_minimum_threshold:
+            # Write in the file ONLY IF 'file' is not None.
+            if file is not None:
+                # Get the description and the target.
+                subgroup_description = Pattern(single_result[0].list_of_selectors)
+                target_as_tuple = single_result[1] # Attribute name -> target_as_tuple[0], Attribute value -> target_as_tuple[1]
+                # Create the subgroup.
+                subgroup = Subgroup(subgroup_description, Selector(target_as_tuple[0], Operator.EQUAL, target_as_tuple[1]))
+                # Write.
+                file.write(str(subgroup) + " ; ")
+                file.write("Quality Measure " + self._quality_measure.get_name() + " = " + str(quality_measure_value) + " ; ")
+                file.write("Optimistic Estimate " + self._optimistic_estimate.get_name() + " = " + str(single_result[0].quality_value) + " ; ")
+                file.write("tp = " + str(tp) + " ; ")
+                file.write("fp = " + str(fp) + " ; ")
+                file.write("TP = " + str(TP) + " ; ")
+                file.write("FP = " + str(FP) + "\n")
+            # Increment the number of visited nodes.
+            self._visited_nodes = self._visited_nodes + 1
+        else: # If the quality measure is not greater or equal, increment the number of pruned nodes.
+            self._pruned_nodes = self._pruned_nodes + 1
+    
     # IMPORTANT: although the subgroup parameters TP and FP can be computed from 'pandas_dataframe', we also pass them by parameter in this method to avoid computing them twice (in the 'fit' method and in this method).
     def _generate_subgroups_s1(self, pandas_dataframe, target, TP, FP):
         """Private method to generate the list of Vertical Lists of size 1 (i.e., whose list of selectors has only one selector), prune it and sort it.
@@ -239,49 +279,11 @@ class VLSD(Algorithm):
         # Return the list.
         return result
     
-    def _write_single_result_in_file(self, single_result, file):
-        """Private method to write a single result in a file only if 'file' is not None.
-        
-        :type single_result: tuple[VerticalList, tuple[str, str], int, int]
-        :param single_result: the single result which is written in the file. In this case, it is a Vertical List, a target as a tuple and the subgroup parameters TP and FP.
-        :type file: type( open(file_path, "w") )
-        :param file: the file in which the results is written.
-        """
-        tp = single_result[0].tp
-        fp = single_result[0].fp
-        TP = single_result[2]
-        FP = single_result[3]
-        # Compute the quality measure of the frequent pattern along with the target (i.e., the quality measure of the subgroup).
-        dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_tp : tp, QualityMeasure.SUBGROUP_PARAMETER_fp : fp, QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
-        dict_of_parameters.update(self._additional_parameters_for_the_quality_measure)
-        quality_measure_value = self._quality_measure.compute(dict_of_parameters)
-        # Add the subgroup only if the quality measure value is greater or equal than the threshold.
-        if quality_measure_value >= self._q_minimum_threshold:
-            # Write in the file ONLY IF 'file' is not None.
-            if file is not None:
-                # Get the description and the target.
-                subgroup_description = Pattern(single_result[0].list_of_selectors)
-                target_as_tuple = single_result[1] # Attribute name -> target_as_tuple[0], Attribute value -> target_as_tuple[1]
-                # Create the subgroup.
-                subgroup = Subgroup(subgroup_description, Selector(target_as_tuple[0], Operator.EQUAL, target_as_tuple[1]))
-                # Write.
-                file.write(str(subgroup) + " ; ")
-                file.write("Quality Measure " + self._quality_measure.get_name() + " = " + str(quality_measure_value) + " ; ")
-                file.write("Optimistic Estimate " + self._optimistic_estimate.get_name() + " = " + str(single_result[0].quality_value) + " ; ")
-                file.write("tp = " + str(tp) + " ; ")
-                file.write("fp = " + str(fp) + " ; ")
-                file.write("TP = " + str(TP) + " ; ")
-                file.write("FP = " + str(FP) + "\n")
-            # Increment the number of visited nodes.
-            self._visited_nodes = self._visited_nodes + 1
-        else: # If the quality measure is not greater or equal, increment the number of pruned nodes.
-            self._pruned_nodes = self._pruned_nodes + 1
-    
     def _search(self, P, M, target, TP, FP):
-        """ Private search method.
+        """Private search method.
         
         :type P: list[VerticalList]
-        :param P: a list of vertical lists.
+        :param P: a list of Vertical Lists.
         :type M: dict[Selector, dict[Selector, VerticalList]]
         :param M: the 2-dimensional matrix M (in this case, it is a python dictionary).
         :type TP: int
@@ -290,44 +292,46 @@ class VLSD(Algorithm):
         :param FP: the False Positives of the dataset.
         """
         index_x = 0
-        # Main loop: while P list is not completely processed.
-        while (index_x < len(P)):
-            # Simulate "pop_first" method.
+        # Main loop: while P list is not completely processed (the last element is never processed).
+        while (index_x < (len(P)-1)):
             s_x = P[index_x]
+            # Simulate the "pop_first" method.
+            # --> IMPORTANT: we set None instead of directly delete the first element because deleting a element that is not the last in a python list is O(n),
+            #                because all the element at the right of the deleted element are moved one position to the left.
             P[index_x] = None
             index_x = index_x + 1
             # Get the last selector of s_x.
             s_x_last_selector = s_x.list_of_selectors[-1]
-            # Check whether there are more elements in P after the extraction.
-            if (index_x < len(P)):
-                V = []
-                for index_y in range(index_x, len(P)):
-                    s_y = P[index_y]
-                    # Get the last selector of s_y.
-                    s_y_last_selector = s_y.list_of_selectors[-1]
-                    # Query M.
-                    vertical_list_in_M = _query_triangular_matrix(M, s_x_last_selector, s_y_last_selector)
-                    if (vertical_list_in_M is not None) and (vertical_list_in_M.quality_value >= self.oe_minimum_threshold):
-                        s_xy_dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
-                        s_xy_dict_of_parameters.update(self._additional_parameters_for_the_optimistic_estimate)
-                        s_xy = s_x.join(s_y, self._optimistic_estimate, s_xy_dict_of_parameters, return_None_if_n_is_0 = True)
-                        if (s_xy is not None) and (s_xy.quality_value >= self.oe_minimum_threshold):
-                            V.append(s_xy)
-                            self._write_single_result_in_file( (s_xy, target, TP, FP) , self._file)
-                # Check whether V is not empty.
-                if V:
-                    # Sort by quality value (optimistic_estimate_value) according to 'sort_criterion_in_other_sizes'.
-                    if (self._sort_criterion_in_other_sizes == VLSD.SORT_CRITERION_QUALITY_ASCENDING):
-                        V.sort(reverse=False, key=lambda x : x.quality_value)
-                    elif (self._sort_criterion_in_other_sizes == VLSD.SORT_CRITERION_QUALITY_DESCENDING):
-                        V.sort(reverse=True, key=lambda x : x.quality_value)
-                    self._search(V, M, target, TP, FP)
+            # List in which the children will be stored.
+            V = []
+            # Join between s_x and each node to its right.
+            for index_y in range(index_x, len(P)): # In this case, it is not index_x+1 because the index was already increased.
+                s_y = P[index_y]
+                # Get the last selector of s_y.
+                s_y_last_selector = s_y.list_of_selectors[-1]
+                # Query M.
+                vertical_list_in_M = _query_triangular_matrix(M, s_x_last_selector, s_y_last_selector)
+                if (vertical_list_in_M is not None) and (vertical_list_in_M.quality_value >= self.oe_minimum_threshold):
+                    s_xy_dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
+                    s_xy_dict_of_parameters.update(self._additional_parameters_for_the_optimistic_estimate)
+                    s_xy = s_x.join(s_y, self._optimistic_estimate, s_xy_dict_of_parameters, return_None_if_n_is_0 = True)
+                    if (s_xy is not None) and (s_xy.quality_value >= self.oe_minimum_threshold):
+                        V.append(s_xy)
+                        self._write_single_result_in_file( (s_xy, target, TP, FP) , self._file)
+            # Check whether V is not empty.
+            if V:
+                # Sort by quality value (optimistic_estimate_value) according to 'sort_criterion_in_other_sizes'.
+                if (self._sort_criterion_in_other_sizes == VLSD.SORT_CRITERION_QUALITY_ASCENDING):
+                    V.sort(reverse=False, key=lambda x : x.quality_value)
+                elif (self._sort_criterion_in_other_sizes == VLSD.SORT_CRITERION_QUALITY_DESCENDING):
+                    V.sort(reverse=True, key=lambda x : x.quality_value)
+                self._search(V, M, target, TP, FP)
     
     def fit(self, pandas_dataframe, target):
-        """Method to run the VLSD algorithm. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
+        """Method to run the VLSD algorithm. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported.
         
         :type pandas_dataframe: pandas.DataFrame
-        :param pandas_dataframe: the DataFrame which is scanned. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
+        :param pandas_dataframe: the DataFrame which is scanned. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported.
         :type target: tuple[str, str]
         :param target: a tuple with 2 elements: the target attribute name and the target value.
         """
@@ -345,14 +349,14 @@ class VLSD(Algorithm):
         # Obtain TP and FP of the dataset.
         TP = sum(pandas_dataframe[target[0]] == target[1])
         FP = len(pandas_dataframe.index) - TP
-        # Get the list of Vertical Lists of size 1.
+        # Get the list of Vertical Lists of size 1 (i.e., only one selector in their lists of selectors).
         S1 = self._generate_subgroups_s1(pandas_dataframe, target, TP, FP)
         # Save each individual result.
         for s in S1:
             self._write_single_result_in_file( (s, target, TP, FP) , self._file)
         # Create 2-dimensional empty matrix M (in this case, it is a python dictionary).
         M = dict()
-        # Double iteration through F.
+        # Double iteration through S1.
         for index_x in range(len(S1)): # From 0 to len(S1)-1.
             s_x = S1[index_x]
             # Get the last selector of s_x. In this point, there is only one.
@@ -376,8 +380,8 @@ class VLSD(Algorithm):
         for index in range(len(S1)-1): # From 0 to len(S1)-2.
             selector_i = S1[index].list_of_selectors[-1]
             if (selector_i in M):
-                # Get all the values (in this case, Vertical List) from the corresponding dictionary.
-                P = list(M[selector_i].values)
+                # Get all the values (in this case, Vertical Lists) from the corresponding dictionary.
+                P = list(M[selector_i].values())
                 # Sort by quality value (optimistic_estimate_value) according to 'sort_criterion_in_other_sizes'.
                 if (self._sort_criterion_in_other_sizes == VLSD.SORT_CRITERION_QUALITY_ASCENDING):
                     P.sort(reverse=False, key=lambda x : x.quality_value)

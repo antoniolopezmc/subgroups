@@ -3,7 +3,7 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-""" Tests of the functionality contained in the file 'data_structures/fp_tree_node.py'.
+"""Tests of the functionality contained in the file 'data_structures/fp_tree_node.py'.
 """
 
 from subgroups.data_structures.fp_tree_node import FPTreeNode

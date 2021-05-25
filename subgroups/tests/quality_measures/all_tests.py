@@ -3,7 +3,7 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-""" Tests of the functionality contained in the folder 'quality_measures'.
+"""Tests of the functionality contained in the folder 'quality_measures'.
 """
 
 from subgroups.quality_measures._base import QualityMeasure

@@ -3,7 +3,7 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-""" Tests of the functionality contained in the file 'core/operator.py'.
+"""Tests of the functionality contained in the file 'core/operator.py'.
 """
 
 from subgroups.core.operator import Operator

@@ -3,7 +3,7 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-""" Tests of the functionality contained in the file 'core/selector.py'.
+"""Tests of the functionality contained in the file 'core/selector.py'.
 """
 
 from subgroups.core.selector import Selector

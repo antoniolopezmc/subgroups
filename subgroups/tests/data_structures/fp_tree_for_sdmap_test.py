@@ -3,7 +3,7 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-""" Tests of the functionality contained in the file 'data_structures/fp_tree_for_sdmap.py'.
+"""Tests of the functionality contained in the file 'data_structures/fp_tree_for_sdmap.py'.
 """
 
 from pandas import DataFrame

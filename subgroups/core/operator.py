@@ -23,7 +23,7 @@ class Operator(Enum):
     GREATER_OR_EQUAL = 6
     
     def evaluate(self, left_element, right_element):
-        """Method to evaluate whether the expression (left_element self right_element) is True. IMPORTANT: if the operator is not supported between the both elements, a TypeError exception is raised.
+        """Method to evaluate whether the expression (left_element self right_element) is True. IMPORTANT: if the operator is not supported between both elements, a TypeError exception is raised.
         
         :type left_element: str, int, float or pandas.Series
         :param left_element: the left element of the expression. It can be also of type 'pandas.Series' in order to allow comparisons with whole arrays.
