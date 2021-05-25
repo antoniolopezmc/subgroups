@@ -15,13 +15,11 @@ class WRAcc(QualityMeasure):
     
     _singleton = None
     __slots__ = ()
-
+    
     def __new__(cls):
         if WRAcc._singleton is None:
             WRAcc._singleton = super().__new__(cls)
-            return WRAcc._singleton
-        else:
-            return WRAcc._singleton
+        return WRAcc._singleton
     
     def compute(self, dict_of_parameters):
         """Method to compute the WRAcc quality measure (you can also call to the instance for this purpose).

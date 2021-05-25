@@ -3,24 +3,22 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-"""This file contains a modification of the Weighted Relative Accuracy (WRAcc) quality measure. This quality measure always returns the absolute value of the original one.
+"""This file contains a modification of the Weighted Relative Accuracy (WRAcc) quality measure. This new quality measure always returns the absolute value of the original one.
 """
 
 from subgroups.quality_measures.wracc import WRAcc
 
 class WRAccAbsoluteValue(WRAcc):
-    """This class defines the modified Weighted Relative Accuracy (WRAcc) quality measure. In this modification, the quality measure always returns the absolute value of the original one.
+    """This class defines the modified Weighted Relative Accuracy quality measure. This new quality measure always returns the absolute value of the original one.
     """
     
     _singleton = None
     __slots__ = ()
-
+    
     def __new__(cls):
         if WRAccAbsoluteValue._singleton is None:
             WRAccAbsoluteValue._singleton = object().__new__(cls)
-            return WRAccAbsoluteValue._singleton
-        else:
-            return WRAccAbsoluteValue._singleton
+        return WRAccAbsoluteValue._singleton
     
     def compute(self, dict_of_parameters):
         """Method to compute the WRAccAbsoluteValue quality measure (you can also call to the instance for this purpose).

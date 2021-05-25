@@ -15,13 +15,11 @@ class Qg(QualityMeasure):
     
     _singleton = None
     __slots__ = ()
-
+    
     def __new__(cls):
         if Qg._singleton is None:
             Qg._singleton = super().__new__(cls)
-            return Qg._singleton
-        else:
-            return Qg._singleton
+        return Qg._singleton
     
     def compute(self, dict_of_parameters):
         """Method to compute the Qg quality measure (you can also call to the instance for this purpose). IMPORTANT: the generalisation parameter 'g' is needed in order to compute this quality measure. It also has to be in the dict of parameters.

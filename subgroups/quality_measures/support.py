@@ -19,9 +19,7 @@ class Support(QualityMeasure):
     def __new__(cls):
         if Support._singleton is None:
             Support._singleton = super().__new__(cls)
-            return Support._singleton
-        else:
-            return Support._singleton
+        return Support._singleton
     
     def compute(self, dict_of_parameters):
         """Method to compute the Support quality measure (you can also call to the instance for this purpose).

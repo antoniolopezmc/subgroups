@@ -15,13 +15,11 @@ class PiatetskyShapiro(QualityMeasure):
     
     _singleton = None
     __slots__ = ()
-
+    
     def __new__(cls):
         if PiatetskyShapiro._singleton is None:
             PiatetskyShapiro._singleton = super().__new__(cls)
-            return PiatetskyShapiro._singleton
-        else:
-            return PiatetskyShapiro._singleton
+        return PiatetskyShapiro._singleton
     
     def compute(self, dict_of_parameters):
         """Method to compute the PiatetskyShapiro quality measure (you can also call to the instance for this purpose).

@@ -16,13 +16,11 @@ class PiatetskyShapiroOptimisticEstimate2(QualityMeasure): # SOURCE: https://lin
     
     _singleton = None
     __slots__ = ()
-
+    
     def __new__(cls):
         if PiatetskyShapiroOptimisticEstimate2._singleton is None:
             PiatetskyShapiroOptimisticEstimate2._singleton = super().__new__(cls)
-            return PiatetskyShapiroOptimisticEstimate2._singleton
-        else:
-            return PiatetskyShapiroOptimisticEstimate2._singleton
+        return PiatetskyShapiroOptimisticEstimate2._singleton
     
     def compute(self, dict_of_parameters):
         """Method to compute the PiatetskyShapiroOptimisticEstimate2 quality measure (you can also call to the instance for this purpose).

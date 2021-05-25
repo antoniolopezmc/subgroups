@@ -19,9 +19,7 @@ class PrecisionGain(QualityMeasure):
     def __new__(cls):
         if PrecisionGain._singleton is None:
             PrecisionGain._singleton = super().__new__(cls)
-            return PrecisionGain._singleton
-        else:
-            return PrecisionGain._singleton
+        return PrecisionGain._singleton
     
     def compute(self, dict_of_parameters):
         """Method to compute the PrecisionGain quality measure (you can also call to the instance for this purpose).

@@ -15,14 +15,12 @@ class Coverage(QualityMeasure):
     
     _singleton = None
     __slots__ = ()
-
+    
     def __new__(cls):
         if Coverage._singleton is None:
             Coverage._singleton = super().__new__(cls)
-            return Coverage._singleton
-        else:
-            return Coverage._singleton
-
+        return Coverage._singleton
+    
     def compute(self, dict_of_parameters):
         """Method to compute the Coverage quality measure (you can also call to the instance for this purpose).
         

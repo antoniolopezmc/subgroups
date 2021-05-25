@@ -16,13 +16,11 @@ class BinomialTest(QualityMeasure):
     
     _singleton = None
     __slots__ = ()
-
+    
     def __new__(cls):
         if BinomialTest._singleton is None:
             BinomialTest._singleton = super().__new__(cls)
-            return BinomialTest._singleton
-        else:
-            return BinomialTest._singleton
+        return BinomialTest._singleton
     
     def compute(self, dict_of_parameters):
         """Method to compute the BinomialTest quality measure (you can also call to the instance for this purpose).
