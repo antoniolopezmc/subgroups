@@ -68,6 +68,4 @@ class WRAcc(QualityMeasure):
         :rtype: float
         :return: the computed value for the WRAcc quality measure.
         """
-        if type(dict_of_parameters) is not dict:
-            raise TypeError("The type of the parameter 'dict_of_parameters' must be 'dict'.")
         return self.compute(dict_of_parameters)
