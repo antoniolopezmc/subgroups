@@ -19,5 +19,5 @@ class Algorithm(ABC):
         pass
     
     @abstractmethod
-    def _write_single_result_in_file(self, single_result, file):
+    def _save_individual_result(self, individual_result):
         pass

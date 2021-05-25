@@ -149,38 +149,37 @@ class SDMap(Algorithm):
     visited_nodes = property(_get_visited_nodes, None, None, "The visited nodes after executing the SDMap algorithm (before executing the 'fit' method, this attribute is 0).")
     pruned_nodes = property(_get_pruned_nodes, None, None, "The pruned nodes after executing the SDMap algorithm (before executing the 'fit' method, this attribute is 0).")
     
-    def _write_single_result_in_file(self, single_result, file):
-        """Private method to write a single result in a file only if 'file' is not None.
+    def _save_individual_result(self, individual_result):
+        """Private method to save a individual result and, if applicable, write it in a file.
         
-        :type single_result: tuple[Pattern, tuple[str, str], int, int, int, int]
-        :param single_result: the single result which is written in the file. In this case, it is a subgroup description, a target as a tuple and the subgroup parameters tp, fp, TP and FP.
-        :type file: type( open(file_path, "w") )
-        :param file: the file in which the results is written.
+        :type individual_result: tuple[Pattern, tuple[str, str], int, int, int, int]
+        :param individual_result: the individual result which is saved and, if applicable, written in the file. In this case, it is a subgroup description, a target as a tuple and the subgroup parameters tp, fp, TP and FP.
         """
-        # Get the elements in "single_result".
-        subgroup_description = single_result[0]
-        target_as_tuple = single_result[1] # Attribute name -> target_as_tuple[0], Attribute value -> target_as_tuple[1]
-        tp = single_result[2]
-        fp = single_result[3]
-        TP = single_result[4]
-        FP = single_result[5]
+        # Get the subgroup parameters.
+        tp = individual_result[2]
+        fp = individual_result[3]
+        TP = individual_result[4]
+        FP = individual_result[5]
         # Compute the quality measure of the frequent pattern along with the target (i.e., the quality measure of the subgroup).
         dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_tp : tp, QualityMeasure.SUBGROUP_PARAMETER_fp : fp, QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
         dict_of_parameters.update(self._additional_parameters_for_the_quality_measure)
         quality_measure_value = self._quality_measure.compute(dict_of_parameters)
         # Add the subgroup only if the quality measure value is greater or equal than the threshold.
         if quality_measure_value >= self._minimum_quality_measure_value:
-            # Write in the file ONLY IF 'file' is not None.
-            if file is not None:
+            # If applicable, write in the file defined in the __init__ method.
+            if self._file_path is not None:
+                # Get the description and the target.
+                subgroup_description = individual_result[0]
+                target_as_tuple = individual_result[1] # Attribute name -> target_as_tuple[0], Attribute value -> target_as_tuple[1]
                 # Create the subgroup.
                 subgroup = Subgroup(subgroup_description, Selector(target_as_tuple[0], Operator.EQUAL, target_as_tuple[1]))
                 # Write.
-                file.write(str(subgroup) + " ; ")
-                file.write("Quality Measure " + self._quality_measure.get_name() + " = " + str(quality_measure_value) + " ; ")
-                file.write("tp = " + str(tp) + " ; ")
-                file.write("fp = " + str(fp) + " ; ")
-                file.write("TP = " + str(TP) + " ; ")
-                file.write("FP = " + str(FP) + "\n")
+                self._file.write(str(subgroup) + " ; ")
+                self._file.write("Quality Measure " + self._quality_measure.get_name() + " = " + str(quality_measure_value) + " ; ")
+                self._file.write("tp = " + str(tp) + " ; ")
+                self._file.write("fp = " + str(fp) + " ; ")
+                self._file.write("TP = " + str(TP) + " ; ")
+                self._file.write("FP = " + str(FP) + "\n")
             # Increment the number of visited nodes.
             self._visited_nodes = self._visited_nodes + 1
         else: # If the quality measure is not greater or equal, increment the number of pruned nodes.
@@ -224,8 +223,8 @@ class SDMap(Algorithm):
                     index = index + 1
                 tp = fptree.header_table[most_unfrequent_selector][0][0]
                 fp = fptree.header_table[most_unfrequent_selector][0][1]
-                # Write this result.
-                self._write_single_result_in_file( (pattern, target, tp, fp, TP, FP), self._file)
+                # Save this result.
+                self._save_individual_result( (pattern, target, tp, fp, TP, FP) )
         else:
             # Iterate throughout the selectors in the sorted header table of the fptree.
             for ai in fptree._sorted_header_table:
@@ -241,8 +240,8 @@ class SDMap(Algorithm):
                 # The values of the counters tp and fp of 'beta' will be those of the selector ai in the header table.
                 tp = fptree.header_table[ai][0][0]
                 fp = fptree.header_table[ai][0][1]
-                # Write this result.
-                self._write_single_result_in_file( (beta_as_Pattern, target, tp, fp, TP, FP), self._file)
+                # Save this result.
+                self._save_individual_result( (beta_as_Pattern, target, tp, fp, TP, FP) )
                 # Build the conditional FPTree.
                 conditional_fp_tree = fptree.generate_conditional_fp_tree(beta_as_list, minimum_tp=self.minimum_tp, minimum_fp=self.minimum_fp, minimum_n=self.minimum_n)
                 # Recursive call.
