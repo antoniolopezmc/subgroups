@@ -7,7 +7,7 @@
 """
 
 from pandas import DataFrame
-from subgroups.algorithms.sdmap import SDMap
+from subgroups.algorithms.individual_subgroups.non_numeric_target.sdmap import SDMap
 from subgroups.quality_measures.wracc import WRAcc
 from subgroups.quality_measures.qg import Qg
 from subgroups.exceptions import InconsistentMethodParametersError, DatasetAttributeTypeError, ParameterNotFoundError
