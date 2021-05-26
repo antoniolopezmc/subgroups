@@ -3,7 +3,7 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-"""This file contains the implementation of the Vertical List data structure used in the VLSD algorithm. This data structure is a Subgroup in which additional attributes have been added (two sequences of instances, the true positives tp and the false positives fp). Moreover, the list of selectors (i.e., the pattern) is not ordered.
+"""This file contains the implementation of the Vertical List data structure used in the VLSD algorithm. A Vertical List is a Subgroup in which additional attributes have been added (two sequences of instances, the true positives tp and the false positives fp). Moreover, the list of selectors (i.e., the pattern) is not ordered.
 """
 
 from collections.abc import Iterable
@@ -11,7 +11,7 @@ from bitarray import bitarray
 from subgroups.quality_measures._base import QualityMeasure
 
 class VerticalList(object):
-    """This class represents a Vertical List. This data structure is a Subgroup in which additional attributes have been added. Moreover, the list of selectors (i.e., the pattern) is not ordered.
+    """This class represents a Vertical List. It is a Subgroup in which additional attributes have been added. Moreover, the list of selectors (i.e., the pattern) is not ordered.
     
     :type list_of_selectors: list[Selector]
     :param list_of_selectors: the list of selectors represented by the Vertical List.
