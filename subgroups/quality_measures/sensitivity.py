@@ -18,7 +18,7 @@ class Sensitivity(QualityMeasure):
     
     def __new__(cls):
         if Sensitivity._singleton is None:
-            Sensitivity._singleton = super().__new__(cls)
+            Sensitivity._singleton = object().__new__(cls)
         return Sensitivity._singleton
     
     def compute(self, dict_of_parameters):

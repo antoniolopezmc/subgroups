@@ -18,7 +18,7 @@ class PPV(QualityMeasure):
     
     def __new__(cls):
         if PPV._singleton is None:
-            PPV._singleton = super().__new__(cls)
+            PPV._singleton = object().__new__(cls)
         return PPV._singleton
     
     def compute(self, dict_of_parameters):

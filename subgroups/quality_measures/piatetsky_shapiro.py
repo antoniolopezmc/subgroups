@@ -18,7 +18,7 @@ class PiatetskyShapiro(QualityMeasure):
     
     def __new__(cls):
         if PiatetskyShapiro._singleton is None:
-            PiatetskyShapiro._singleton = super().__new__(cls)
+            PiatetskyShapiro._singleton = object().__new__(cls)
         return PiatetskyShapiro._singleton
     
     def compute(self, dict_of_parameters):

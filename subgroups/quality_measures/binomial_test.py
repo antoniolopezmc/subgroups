@@ -19,7 +19,7 @@ class BinomialTest(QualityMeasure):
     
     def __new__(cls):
         if BinomialTest._singleton is None:
-            BinomialTest._singleton = super().__new__(cls)
+            BinomialTest._singleton = object().__new__(cls)
         return BinomialTest._singleton
     
     def compute(self, dict_of_parameters):

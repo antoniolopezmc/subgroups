@@ -11,5 +11,7 @@ from subgroups.quality_measures.qg import Qg
 from subgroups.quality_measures.sensitivity import Sensitivity
 from subgroups.quality_measures.support import Support
 from subgroups.quality_measures.wracc import WRAcc
-from subgroups.quality_measures.wracc_absolute_value import WRAccAbsoluteValue
+from subgroups.quality_measures.absolute_wracc import AbsoluteWRAcc
 from subgroups.quality_measures.wracc_optimistic_estimate_1 import WRAccOptimisticEstimate1
+from subgroups.quality_measures.specificity import Specificity
+from subgroups.quality_measures.irr import IRR

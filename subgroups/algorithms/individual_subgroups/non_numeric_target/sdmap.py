@@ -249,7 +249,7 @@ class SDMap(Algorithm):
                     self._fpgrowth(conditional_fp_tree, beta_as_list, target, TP, FP)
     
     def fit(self, pandas_dataframe, target):
-        """Method to run the SDMap algorithm. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
+        """Main method to run the SDMap algorithm. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
         
         :type pandas_dataframe: pandas.DataFrame
         :param pandas_dataframe: the DataFrame which is scanned. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.

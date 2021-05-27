@@ -18,7 +18,7 @@ class Coverage(QualityMeasure):
     
     def __new__(cls):
         if Coverage._singleton is None:
-            Coverage._singleton = super().__new__(cls)
+            Coverage._singleton = object().__new__(cls)
         return Coverage._singleton
     
     def compute(self, dict_of_parameters):

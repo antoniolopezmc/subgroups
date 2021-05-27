@@ -19,7 +19,7 @@ class WRAccOptimisticEstimate1(QualityMeasure):
     
     def __new__(cls):
         if WRAccOptimisticEstimate1._singleton is None:
-            WRAccOptimisticEstimate1._singleton = super().__new__(cls)
+            WRAccOptimisticEstimate1._singleton = object().__new__(cls)
         return WRAccOptimisticEstimate1._singleton
     
     def compute(self, dict_of_parameters):

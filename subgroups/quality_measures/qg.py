@@ -18,7 +18,7 @@ class Qg(QualityMeasure):
     
     def __new__(cls):
         if Qg._singleton is None:
-            Qg._singleton = super().__new__(cls)
+            Qg._singleton = object().__new__(cls)
         return Qg._singleton
     
     def compute(self, dict_of_parameters):

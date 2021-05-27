@@ -18,7 +18,7 @@ class WRAcc(QualityMeasure):
     
     def __new__(cls):
         if WRAcc._singleton is None:
-            WRAcc._singleton = super().__new__(cls)
+            WRAcc._singleton = object().__new__(cls)
         return WRAcc._singleton
     
     def compute(self, dict_of_parameters):

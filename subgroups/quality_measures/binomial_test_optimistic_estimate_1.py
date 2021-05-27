@@ -20,7 +20,7 @@ class BinomialTestOptimisticEstimate1(QualityMeasure):
     
     def __new__(cls):
         if BinomialTestOptimisticEstimate1._singleton is None:
-            BinomialTestOptimisticEstimate1._singleton = super().__new__(cls)
+            BinomialTestOptimisticEstimate1._singleton = object().__new__(cls)
         return BinomialTestOptimisticEstimate1._singleton
     
     def compute(self, dict_of_parameters):

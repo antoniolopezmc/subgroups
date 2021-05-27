@@ -329,7 +329,7 @@ class VLSD(Algorithm):
                 self._search(V, M, target, TP, FP)
     
     def fit(self, pandas_dataframe, target):
-        """Method to run the VLSD algorithm. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported.
+        """Main method to run the VLSD algorithm. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported.
         
         :type pandas_dataframe: pandas.DataFrame
         :param pandas_dataframe: the DataFrame which is scanned. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported.
