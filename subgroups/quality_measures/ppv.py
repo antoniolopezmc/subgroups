@@ -3,14 +3,14 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-"""This file contains the implementation of the PPV quality measure.
+"""This file contains the implementation of the Positive Predictive Value (PPV) quality measure.
 """
 
 from subgroups.quality_measures._base import QualityMeasure
 from subgroups.exceptions import SubgroupParameterNotFoundError
 
 class PPV(QualityMeasure):
-    """This class defines the PPV quality measure.
+    """This class defines the Positive Predictive Value (PPV) quality measure.
     """
     
     _singleton = None
@@ -37,7 +37,7 @@ class PPV(QualityMeasure):
             raise SubgroupParameterNotFoundError("The subgroup parameter 'fp' is not in 'dict_of_parameters'.")
         tp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp]
         fp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp]
-        return tp / ( tp + fp ) # tp / ( tp + fp )
+        return tp / ( tp + fp ) # tp / n
     
     def get_name(self):
         """Method to get the quality measure name (equal to the class name).

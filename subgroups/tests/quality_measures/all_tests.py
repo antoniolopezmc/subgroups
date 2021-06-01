@@ -19,7 +19,7 @@ from subgroups.quality_measures.binomial_test_optimistic_estimate_1 import Binom
 from subgroups.quality_measures.piatetsky_shapiro import PiatetskyShapiro
 from subgroups.quality_measures.piatetsky_shapiro_optimistic_estimate_1 import PiatetskyShapiroOptimisticEstimate1
 from subgroups.quality_measures.piatetsky_shapiro_optimistic_estimate_2 import PiatetskyShapiroOptimisticEstimate2
-from subgroups.quality_measures.precision_gain import PrecisionGain
+from subgroups.quality_measures.npv import NPV
 from subgroups.quality_measures.absolute_wracc import AbsoluteWRAcc
 from subgroups.quality_measures.specificity import Specificity
 from subgroups.quality_measures.irr import IRR
@@ -38,7 +38,7 @@ def test_quality_measures():
     piatetsky_shapiro = PiatetskyShapiro()
     piatetsky_shapiro_optimistic_estimate_1 = PiatetskyShapiroOptimisticEstimate1()
     piatetsky_shapiro_optimistic_estimate_2 = PiatetskyShapiroOptimisticEstimate2()
-    precision_gain = PrecisionGain()
+    npv = NPV()
     absolute_wracc = AbsoluteWRAcc()
     specificity = Specificity()
     irr = IRR()
@@ -55,7 +55,7 @@ def test_quality_measures():
     assert (type(piatetsky_shapiro) == PiatetskyShapiro)
     assert (type(piatetsky_shapiro_optimistic_estimate_1) == PiatetskyShapiroOptimisticEstimate1)
     assert (type(piatetsky_shapiro_optimistic_estimate_2) == PiatetskyShapiroOptimisticEstimate2)
-    assert (type(precision_gain) == PrecisionGain)
+    assert (type(npv) == NPV)
     assert (type(absolute_wracc) == AbsoluteWRAcc)
     assert (type(specificity) == Specificity)
     assert (type(irr) == IRR)
@@ -72,7 +72,7 @@ def test_quality_measures():
     assert (id(piatetsky_shapiro) == id(PiatetskyShapiro()))
     assert (id(piatetsky_shapiro_optimistic_estimate_1) == id(PiatetskyShapiroOptimisticEstimate1()))
     assert (id(piatetsky_shapiro_optimistic_estimate_2) == id(PiatetskyShapiroOptimisticEstimate2()))
-    assert (id(precision_gain) == id(PrecisionGain()))
+    assert (id(npv) == id(NPV()))
     assert (id(absolute_wracc) == id(AbsoluteWRAcc()))
     assert (id(wracc) != id(absolute_wracc))
     assert (id(WRAcc()) != id(AbsoluteWRAcc()))
@@ -91,7 +91,7 @@ def test_quality_measures():
     assert (piatetsky_shapiro.get_name() == "PiatetskyShapiro")
     assert (piatetsky_shapiro_optimistic_estimate_1.get_name() == "PiatetskyShapiroOptimisticEstimate1")
     assert (piatetsky_shapiro_optimistic_estimate_2.get_name() == "PiatetskyShapiroOptimisticEstimate2")
-    assert (precision_gain.get_name() == "PrecisionGain")
+    assert (npv.get_name() == "NPV")
     assert (absolute_wracc.get_name() == "AbsoluteWRAcc")
     assert (specificity.get_name() == "Specificity")
     assert (irr.get_name() == "IRR")
@@ -108,7 +108,7 @@ def test_quality_measures():
     assert (len(piatetsky_shapiro.optimistic_estimate_of()) == 0)
     assert (len(piatetsky_shapiro_optimistic_estimate_1.optimistic_estimate_of()) == 1)
     assert (len(piatetsky_shapiro_optimistic_estimate_2.optimistic_estimate_of()) == 1)
-    assert (len(precision_gain.optimistic_estimate_of()) == 0)
+    assert (len(npv.optimistic_estimate_of()) == 0)
     assert (len(absolute_wracc.optimistic_estimate_of()) == 0)
     assert (len(specificity.optimistic_estimate_of()) == 0)
     assert (len(irr.optimistic_estimate_of()) == 0)
@@ -123,6 +123,8 @@ def test_quality_measures_compute():
     N = TP + FP
     p = tp / n # p = tp / ( tp + fp )
     p0 = TP / N # p0 = TP / ( TP + FP )
+    tn = FP - fp
+    fn = TP - tp
     dict_of_parameters = dict({QualityMeasure.SUBGROUP_PARAMETER_tp : tp, QualityMeasure.SUBGROUP_PARAMETER_fp : fp, QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP, "g" : g})
     # --------------------------------------------------
     assert (Support()(dict_of_parameters) == (tp / ( TP + FP )))
@@ -137,11 +139,11 @@ def test_quality_measures_compute():
     assert (PiatetskyShapiro()(dict_of_parameters) == n*(p-p0))
     assert (PiatetskyShapiroOptimisticEstimate1()(dict_of_parameters) == n*(1-p0))
     assert (PiatetskyShapiroOptimisticEstimate2()(dict_of_parameters) == n*p*(1-p0))
-    assert (PrecisionGain()(dict_of_parameters) == ( tp / ( tp + fp ) ) - ( TP / ( TP + FP ) ))
+    assert (NPV()(dict_of_parameters) == tn/(tn+fn))
     assert (AbsoluteWRAcc()(dict_of_parameters) == abs( (( (tp+fp) / (TP+FP) ) * ( ( tp / (tp+fp) ) - ( TP / (TP+FP) ) )) ))
     assert (AbsoluteWRAcc()(dict_of_parameters) == abs(WRAcc()(dict_of_parameters)))
     assert (Specificity()(dict_of_parameters) == (FP-fp)/FP)
-    assert (IRR()(dict_of_parameters) == (tp/TP - 1 + (FP-fp)/FP))
+    assert (IRR()(dict_of_parameters) == (tp/n - 1 + (FP-fp)/FP))
     # --------------------------------------------------
     assert (Support()(dict_of_parameters) == Support().compute(dict_of_parameters))
     assert (Coverage()(dict_of_parameters) == Coverage().compute(dict_of_parameters))
@@ -155,7 +157,7 @@ def test_quality_measures_compute():
     assert (PiatetskyShapiro()(dict_of_parameters) == PiatetskyShapiro().compute(dict_of_parameters))
     assert (PiatetskyShapiroOptimisticEstimate1()(dict_of_parameters) == PiatetskyShapiroOptimisticEstimate1().compute(dict_of_parameters))
     assert (PiatetskyShapiroOptimisticEstimate2()(dict_of_parameters) == PiatetskyShapiroOptimisticEstimate2().compute(dict_of_parameters))
-    assert (PrecisionGain()(dict_of_parameters) == PrecisionGain().compute(dict_of_parameters))
+    assert (NPV()(dict_of_parameters) == NPV().compute(dict_of_parameters))
     assert (AbsoluteWRAcc()(dict_of_parameters) == AbsoluteWRAcc().compute(dict_of_parameters))
     assert (AbsoluteWRAcc()(dict_of_parameters) == abs(WRAcc().compute(dict_of_parameters)))
     assert (Specificity()(dict_of_parameters) == Specificity().compute(dict_of_parameters))
@@ -282,12 +284,12 @@ def test_quality_measures_compute():
     except TypeError:
         assert (True)
     try:
-        PrecisionGain()(3)
+        NPV()(3)
         assert (False)
     except TypeError:
         assert (True)
     try:
-        PrecisionGain().compute(3)
+        NPV().compute(3)
         assert (False)
     except TypeError:
         assert (True)

@@ -3,14 +3,14 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-"""This file contains the implementation of the Sensitivity quality measure.
+"""This file contains the implementation of the Sensitivity quality measure. This quality measure is also called as Recall or True Positive Rate.
 """
 
 from subgroups.quality_measures._base import QualityMeasure
 from subgroups.exceptions import SubgroupParameterNotFoundError
 
 class Sensitivity(QualityMeasure):
-    """This class defines the Sensitivity quality measure.
+    """This class defines the Sensitivity quality measure. This quality measure is also called as Recall or True Positive Rate.
     """
     
     _singleton = None
@@ -37,7 +37,7 @@ class Sensitivity(QualityMeasure):
             raise SubgroupParameterNotFoundError("The subgroup parameter 'TP' is not in 'dict_of_parameters'.")
         tp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp]
         TP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_TP]
-        return tp / TP # tp / TP
+        return tp / TP # tp / (tp + fn)
     
     def get_name(self):
         """Method to get the quality measure name (equal to the class name).

@@ -48,7 +48,7 @@ class BinomialTest(QualityMeasure):
         N = TP + FP
         p = tp / n # p = tp / ( tp + fp )
         p0 = TP / N # p0 = TP / ( TP + FP )
-        return ( ( (p-p0)*sqrt(n) ) / ( sqrt(p0*(1-p0)) ) ) * sqrt( N / ( N - n ) ) # ( ( (p-p0)*sqrt(n) ) / ( sqrt(p0*(1-p0)) ) ) * sqrt( N / ( N - n ) )
+        return ( ( (p-p0)*sqrt(n) ) / ( sqrt(p0*(1-p0)) ) ) * sqrt( N / ( N - n ) )
     
     def get_name(self):
         """Method to get the quality measure name (equal to the class name).
@@ -72,7 +72,3 @@ class BinomialTest(QualityMeasure):
         :return: the computed value for the BinomialTest quality measure.
         """
         return self.compute(dict_of_parameters)
-
-
-
-

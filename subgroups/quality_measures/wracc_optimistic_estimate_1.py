@@ -44,7 +44,7 @@ class WRAccOptimisticEstimate1(QualityMeasure):
         fp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp]
         TP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_TP]
         FP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_FP]
-        return ( (tp*tp)/(tp+fp) ) * ( 1 - ( TP/(TP+FP) ) ) # ( (tp*tp)/(tp+fp) ) * ( 1 - ( TP/(TP+FP) ) )
+        return ( (tp*tp)/(tp+fp) ) * ( 1 - ( TP/(TP+FP) ) )
     
     def get_name(self):
         """Method to get the quality measure name (equal to the class name).

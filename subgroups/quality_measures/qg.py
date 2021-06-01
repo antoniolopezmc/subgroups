@@ -41,7 +41,7 @@ class Qg(QualityMeasure):
         tp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp]
         fp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp]
         g = dict_of_parameters["g"]
-        return tp / ( fp + g ) # tp / ( fp + g )
+        return tp / ( fp + g )
     
     def get_name(self):
         """Method to get the quality measure name (equal to the class name).

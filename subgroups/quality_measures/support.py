@@ -40,7 +40,7 @@ class Support(QualityMeasure):
         tp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp]
         TP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_TP]
         FP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_FP]
-        return tp / ( TP + FP ) # tp / ( TP + FP )
+        return tp / ( TP + FP )
     
     def get_name(self):
         """Method to get the quality measure name (equal to the class name).

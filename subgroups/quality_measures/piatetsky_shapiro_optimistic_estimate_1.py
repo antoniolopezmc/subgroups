@@ -44,7 +44,7 @@ class PiatetskyShapiroOptimisticEstimate1(QualityMeasure): # SOURCE: https://lin
         fp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp]
         TP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_TP]
         FP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_FP]
-        return (tp+fp) * ( 1 - ( TP / (TP+FP) ) ) # (tp+fp) * ( 1 - ( TP / (TP+FP) ) )
+        return (tp+fp) * ( 1 - ( TP / (TP+FP) ) ) # n * (1 - p0)
     
     def get_name(self):
         """Method to get the quality measure name (equal to the class name).

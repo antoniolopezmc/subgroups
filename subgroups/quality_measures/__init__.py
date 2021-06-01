@@ -6,7 +6,7 @@ from subgroups.quality_measures.piatetsky_shapiro import PiatetskyShapiro
 from subgroups.quality_measures.piatetsky_shapiro_optimistic_estimate_1 import PiatetskyShapiroOptimisticEstimate1
 from subgroups.quality_measures.piatetsky_shapiro_optimistic_estimate_2 import PiatetskyShapiroOptimisticEstimate2
 from subgroups.quality_measures.ppv import PPV
-from subgroups.quality_measures.precision_gain import PrecisionGain
+from subgroups.quality_measures.npv import NPV
 from subgroups.quality_measures.qg import Qg
 from subgroups.quality_measures.sensitivity import Sensitivity
 from subgroups.quality_measures.support import Support

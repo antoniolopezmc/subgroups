@@ -9,7 +9,7 @@
 from subgroups.quality_measures._base import QualityMeasure
 from subgroups.exceptions import SubgroupParameterNotFoundError
 
-class PiatetskyShapiro(QualityMeasure):
+class PiatetskyShapiro(QualityMeasure): # SOURCE: https://link.springer.com/chapter/10.1007%2F978-3-540-87479-9_47
     """This class defines the Piatetsky-Shapiro quality measure.
     """
     
@@ -43,7 +43,7 @@ class PiatetskyShapiro(QualityMeasure):
         fp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp]
         TP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_TP]
         FP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_FP]
-        return (tp+fp) * ( ( tp / (tp+fp) ) - ( TP / (TP+FP) ) ) # (tp+fp) * ( ( tp / (tp+fp) ) - ( TP / (TP+FP) ) )
+        return (tp+fp) * ( ( tp / (tp+fp) ) - ( TP / (TP+FP) ) ) # n * (p - p0)
     
     def get_name(self):
         """Method to get the quality measure name (equal to the class name).

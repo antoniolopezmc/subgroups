@@ -43,7 +43,7 @@ class IRR(QualityMeasure):
         TP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_TP]
         fp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp]
         FP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_FP]
-        return tp/TP - 1 + (FP-fp)/FP # PPV - (1 - Specificity) = tp/TP - (1 - tn / (fp + tn)) = tp/TP - 1 + (FP-fp)/FP
+        return (tp/(tp+fp)) - 1 + ((FP-fp)/FP) # PPV - (1 - Specificity)
     
     def get_name(self):
         """Method to get the quality measure name (equal to the class name).

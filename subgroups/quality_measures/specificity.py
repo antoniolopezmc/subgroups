@@ -3,14 +3,14 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-"""This file contains the implementation of the Specificity quality measure.
+"""This file contains the implementation of the Specificity quality measure. This quality measure is also called as True Negative Rate.
 """
 
 from subgroups.quality_measures._base import QualityMeasure
 from subgroups.exceptions import SubgroupParameterNotFoundError
 
 class Specificity(QualityMeasure):
-    """This class defines the Specificity quality measure.
+    """This class defines the Specificity quality measure. This quality measure is also called as True Negative Rate.
     """
     
     _singleton = None
@@ -37,7 +37,7 @@ class Specificity(QualityMeasure):
             raise SubgroupParameterNotFoundError("The subgroup parameter 'FP' is not in 'dict_of_parameters'.")
         fp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp]
         FP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_FP]
-        return (FP - fp) / FP # tn / (fp + tn) = (FP - fp) / FP
+        return (FP - fp) / FP # tn / (tn + fp)
     
     def get_name(self):
         """Method to get the quality measure name (equal to the class name).

@@ -42,7 +42,7 @@ class BinomialTestOptimisticEstimate1(QualityMeasure):
         tp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp]
         TP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_TP]
         FP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_FP]
-        return ( sqrt(tp) ) * ( 1 - ( TP/(TP+FP) ) ) # ( sqrt(tp) ) * ( 1 - ( TP/(TP+FP) ) )
+        return ( sqrt(tp) ) * ( 1 - ( TP/(TP+FP) ) )
     
     def get_name(self):
         """Method to get the quality measure name (equal to the class name).
@@ -66,7 +66,3 @@ class BinomialTestOptimisticEstimate1(QualityMeasure):
         :return: the computed value for the BinomialTestOptimisticEstimate1 quality measure.
         """
         return self.compute(dict_of_parameters)
-
-
-
-
