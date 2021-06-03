@@ -15,3 +15,5 @@ from subgroups.quality_measures.absolute_wracc import AbsoluteWRAcc
 from subgroups.quality_measures.wracc_optimistic_estimate_1 import WRAccOptimisticEstimate1
 from subgroups.quality_measures.specificity import Specificity
 from subgroups.quality_measures.irr import IRR
+from subgroups.quality_measures.f1_score import F1Score
+from subgroups.quality_measures.youden import Youden

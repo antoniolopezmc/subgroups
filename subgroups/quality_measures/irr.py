@@ -33,14 +33,11 @@ class IRR(QualityMeasure):
             raise TypeError("The type of the parameter 'dict_of_parameters' must be 'dict'.")
         if (QualityMeasure.SUBGROUP_PARAMETER_tp not in dict_of_parameters):
             raise SubgroupParameterNotFoundError("The subgroup parameter 'tp' is not in 'dict_of_parameters'.")
-        if (QualityMeasure.SUBGROUP_PARAMETER_TP not in dict_of_parameters):
-            raise SubgroupParameterNotFoundError("The subgroup parameter 'TP' is not in 'dict_of_parameters'.")
         if (QualityMeasure.SUBGROUP_PARAMETER_fp not in dict_of_parameters):
             raise SubgroupParameterNotFoundError("The subgroup parameter 'fp' is not in 'dict_of_parameters'.")
         if (QualityMeasure.SUBGROUP_PARAMETER_FP not in dict_of_parameters):
             raise SubgroupParameterNotFoundError("The subgroup parameter 'FP' is not in 'dict_of_parameters'.")
         tp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp]
-        TP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_TP]
         fp = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp]
         FP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_FP]
         return (tp/(tp+fp)) - 1 + ((FP-fp)/FP) # PPV - (1 - Specificity)

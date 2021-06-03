@@ -23,6 +23,8 @@ from subgroups.quality_measures.npv import NPV
 from subgroups.quality_measures.absolute_wracc import AbsoluteWRAcc
 from subgroups.quality_measures.specificity import Specificity
 from subgroups.quality_measures.irr import IRR
+from subgroups.quality_measures.f1_score import F1Score
+from subgroups.quality_measures.youden import Youden
 from math import sqrt
 
 def test_quality_measures():
@@ -42,6 +44,8 @@ def test_quality_measures():
     absolute_wracc = AbsoluteWRAcc()
     specificity = Specificity()
     irr = IRR()
+    f1_score = F1Score()
+    youden = Youden()
     # --------------------------------------------------
     assert (type(support) == Support)
     assert (type(coverage) == Coverage)
@@ -59,6 +63,8 @@ def test_quality_measures():
     assert (type(absolute_wracc) == AbsoluteWRAcc)
     assert (type(specificity) == Specificity)
     assert (type(irr) == IRR)
+    assert (type(f1_score) == F1Score)
+    assert (type(youden) == Youden)
     # --------------------------------------------------
     assert (id(support) == id(Support()))
     assert (id(coverage) == id(Coverage()))
@@ -78,6 +84,8 @@ def test_quality_measures():
     assert (id(WRAcc()) != id(AbsoluteWRAcc()))
     assert (id(specificity) == id(Specificity()))
     assert (id(irr) == id(IRR()))
+    assert (id(f1_score) == id(F1Score()))
+    assert (id(youden) == id(Youden()))
     # --------------------------------------------------
     assert (support.get_name() == "Support")
     assert (coverage.get_name() == "Coverage")
@@ -95,6 +103,8 @@ def test_quality_measures():
     assert (absolute_wracc.get_name() == "AbsoluteWRAcc")
     assert (specificity.get_name() == "Specificity")
     assert (irr.get_name() == "IRR")
+    assert (f1_score.get_name() == "F1Score")
+    assert (youden.get_name() == "Youden")
     # --------------------------------------------------
     assert (len(support.optimistic_estimate_of()) == 0)
     assert (len(coverage.optimistic_estimate_of()) == 0)
@@ -112,6 +122,8 @@ def test_quality_measures():
     assert (len(absolute_wracc.optimistic_estimate_of()) == 0)
     assert (len(specificity.optimistic_estimate_of()) == 0)
     assert (len(irr.optimistic_estimate_of()) == 0)
+    assert (len(f1_score.optimistic_estimate_of()) == 0)
+    assert (len(youden.optimistic_estimate_of()) == 0)
 
 def test_quality_measures_compute():
     tp = 3
@@ -144,6 +156,8 @@ def test_quality_measures_compute():
     assert (AbsoluteWRAcc()(dict_of_parameters) == abs(WRAcc()(dict_of_parameters)))
     assert (Specificity()(dict_of_parameters) == (FP-fp)/FP)
     assert (IRR()(dict_of_parameters) == (tp/n - 1 + (FP-fp)/FP))
+    assert (F1Score()(dict_of_parameters) == (2*tp)/(tp+fp+TP))
+    assert (Youden()(dict_of_parameters) == (tp/TP) + ((FP-fp)/FP) - 1)
     # --------------------------------------------------
     assert (Support()(dict_of_parameters) == Support().compute(dict_of_parameters))
     assert (Coverage()(dict_of_parameters) == Coverage().compute(dict_of_parameters))
@@ -162,6 +176,8 @@ def test_quality_measures_compute():
     assert (AbsoluteWRAcc()(dict_of_parameters) == abs(WRAcc().compute(dict_of_parameters)))
     assert (Specificity()(dict_of_parameters) == Specificity().compute(dict_of_parameters))
     assert (IRR()(dict_of_parameters) == IRR().compute(dict_of_parameters))
+    assert (F1Score()(dict_of_parameters) == F1Score().compute(dict_of_parameters))
+    assert (Youden()(dict_of_parameters) == Youden().compute(dict_of_parameters))
     # --------------------------------------------------
     try:
         Support()(3)
@@ -320,6 +336,26 @@ def test_quality_measures_compute():
         assert (True)
     try:
         IRR().compute(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        F1Score()(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        F1Score().compute(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        Youden()(3)
+        assert (False)
+    except TypeError:
+        assert (True)
+    try:
+        Youden().compute(3)
         assert (False)
     except TypeError:
         assert (True)
