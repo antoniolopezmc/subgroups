@@ -88,11 +88,12 @@ class custom_clean_command(clean):
         if os.path.isdir("subgroups.egg-info"):
             shutil.rmtree("subgroups.egg-info")
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
-
 # Entry point of the python script.
 if __name__ == "__main__":
+    # Read the long description of the project (stored in the README.md file).
+    with open("README.md", "r", encoding="utf-8") as fh:
+        long_description = fh.read()
+    # Project properties.
     setup(
         name="subgroups",
         version="0.0.1",
