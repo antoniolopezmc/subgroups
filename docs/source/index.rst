@@ -4,5 +4,5 @@ Welcome to subgroups's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   rst_files/subgroups
-   rst_files/subgroups.tests
+   project_files/subgroups
+   project_files/subgroups.tests
