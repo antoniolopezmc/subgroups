@@ -1,4 +1,4 @@
-.PHONY: build clean remove_all_pycache_directories docs_build docs_clean
+.PHONY: build clean remove_all_pycache_directories upload
 
 build: clean
 	python -m pip install --upgrade build
@@ -9,3 +9,7 @@ clean:
 
 remove_all_pycache_directories:
 	python setup.py remove_all_pycache_directories
+
+upload:
+	python -m pip install --upgrade twine
+	python -m twine upload --repository pypi dist/*.whl

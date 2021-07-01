@@ -18,7 +18,8 @@ class custom_build_py(build_py):
         list_of_py_files = glob.glob("subgroups/**/*.py", recursive=True)
         # Iterate throughout them.
         for file in list_of_py_files:
-            py_compile.compile(file, file) # Compile the .py file in the same directory and with the same name (also with .py extension).
+            # Compile the .py file in the same directory and with the same name (also with .py extension).
+            py_compile.compile(file, file, optimize=2)
     
     @staticmethod
     def _rename_all_py_files_to_pyc_in_the_build_directory(build_directory):
