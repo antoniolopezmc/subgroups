@@ -97,9 +97,11 @@ if __name__ == "__main__":
     # Project properties.
     setup(
         name="subgroups",
-        version="0.0.1",
+        version="0.0.2",
         author="Antonio López Martínez-Carrasco",
         author_email="antoniolopezmc1995@gmail.com",
+        maintainer="Antonio López Martínez-Carrasco",
+        maintainer_email="antoniolopezmc1995@gmail.com",
         description="subgroups is a python library which contains a collection of subgroup discovery algorithms and other data analysis utilities.",
         long_description=long_description,
         long_description_content_type="text/markdown",

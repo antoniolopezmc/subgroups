@@ -10,6 +10,6 @@ clean:
 remove_all_pycache_directories:
 	python setup.py remove_all_pycache_directories
 
-upload:
+upload: clean build
 	python -m pip install --upgrade twine
 	python -m twine upload --repository pypi dist/*.whl
