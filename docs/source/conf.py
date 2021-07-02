@@ -32,7 +32,7 @@ release = '0.0.2'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    #'sphinx.ext.viewcode', # Uncomment to view the the button "source" in the generated documentation.
+    #'sphinx.ext.viewcode', # Uncomment to view the button "source" in the generated documentation.
     'sphinx.ext.coverage',
     'sphinx.ext.githubpages'
 ]

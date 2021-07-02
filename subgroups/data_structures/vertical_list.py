@@ -21,7 +21,7 @@ class VerticalList(object):
     :param sequence_of_instances_fp: the sequence of IDs of the dataset instances which are covered by the selectors ('list_of_selectors'), but not by the target. The number of elements in this sequence would be the false positives fp of the equivalent subgroup with the same list of selectors and with the same target.
     :type dataset_size: int
     :param dataset_size: the total number of instances in the dataset.
-    :type quality_value: int or float.
+    :type quality_value: int or float
     :param quality_value: the Vertical List quality value.
     """
     
