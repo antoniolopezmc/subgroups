@@ -14,9 +14,9 @@ from subgroups.tests.quality_measures.test_all import *
 from subgroups.tests.utils.test_dataframe_filters import *
 from subgroups.tests.data_structures.test_fp_tree_node import *
 from subgroups.tests.data_structures.test_fp_tree_for_sdmap import *
-from subgroups.tests.algorithms.individual_subgroups.non_numeric_target.test_sdmap import *
+from subgroups.tests.algorithms.individual_subgroups.nominal_target.test_sdmap import *
 from subgroups.tests.data_structures.test_vertical_list import *
-from subgroups.tests.algorithms.individual_subgroups.non_numeric_target.test_vlsd import *
+from subgroups.tests.algorithms.individual_subgroups.nominal_target.test_vlsd import *
 
 if __name__ == "__main__":
     # core/test_operator file.
