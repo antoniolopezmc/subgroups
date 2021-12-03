@@ -97,7 +97,7 @@ if __name__ == "__main__":
     # Project properties.
     setup(
         name="subgroups",
-        version="0.0.2",
+        version="0.0.3",
         author="Antonio López Martínez-Carrasco",
         author_email="antoniolopezmc1995@gmail.com",
         maintainer="Antonio López Martínez-Carrasco",

@@ -22,7 +22,7 @@ copyright = '2021, Antonio López Martínez-Carrasco'
 author = 'Antonio López Martínez-Carrasco'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.2'
+release = '0.0.5'
 
 
 # -- General configuration ---------------------------------------------------
@@ -32,6 +32,7 @@ release = '0.0.2'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx_autodoc_typehints',
     #'sphinx.ext.viewcode', # Uncomment to view the button "source" in the generated documentation.
     'sphinx.ext.coverage',
     'sphinx.ext.githubpages'

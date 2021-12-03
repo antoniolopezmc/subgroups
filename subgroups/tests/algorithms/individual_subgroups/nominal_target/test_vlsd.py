@@ -7,7 +7,7 @@
 """
 
 from pandas import DataFrame
-from subgroups.algorithms.individual_subgroups.non_numeric_target.vlsd import VLSD
+from subgroups.algorithms.individual_subgroups.nominal_target.vlsd import VLSD
 from subgroups.quality_measures.wracc import WRAcc
 from subgroups.quality_measures.wracc_optimistic_estimate_1 import WRAccOptimisticEstimate1
 from subgroups.quality_measures.qg import Qg

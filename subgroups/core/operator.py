@@ -10,6 +10,9 @@ from enum import Enum
 from subgroups.exceptions import OperatorNotSupportedError
 from pandas import Series
 
+# Python annotations.
+from typing import Union
+
 class Operator(Enum):
     
     """This enumerator provides the available operators which can be used by the selectors.
@@ -22,15 +25,12 @@ class Operator(Enum):
     LESS_OR_EQUAL = 5
     GREATER_OR_EQUAL = 6
     
-    def evaluate(self, left_element, right_element):
+    def evaluate(self, left_element : Union[str, int, float, Series], right_element : Union[str, int, float, Series]) -> Union[bool, Series]:
         """Method to evaluate whether the expression (left_element self right_element) is True. IMPORTANT: if the operator is not supported between both elements, a TypeError exception is raised.
         
-        :type left_element: str, int, float or pandas.Series
         :param left_element: the left element of the expression. It can be also of type 'pandas.Series' in order to allow comparisons with whole arrays.
-        :type right_element: str, int, float or pandas.Series
         :param right_element: the right element of the expression. It can be also of type 'pandas.Series' in order to allow comparisons with whole arrays.
-        :rtype: bool or collection[bool]
-        :return: whether the expression (left_element self right_element) is True.
+        :return: whether the expression (left_element self right_element) is True. If case of both elements are of type Series, a Series in which each element is of type bool is returned.
         """
         if (type(left_element) is not str) and (type(left_element) is not int) and (type(left_element) is not float) and (type(left_element) is not Series):
             raise TypeError("The type of the parameter 'left_element' must be 'str', 'int', 'float' or 'pandas.Series'.")
@@ -52,12 +52,10 @@ class Operator(Enum):
             raise OperatorNotSupportedError("This operator has not been added to the method 'evaluate'.")
     
     @staticmethod
-    def generate_from_str(input_str):
+    def generate_from_str(input_str : str) -> 'Operator':
         """Static method to generate an Operator from a str.
         
-        :type input_str: str
         :param input_str: the str from which to generate the Operator.
-        :rtype: Operator
         :return: the Operator generated from the str.
         """
         if type(input_str) is not str:
@@ -77,34 +75,34 @@ class Operator(Enum):
         else:
             raise AttributeError("The parameter 'input_str' (with the value '" + input_str + "') does not match with any operator.")
     
-    def __eq__(self, other):
-        if not isinstance(other, Operator):
-            raise TypeError("The type of the parameter must be 'Operator'.")
+    def __eq__(self, other : 'Operator') -> bool:
+        if type(other) is not Operator:
+            raise TypeError("You are making a comparison with an object which type is not 'Operator' (method '__eq__').")
         return self.value == other.value
     
-    def __ne__(self, other):
-        if not isinstance(other, Operator):
-            raise TypeError("The type of the parameter must be 'Operator'.")
+    def __ne__(self, other : 'Operator') -> bool:
+        if type(other) is not Operator:
+            raise TypeError("You are making a comparison with an object which type is not 'Operator' (method '__ne__').")
         return self.value != other.value
     
-    def __lt__(self, other):
-        if not isinstance(other, Operator):
-            raise TypeError("The type of the parameter must be 'Operator'.")
+    def __lt__(self, other : 'Operator') -> bool:
+        if type(other) is not Operator:
+            raise TypeError("You are making a comparison with an object which type is not 'Operator' (method '__lt__').")
         return self.value < other.value
     
-    def __gt__(self, other):
-        if not isinstance(other, Operator):
-            raise TypeError("The type of the parameter must be 'Operator'.")
+    def __gt__(self, other : 'Operator') -> bool:
+        if type(other) is not Operator:
+            raise TypeError("You are making a comparison with an object which type is not 'Operator' (method '__gt__').")
         return self.value > other.value
     
-    def __le__(self, other):
-        if not isinstance(other, Operator):
-            raise TypeError("The type of the parameter must be 'Operator'.")
+    def __le__(self, other : 'Operator') -> bool:
+        if type(other) is not Operator:
+            raise TypeError("You are making a comparison with an object which type is not 'Operator' (method '__le__').")
         return self.value <= other.value
     
-    def __ge__(self, other):
-        if not isinstance(other, Operator):
-            raise TypeError("The type of the parameter must be 'Operator'.")
+    def __ge__(self, other : 'Operator') -> bool:
+        if type(other) is not Operator:
+            raise TypeError("You are making a comparison with an object which type is not 'Operator' (method '__ge__').")
         return self.value >= other.value
     
     def __str__(self):
