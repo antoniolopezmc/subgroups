@@ -10,6 +10,9 @@ from subgroups.quality_measures._base import QualityMeasure
 from subgroups.exceptions import SubgroupParameterNotFoundError
 from subgroups.quality_measures.piatetsky_shapiro import PiatetskyShapiro
 
+# Python annotations.
+from typing import Union
+
 class PiatetskyShapiroOptimisticEstimate1(QualityMeasure): # SOURCE: https://link.springer.com/chapter/10.1007%2F978-3-540-87479-9_47
     """This class defines an Optimistic Estimate of the Piatetsky-Shapiro quality measure.
     """
@@ -17,17 +20,15 @@ class PiatetskyShapiroOptimisticEstimate1(QualityMeasure): # SOURCE: https://lin
     _singleton = None
     __slots__ = ()
     
-    def __new__(cls):
+    def __new__(cls) -> 'PiatetskyShapiroOptimisticEstimate1':
         if PiatetskyShapiroOptimisticEstimate1._singleton is None:
             PiatetskyShapiroOptimisticEstimate1._singleton = object().__new__(cls)
         return PiatetskyShapiroOptimisticEstimate1._singleton
     
-    def compute(self, dict_of_parameters):
+    def compute(self, dict_of_parameters : dict[str, Union[int, float]]) -> float:
         """Method to compute the PiatetskyShapiroOptimisticEstimate1 quality measure (you can also call to the instance for this purpose).
         
-        :type dict_of_parameters: dict[str, int or float]
         :param dict_of_parameters: python dictionary which contains all the necessary parameters used to compute this quality measure.
-        :rtype: float
         :return: the computed value for the PiatetskyShapiroOptimisticEstimate1 quality measure.
         """
         if type(dict_of_parameters) is not dict:
@@ -46,25 +47,22 @@ class PiatetskyShapiroOptimisticEstimate1(QualityMeasure): # SOURCE: https://lin
         FP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_FP]
         return (tp+fp) * ( 1 - ( TP / (TP+FP) ) ) # n * (1 - p0)
     
-    def get_name(self):
+    def get_name(self) -> str:
         """Method to get the quality measure name (equal to the class name).
         """
         return "PiatetskyShapiroOptimisticEstimate1"
     
-    def optimistic_estimate_of(self):
+    def optimistic_estimate_of(self) -> dict[str, QualityMeasure]:
         """Method to get a python dictionary with the quality measures of which this one is an optimistic estimate.
         
-        :rtype: dict[str, QualityMeasure]
-        :return: a python dictionary where the keys are the quality measure names and the values are the instances of those quality measures.
+        :return: a python dictionary in which the keys are the quality measure names and the values are the instances of those quality measures.
         """
         return dict({PiatetskyShapiro().get_name() : PiatetskyShapiro()})
     
-    def __call__(self, dict_of_parameters):
+    def __call__(self, dict_of_parameters : dict[str, Union[int, float]]) -> float:
         """Compute the PiatetskyShapiroOptimisticEstimate1 quality measure.
         
-        :type dict_of_parameters: dict[str, int or float]
         :param dict_of_parameters: python dictionary which contains all the needed parameters with which to compute this quality measure.
-        :rtype: float
         :return: the computed value for the PiatetskyShapiroOptimisticEstimate1 quality measure.
         """
         return self.compute(dict_of_parameters)

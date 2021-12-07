@@ -10,6 +10,9 @@ from subgroups.quality_measures._base import QualityMeasure
 from subgroups.exceptions import SubgroupParameterNotFoundError
 from subgroups.quality_measures.wracc import WRAcc
 
+# Python annotations.
+from typing import Union
+
 class WRAccOptimisticEstimate1(QualityMeasure):
     """This class defines an Optimistic Estimate of the Weighted Relative Accuracy (WRAcc) quality measure.
     """
@@ -17,17 +20,15 @@ class WRAccOptimisticEstimate1(QualityMeasure):
     _singleton = None
     __slots__ = ()
     
-    def __new__(cls):
+    def __new__(cls) -> 'WRAccOptimisticEstimate1':
         if WRAccOptimisticEstimate1._singleton is None:
             WRAccOptimisticEstimate1._singleton = object().__new__(cls)
         return WRAccOptimisticEstimate1._singleton
     
-    def compute(self, dict_of_parameters):
+    def compute(self, dict_of_parameters : dict[str, Union[int, float]]) -> float:
         """Method to compute the WRAccOptimisticEstimate1 quality measure (you can also call to the instance for this purpose).
         
-        :type dict_of_parameters: dict[str, int or float]
         :param dict_of_parameters: python dictionary which contains all the necessary parameters used to compute this quality measure.
-        :rtype: float
         :return: the computed value for the WRAccOptimisticEstimate1 quality measure.
         """
         if type(dict_of_parameters) is not dict:
@@ -46,25 +47,22 @@ class WRAccOptimisticEstimate1(QualityMeasure):
         FP = dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_FP]
         return ( (tp*tp)/(tp+fp) ) * ( 1 - ( TP/(TP+FP) ) )
     
-    def get_name(self):
+    def get_name(self) -> str:
         """Method to get the quality measure name (equal to the class name).
         """
         return "WRAccOptimisticEstimate1"
     
-    def optimistic_estimate_of(self):
+    def optimistic_estimate_of(self) -> dict[str, QualityMeasure]:
         """Method to get a python dictionary with the quality measures of which this one is an optimistic estimate.
         
-        :rtype: dict[str, QualityMeasure]
-        :return: a python dictionary where the keys are the quality measure names and the values are the instances of those quality measures.
+        :return: a python dictionary in which the keys are the quality measure names and the values are the instances of those quality measures.
         """
         return dict({WRAcc().get_name() : WRAcc()})
     
-    def __call__(self, dict_of_parameters):
+    def __call__(self, dict_of_parameters : dict[str, Union[int, float]]) -> float:
         """Compute the WRAccOptimisticEstimate1 quality measure.
         
-        :type dict_of_parameters: dict[str, int or float]
         :param dict_of_parameters: python dictionary which contains all the needed parameters with which to compute this quality measure.
-        :rtype: float
         :return: the computed value for the WRAccOptimisticEstimate1 quality measure.
         """
         return self.compute(dict_of_parameters)

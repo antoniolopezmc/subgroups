@@ -11,7 +11,7 @@ from subgroups.exceptions import OperatorNotSupportedError
 from pandas import Series
 
 # Python annotations.
-from typing import Union, Literal
+from typing import Union
 
 class Operator(Enum):
     
@@ -41,13 +41,13 @@ class Operator(Enum):
         elif self == Operator.NOT_EQUAL:
             return left_element != right_element
         elif self == Operator.LESS:
-            return left_element < right_element
+            return left_element < right_element # type: ignore
         elif self == Operator.GREATER:
-            return left_element > right_element
+            return left_element > right_element # type: ignore
         elif self == Operator.LESS_OR_EQUAL:
-            return left_element <= right_element
+            return left_element <= right_element # type: ignore
         elif self == Operator.GREATER_OR_EQUAL:
-            return left_element >= right_element
+            return left_element >= right_element # type: ignore
         else:
             raise OperatorNotSupportedError("This operator has not been added to the method 'evaluate'.")
     

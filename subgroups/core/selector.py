@@ -7,11 +7,11 @@
 """
 
 from subgroups.core.operator import Operator
-import weakref
+from weakref import WeakValueDictionary
 from pandas import Series
 
 # Python annotations.
-from typing import Union
+from typing import Union, ClassVar
 
 class Selector(object):
     """This class represents a 'Selector'. A 'Selector' is an IMMUTABLE structure which contains an attribute name, an operator and a value.
@@ -21,10 +21,10 @@ class Selector(object):
     :param value: the value.
     """
     
-    __slots__ = "_attribute_name", "_operator", "_value", "__weakref__"
+    __slots__ = ("_attribute_name", "_operator", "_value", "__weakref__")
     
     # We implement a selector pool using Weak References.
-    _dict_of_selectors : weakref.WeakValueDictionary[str, 'Selector'] = weakref.WeakValueDictionary()
+    _dict_of_selectors : ClassVar[WeakValueDictionary[str, 'Selector']] = WeakValueDictionary()
     
     def __new__(cls, attribute_name : str, operator : Operator, value : Union[str, int, float]) -> 'Selector':
         if type(attribute_name) is not str:
@@ -55,17 +55,15 @@ class Selector(object):
     
     def _get_attribute_name(self) -> str:
         return self._attribute_name
-    
-    attribute_name = property(_get_attribute_name, None, None, "The attribute name.")
-    
+        
     def _get_operator(self) -> Operator:
         return self._operator
-    
-    operator = property(_get_operator, None, None, "The operator between the attribute name and the value.")
-    
+        
     def _get_value(self) -> Union[str, int, float]:
         return self._value
     
+    attribute_name = property(_get_attribute_name, None, None, "The attribute name.")
+    operator = property(_get_operator, None, None, "The operator between the attribute name and the value.")
     value = property(_get_value, None, None, "The value.")
     
     def match(self, attribute_name : str, value : Union[str, int, float, Series]) -> Union[bool, Series]:

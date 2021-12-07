@@ -9,6 +9,7 @@
 from subgroups.data_structures.fp_tree_node import FPTreeNode
 from subgroups.core.selector import Selector
 from subgroups.core.operator import Operator
+from subgroups.exceptions import DuplicateFpTreeNodeError
 
 def test_FPTreeNode():
     # Root.
@@ -44,7 +45,7 @@ def test_FPTreeNode():
     try:
         node1.add_child(node4) # This node will not be inserted because it has the same selector as node3.
         assert (False)
-    except KeyError:
+    except DuplicateFpTreeNodeError:
         assert (True)
     node1.add_child(node5)
     assert (node1.number_of_children == 3)

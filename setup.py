@@ -57,7 +57,8 @@ class custom_build_py(build_py):
         shutil.copytree("subgroups/tests", tests_dir_in_build_directory)
 
 class remove_all_pycache_directories(Command):
-    """Command to remove all '__pycache__' directories."""
+    """Command to remove all '__pycache__' directories.
+    """
     
     # This command has no user options.
     user_options = []
@@ -117,7 +118,7 @@ if __name__ == "__main__":
             "License :: OSI Approved :: BSD License",
             "Operating System :: OS Independent",
         ],
-        python_requires='>=3.8.5',
+        python_requires='>=3.9.0',
         cmdclass = {
             "build_py" : custom_build_py,
             "remove_all_pycache_directories" : remove_all_pycache_directories,

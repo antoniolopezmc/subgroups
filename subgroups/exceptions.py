@@ -3,8 +3,7 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-"""
-This file contains new exceptions used by the library.
+"""This file contains new exceptions used by the library.
 """
 
 class OperatorNotSupportedError(NotImplementedError):
@@ -25,4 +24,8 @@ class InconsistentMethodParametersError(RuntimeError):
 
 class DatasetAttributeTypeError(TypeError):
     """This exception is raised when the type of an attribute in a dataset is not supported by a Subgroup Discovery (SD) algorithm.
+    """
+
+class DuplicateFpTreeNodeError(RuntimeError):
+    """This exception is raised when attempting to add a FPTreeNode which already exists.
     """

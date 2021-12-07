@@ -7,11 +7,11 @@
 """
 
 from subgroups.core.selector import Selector
-import bisect
+from bisect import bisect_left
 from pandas import Series, DataFrame
 
 # Python annotations.
-from typing import Iterator, Union
+from typing import Iterator
 
 class Pattern(object):
     """This class represents a 'Pattern'. A 'Pattern' is a sorted list of non-repeated selectors.
@@ -19,7 +19,7 @@ class Pattern(object):
     :param list_of_selectors: a list of selectors. IMPORTANT: we assume that the list only contains selectors.
     """
     
-    __slots__ = "_list_of_selectors"
+    __slots__ = ("_list_of_selectors")
     
     def __init__(self, list_of_selectors : list[Selector]) -> None:
         if type(list_of_selectors) is not list:
@@ -43,7 +43,7 @@ class Pattern(object):
         if not isinstance(selector, Selector):
             raise TypeError("The parameter 'selector' must be an instance of the 'Selector' class or of a subclass thereof.")
         # We can use the bisection algorithm because the list is sorted.
-        index = bisect.bisect_left(self._list_of_selectors, selector)
+        index = bisect_left(self._list_of_selectors, selector)
         if (index == len(self._list_of_selectors)): # The list is empty OR the element will be inserted in the right side of the list.
             self._list_of_selectors.append(selector)
         elif (self._list_of_selectors[index] != selector): # The list is not empty AND the element will not be inserted in the right side of the list.
@@ -57,7 +57,7 @@ class Pattern(object):
         if not isinstance(selector, Selector):
             raise TypeError("The parameter 'selector' must be an instance of the 'Selector' class or of a subclass thereof.")
         # We can use the bisection algorithm because the list is sorted.
-        index = bisect.bisect_left(self._list_of_selectors, selector)
+        index = bisect_left(self._list_of_selectors, selector)
         if (index < len(self._list_of_selectors)) and (self._list_of_selectors[index] == selector):
             self._list_of_selectors.pop(index)
     
@@ -70,7 +70,7 @@ class Pattern(object):
             raise TypeError("The type of the parameter 'index' must be 'int'.")
         self._list_of_selectors.pop(index)
     
-    def get_selector(self, index : int) -> None:
+    def get_selector(self, index : int) -> Selector:
         """Method to get a selector from the pattern by index. If the index is out of range, an 'IndexError' exception is raised.
         
         :param index: the index which is used.
@@ -111,9 +111,9 @@ class Pattern(object):
     
     @staticmethod
     def generate_from_str(input_str : str) -> 'Pattern':
-        """Static method to generate a Pattern from a str.
+        r"""Static method to generate a Pattern from a str.
         
-        :param input_str: the str from which to generate the Pattern. We assume the format defined by the following regular expressions: (1) '\[\]' (empty Pattern), (2) '\[selector\]' (Pattern with only one selector) or (3) '\[selector(, selector)+\]' (Pattern with more than one selector).
+        :param input_str: the str from which to generate the Pattern. We assume the format defined by one of the following regular expressions: (1) '\\[\\]' (empty Pattern), (2) '\\[selector\\]' (Pattern with only one selector), (3) '\\[selector(, selector)+\\]' (Pattern with more than one selector).
         :return: the Pattern generated from the str.
         """
         if type(input_str) is not str:
@@ -167,7 +167,7 @@ class Pattern(object):
         if not isinstance(item, Selector):
             raise TypeError("You are using an object which is not an instance of the 'Selector' class or of a subclass thereof.")
         # We can use the bisection algorithm because the list is sorted.
-        index = bisect.bisect_left(self._list_of_selectors, item)
+        index = bisect_left(self._list_of_selectors, item)
         return (len(self._list_of_selectors) > 0) and (self._list_of_selectors[index] == item)
     
     def __iter__(self) -> Iterator[Selector]:

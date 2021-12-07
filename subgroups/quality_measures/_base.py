@@ -8,6 +8,9 @@
 
 from abc import ABC, abstractmethod
 
+# Python annotations.
+from typing import Union, ClassVar
+
 class QualityMeasure(ABC):
     """This abstract class defines the parent class for all the quality measures.
     """
@@ -16,13 +19,13 @@ class QualityMeasure(ABC):
     
     ## We consider the following subgroup parameters. We can compute all the quality measures using these general elements. ##
     # true positives tp (rows covered by the subgroup description and by the subgroup target).
-    SUBGROUP_PARAMETER_tp = "tp"
+    SUBGROUP_PARAMETER_tp : ClassVar[str] = "tp"
     # false positives fp (rows covered by the subgroup description but not by the subgroup target).
-    SUBGROUP_PARAMETER_fp = "fp"
-    # True Positives TP (rows covered by the subgroup target).
-    SUBGROUP_PARAMETER_TP = "TP"
-    # False Positives FP (rows not covered by the subgroup target).
-    SUBGROUP_PARAMETER_FP = "FP"
+    SUBGROUP_PARAMETER_fp : ClassVar[str] = "fp"
+    # true population TP (rows covered by the subgroup target).
+    SUBGROUP_PARAMETER_TP : ClassVar[str] = "TP"
+    # false population FP (rows not covered by the subgroup target).
+    SUBGROUP_PARAMETER_FP : ClassVar[str] = "FP"
     
     ### IMPORTANT ###
     ## There are other elements/parameters which are also used in the Subgroup Discovery literature. We define the following equivalences:
@@ -41,38 +44,33 @@ class QualityMeasure(ABC):
     #  
     
     @abstractmethod
-    def compute(self, dict_of_parameters):
+    def compute(self, dict_of_parameters : dict[str, Union[int, float]]) -> float:
         """Method to compute the corresponding quality measure (you can also call to the instance for this purpose).
         
-        :type dict_of_parameters: dict[str, int or float]
         :param dict_of_parameters: python dictionary which contains all the necessary parameters used to compute this quality measure.
-        :rtype: float
         :return: the computed value for the corresponding quality measure.
         """
         pass
     
     @abstractmethod
-    def get_name(self):
+    def get_name(self) -> str:
         """Method to get the quality measure name (equal to the class name).
         """
         pass
     
     @abstractmethod
-    def optimistic_estimate_of(self):
+    def optimistic_estimate_of(self) -> dict[str, 'QualityMeasure']:
         """Method to get a python dictionary with the quality measures of which this one is an optimistic estimate.
         
-        :rtype: dict[str, QualityMeasure]
-        :return: a python dictionary where the keys are the quality measure names and the values are the instances of those quality measures.
+        :return: a python dictionary in which the keys are the quality measure names and the values are the instances of those quality measures.
         """
         pass
     
     @abstractmethod
-    def __call__(self, dict_of_parameters):
+    def __call__(self, dict_of_parameters : dict[str, Union[int, float]]) -> float:
         """Compute the corresponding quality measure.
         
-        :type dict_of_parameters: dict[str, int or float]
         :param dict_of_parameters: python dictionary which contains all the needed parameters with which to compute this quality measure.
-        :rtype: float
         :return: the computed value for the corresponding quality measure.
         """
         pass

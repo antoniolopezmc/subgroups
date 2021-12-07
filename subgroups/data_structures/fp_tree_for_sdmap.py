@@ -13,16 +13,19 @@ from pandas import DataFrame
 from numpy import size, sum
 from subgroups.exceptions import InconsistentMethodParametersError
 
+# Python annotations.
+from typing import Union, Any
+
 class FPTreeForSDMap(object):
     """This class represents the FPTree data structure used in the SDMap algorithm.
     """
     
-    __slots__ = "_root_node", "_header_table", "_sorted_header_table"
+    __slots__ = ("_root_node", "_header_table", "_sorted_header_table")
     
-    def __init__(self):
+    def __init__(self) -> None:
         # The root of the tree. In this case, in each node, we have two counter: the true positives tp of the selector of the node and the false positives fp of the selector of the node.
         self._root_node = FPTreeNode(Selector("None", Operator.EQUAL, "None"), [-1, -1], None)
-        # The header table is represented with a python dictionary, where the key is a selector and the value is a list with 3 elements:
+        # The header table is represented with a python dictionary, in which the key is a selector and the value is a list with 3 elements:
         # - The first element is a list with 2 elements:
         #   * The summation of the true positives tp of all the nodes with that selector.
         #   * The summation of the false positives fp of all the nodes with that selector.
@@ -34,31 +37,29 @@ class FPTreeForSDMap(object):
         # - We store them in a list.
         self._sorted_header_table = []
     
-    def _get_root_node(self):
+    def _get_root_node(self) -> FPTreeNode:
         return self._root_node
     
-    def _get_header_table(self):
+    def _get_header_table(self) -> dict[Selector, list[Any]]:
         return self._header_table
     
-    def _get_sorted_header_table(self):
+    def _get_sorted_header_table(self) -> list:
         return self._sorted_header_table
     
     root_node = property(_get_root_node, None, None, "The root of the tree.")
     header_table = property(_get_header_table, None, None, "The header table.")
     sorted_header_table = property(_get_sorted_header_table, None, None, "A list with the selectors of the header table sorted according to the summation of the 'n' (summation of the true positives tp + summation of the false positives fp).")
     
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """Method to check whether the FPTree only has the root node.
         
-        :rtype: bool
         :return: whether the FPTree only has the root node.
         """
         return (self._root_node.number_of_children == 0)
     
-    def there_is_a_single_path(self):
+    def there_is_a_single_path(self) -> bool:
         """Method to check whether all internal nodes only have 1 child.
         
-        :rtype: bool
         :return: whether all internal nodes only have 1 child.
         """
         # Go down while the current node has only one child.
@@ -66,24 +67,22 @@ class FPTreeForSDMap(object):
         while (current_node.number_of_children == 1):
             current_node = list(current_node._childs.values())[0] # Get the unique child node.
         # Check the number of children of the current node.
-        if (current_node.number_of_children == 0):
-            return True # If the number of children is 0, we are at the end of the tree and there is a single path.
-        else:
-            return False # If the number of children is greater than 1, there is not a single path.
+        # - If the number of children is 0, we are at the end of the tree and there is a single path.
+        # - If the number of children is greater than 1, there is not a single path.
+        return (current_node.number_of_children == 0)
     
-    def tree_as_str(self):
+    def tree_as_str(self) -> str:
         """Method to print as str the complete FPTree from the root node.
         
-        :rtype: str
         :return: the printed FPTree.
         """
         return self._root_node.tree_as_str(current_depth=0)
     
-    def header_table_as_str(self, follow_node_links=True):
+    def header_table_as_str(self, follow_node_links : bool = True) -> str:
         """Method to print all the entries of the FPTree header table.
         
-        :type follow_node_links: bool
         :param follow_node_links: whether print all the FPTreeNode ids in the horizontal list or only the first one. By default, True.
+        :return: the printed header table.
         """
         if type(follow_node_links) is not bool:
             raise TypeError("The type of the parameter 'follow_node_links' must be 'bool'.")
@@ -101,21 +100,15 @@ class FPTreeForSDMap(object):
         return result
     
     # IMPORTANT: in the original implementation of the SDMap algorithm (in Vikamine), they check 'n' (true positives + false positives) in order to prune the frequent selectors. In our implementation, we use two threshold types: (1) the true positives (tp) and the false positives (fp) separately or (2) the subgroup description size (n).
-    def generate_set_of_frequent_selectors(self, pandas_dataframe, target, minimum_tp=None, minimum_fp=None, minimum_n=None):
+    def generate_set_of_frequent_selectors(self, pandas_dataframe : DataFrame, target : tuple[str, Union[int, float, str]], minimum_tp : Union[int, None] = None, minimum_fp : Union[int, None] = None, minimum_n : Union[int, None] = None) -> dict[str, tuple[Selector, list[int], int]]:
         """Method to scan the pandas DataFrame in order to generate the set of frequent selectors. Two threshold types could be used: (1) the true positives tp and the false positives fp separately or (2) the subgroup description size n (n = tp + fp). This means that: (1) if 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and (2) if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None. IMPORTANT: missing values are not supported yet.
         
-        :type pandas_dataframe: pandas.DataFrame
         :param pandas_dataframe: the DataFrame which is scanned. IMPORTANT: missing values are not supported yet.
-        :type target: tuple[str, int] or tuple[str, float] or tuple[str, str]
         :param target: a tuple with 2 elements: the target attribute name and the target value.
-        :type minimum_tp: int or NoneType
         :param minimum_tp: the minimum true positives (tp) threshold.
-        :type minimum_fp: int or NoneType
         :param minimum_fp: the minimum false positives (fp) threshold.
-        :type minimum_n: int or NoneType
         :param minimum_n: the minimum subgroup description size (n) threshold.
-        :rtype: dict[str, tuple[Selector, list[int, int], int]]
-        :return: a dictionary where the keys are strings (the concatenation of the selector attribute name and the selector value) and the values are tuples with 3 values: (1) the selector, (2) a list with 2 elements: the true positives tp of it and the false positives fp of it, and (3) a number indicating the insertion order in this dictionary (starting from 0).
+        :return: a dictionary in which the keys are strings (the concatenation of the selector attribute name and the selector value) and the values are tuples with 3 elements: (1) the selector, (2) a list with 2 elements: the true positives tp of it and the false positives fp of it, and (3) a number indicating the insertion order in this dictionary (starting from 0).
         """
         if type(pandas_dataframe) is not DataFrame:
             raise TypeError("The type of the parameter 'pandas_dataframe' must be 'DataFrame'.")
@@ -176,14 +169,11 @@ class FPTreeForSDMap(object):
             raise InconsistentMethodParametersError("If 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.")
     
     # IMPORTANT: in the original paper, this method is recursive. In our implementation, the method is iterative.
-    def _insert_tree(self, list_of_selectors, parent_node, target_match):
+    def _insert_tree(self, list_of_selectors : list[Selector], parent_node : FPTreeNode, target_match : bool) -> None:
         """Private method to insert a list of selectors from a parent node.
         
-        :type list_of_selectors: list[Selector]
         :param list_of_selectors: the list of selectors which is inserted in the tree. IMPORTANT: we assume that the list of selectors only contains selectors.
-        :type parent_node: FPTreeNode
         :param parent_node: the parent node from which to start the insertion.
-        :type target_match: bool
         :param target_match: whether we consider that the target attribute match.
         """
         current_parent_node = parent_node
@@ -212,11 +202,6 @@ class FPTreeForSDMap(object):
                 current_parent_node.add_child(new_fptreenode)
                 # Check if the current selector is in the header table.
                 if selector in self._header_table:
-                    ##### # If it is in the header table, iterate through the node links, add the new node at the end of the horizontal list and increase the summation of true positives tp in the header table.
-                    ##### current_node_in_the_horizontal_list = self._header_table[selector][1]
-                    ##### while (current_node_in_the_horizontal_list.node_link is not None):
-                    #####     current_node_in_the_horizontal_list = current_node_in_the_horizontal_list.node_link
-                    ##### current_node_in_the_horizontal_list.node_link = new_fptreenode
                     # If it is in the header table, add the new node at the end of the horizontal list and increase the summation of true positives tp in the header table.
                     self._header_table[selector][2]._node_link = new_fptreenode
                     self._header_table[selector][2] = new_fptreenode
@@ -232,11 +217,6 @@ class FPTreeForSDMap(object):
                 current_parent_node.add_child(new_fptreenode)
                 # Check if the current selector is in the header table.
                 if selector in self._header_table:
-                    ##### # If it is in the header table, iterate through the node links, add the new node at the end of the horizontal list and increase the summation of false positives fp in the header table.
-                    ##### current_node_in_the_horizontal_list = self._header_table[selector][1]
-                    ##### while (current_node_in_the_horizontal_list.node_link is not None):
-                    #####     current_node_in_the_horizontal_list = current_node_in_the_horizontal_list.node_link
-                    ##### current_node_in_the_horizontal_list.node_link = new_fptreenode
                     # If it is in the header table, add the new node at the end of the horizontal list and increase the summation of false positives fp in the header table.
                     self._header_table[selector][2]._node_link = new_fptreenode
                     self._header_table[selector][2] = new_fptreenode
@@ -246,14 +226,11 @@ class FPTreeForSDMap(object):
                 # Go down in the tree (the current node will be the current parent node in the next iteration).
                 current_parent_node = new_fptreenode
     
-    def build_tree(self, pandas_dataframe, set_of_frequent_selectors, target):
+    def build_tree(self, pandas_dataframe : DataFrame, set_of_frequent_selectors : dict[str, tuple[Selector, list[int], int]], target : tuple[str, Union[int, float, str]]) -> None:
         """Method to build the complete FPTree from a pandas DataFrame and using the set of frequent selectors. IMPORTANT: missing values are not supported yet.
         
-        :type pandas_dataframe: pandas.DataFrame
         :param pandas_dataframe: the DataFrame which is scanned. IMPORTANT: missing values are not supported yet.
-        :type set_of_frequent_selectors: dict[str, tuple[Selector, list[int, int], int]]
         :param set_of_frequent_selectors: the set of frequent selectors generated by the method 'generate_set_of_frequent_selectors'.
-        :type target: tuple[str, int] or tuple[str, float] or tuple[str, str]
         :param target: a tuple with 2 elements: the target attribute name and the target value.
         """
         if type(pandas_dataframe) is not DataFrame:
@@ -292,18 +269,13 @@ class FPTreeForSDMap(object):
         # - In case of tie, we maintain the insertion order in the dictionary 'header_table'.
         self._sorted_header_table.sort(reverse=False, key=lambda x : (self._header_table[x][0][0] + self._header_table[x][0][1])) # Ascending order.
     
-    def generate_conditional_fp_tree(self, list_of_selectors, minimum_tp=None, minimum_fp=None, minimum_n=None):
+    def generate_conditional_fp_tree(self, list_of_selectors : list[Selector], minimum_tp : Union[int, None] = None, minimum_fp : Union[int, None] = None, minimum_n : Union[int, None] = None) -> 'FPTreeForSDMap':
         """Method to get the conditional FPTree with a list of selectors. Two threshold types could be used: (1) the true positives tp and the false positives fp separately or (2) the subgroup description size n (n = tp + fp). This means that: (1) if 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and (2) if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.
         
-        :type list_of_selectors: list[Selector]
         :param list_of_selectors: the list of selectors which is used. IMPORTANT: we assume that the list of selectors only contains selectors.
-        :type minimum_tp: int or NoneType
         :param minimum_tp: the minimum true positives (tp) threshold.
-        :type minimum_fp: int or NoneType
         :param minimum_fp: the minimum false positives (fp) threshold.
-        :type minimum_n: int or NoneType
         :param minimum_n: the minimum subgroup description size (n) threshold.
-        :rtype: FPTreeForSDMap
         :return: the generated conditional FPTree.
         """
         if type(list_of_selectors) is not list:
@@ -326,12 +298,12 @@ class FPTreeForSDMap(object):
         # We initialize the final result.
         final_conditional_fp_tree = FPTreeForSDMap()
         ### 1. Generate the conditional pattern base and a dict of frequent selectors with their selectors. ###
-        conditional_pattern_base = [] # list[list[list[Selector], int, int]]
+        conditional_pattern_base = [] # list[list[ element 1 -> list[Selector], element 2 -> int, element 3 -> int ]]
         # If the first selector is not in the header table, return the current conditional FPTree.
         if first_selector not in self._header_table:
             return final_conditional_fp_tree
         # Dictionary with all the frequent selectors (before pruning).
-        dict_of_all_frequent_selectors = dict() # dict[str, tuple[Selector, list[int, int], int]]
+        dict_of_all_frequent_selectors = dict() # dict[str, tuple[Selector, list[int], int]]
         # Get the first node in the corresponding horizontal list.
         current_node_in_the_horizontal_list = self._header_table[first_selector][1]
         # Iterate through the horizontal list.
@@ -365,7 +337,7 @@ class FPTreeForSDMap(object):
             # Finally, go the the next node in the horizontal list.
             current_node_in_the_horizontal_list = current_node_in_the_horizontal_list._node_link
         ### 2. Prune the dict of frequent selectors (depending on the values of the parameters 'minimum_tp', 'minimum_fp' and 'minimum_n'). ###
-        dict_of_frequent_selectors = dict() # dict[str, tuple[Selector, list[int, int], int]]
+        dict_of_frequent_selectors = dict() # dict[str, tuple[Selector, list[int], int]]
         if use_tp_and_fp:
             for key in dict_of_all_frequent_selectors:
                 if (dict_of_all_frequent_selectors[key][1][0] >= minimum_tp) and (dict_of_all_frequent_selectors[key][1][1] >= minimum_fp):
@@ -407,22 +379,18 @@ class FPTreeForSDMap(object):
         # Return the final conditional FPTree.
         return final_conditional_fp_tree
     
-    def _insert_in_conditional_fp_tree(self, list_of_selectors, parent_node, fixed_tp, fixed_fp):
+    def _insert_in_conditional_fp_tree(self, list_of_selectors : list[Selector], parent_node : FPTreeNode, fixed_tp : int, fixed_fp : int) -> None:
         """Private method to insert a list of selectors from a parent node.
         
-        :type list_of_selectors: list[Selector]
         :param list_of_selectors: the list of selectors which is inserted in the conditional FPTree. IMPORTANT: we assume that the list of selectors only contains selectors.
-        :type parent_node: FPTreeNode
         :param parent_node: the parent node from which to start the insertion.
-        :type fixed_tp: int
         :param fixed_tp: the fixed number of true positives tp which is used in the insertions and in the increments.
-        :type fixed_fp: int
         :param fixed_fp: the fixed number of false positives fp which is used in the insertions and in the increments.
         """
         current_parent_node = parent_node
         for selector in list_of_selectors:
             # Get the child node with the current selector or None if it does not exist.
-            child_node_with_this_selector = current_parent_node.get_child_by_selector(selector)
+            child_node_with_this_selector = current_parent_node.get_child_by_selector(selector) # type: ignore
             # Check if the node exists or not and if the parameter 'target_match' is True or False.
             if (child_node_with_this_selector is not None):
                 # Increase the true positives tp and the false positives fp in the node.
@@ -437,14 +405,9 @@ class FPTreeForSDMap(object):
                 # Create a new FPTree Node.
                 new_fptreenode = FPTreeNode(selector, [fixed_tp, fixed_fp], None)
                 # Add it as a child of the current parent node.
-                current_parent_node.add_child(new_fptreenode)
+                current_parent_node.add_child(new_fptreenode) # type: ignore
                 # Check if the current selector is in the header table.
                 if selector in self._header_table:
-                    ##### # If it is in the header table, iterate through the node links, add the new node at the end of the horizontal list and increase the summation of tp and fp in the header table.
-                    ##### current_node_in_the_horizontal_list = self._header_table[selector][1]
-                    ##### while (current_node_in_the_horizontal_list.node_link is not None):
-                    #####     current_node_in_the_horizontal_list = current_node_in_the_horizontal_list.node_link
-                    ##### current_node_in_the_horizontal_list.node_link = new_fptreenode
                     # If it is in the header table, add the new node at the end of the horizontal list and increase the summation of tp and fp in the header table.
                     self._header_table[selector][2]._node_link = new_fptreenode
                     self._header_table[selector][2] = new_fptreenode
