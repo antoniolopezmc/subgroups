@@ -307,7 +307,7 @@ class VLSD(Algorithm):
                     V.sort(reverse=True, key=lambda x : x.quality_value)
                 self._search(V, M, target, TP, FP)
     
-    def fit(self, pandas_dataframe : DataFrame, target : tuple[str, str]):
+    def fit(self, pandas_dataframe : DataFrame, target : tuple[str, str]) -> None:
         """Main method to run the VLSD algorithm. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported.
         
         :param pandas_dataframe: the DataFrame which is scanned. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported.
