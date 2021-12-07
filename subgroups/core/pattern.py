@@ -10,16 +10,18 @@ from subgroups.core.selector import Selector
 import bisect
 from pandas import Series, DataFrame
 
+# Python annotations.
+from typing import Iterator, Union
+
 class Pattern(object):
     """This class represents a 'Pattern'. A 'Pattern' is a sorted list of non-repeated selectors.
     
-    :type list_of_selectors: list[Selector]
     :param list_of_selectors: a list of selectors. IMPORTANT: we assume that the list only contains selectors.
     """
     
     __slots__ = "_list_of_selectors"
     
-    def __init__(self, list_of_selectors):
+    def __init__(self, list_of_selectors : list[Selector]) -> None:
         if type(list_of_selectors) is not list:
             raise TypeError("The type of the parameter 'list_of_selectors' must be 'list'.")
         # We use a temporal list in order to store a copy of the list 'list_of_selectors'. IMPORTANT: We only copy the list, but not the selectors contained in it.
@@ -33,14 +35,13 @@ class Pattern(object):
             if (len(self._list_of_selectors) == 0) or (self._list_of_selectors[-1] != elem):
                 self._list_of_selectors.append(elem)
     
-    def add_selector(self, selector):
+    def add_selector(self, selector : Selector) -> None:
         """Method to add a selector to the pattern. If the selector already exists, this method does nothing.
         
-        :type selector: Selector
         :param selector: the selector which is added.
         """
         if not isinstance(selector, Selector):
-            raise TypeError("The type of the parameter 'selector' must be 'Selector'.")
+            raise TypeError("The parameter 'selector' must be an instance of the 'Selector' class or of a subclass thereof.")
         # We can use the bisection algorithm because the list is sorted.
         index = bisect.bisect_left(self._list_of_selectors, selector)
         if (index == len(self._list_of_selectors)): # The list is empty OR the element will be inserted in the right side of the list.
@@ -48,43 +49,39 @@ class Pattern(object):
         elif (self._list_of_selectors[index] != selector): # The list is not empty AND the element will not be inserted in the right side of the list.
             self._list_of_selectors.insert(index, selector)
     
-    def remove_selector(self, selector):
+    def remove_selector(self, selector : Selector) -> None:
         """Method to remove a selector from the pattern. If the selector does not exist, this method does nothing.
         
-        :type selector: Selector
         :param selector: the selector which is removed.
         """
         if not isinstance(selector, Selector):
-            raise TypeError("The type of the parameter 'selector' must be 'Selector'.")
+            raise TypeError("The parameter 'selector' must be an instance of the 'Selector' class or of a subclass thereof.")
         # We can use the bisection algorithm because the list is sorted.
         index = bisect.bisect_left(self._list_of_selectors, selector)
         if (index < len(self._list_of_selectors)) and (self._list_of_selectors[index] == selector):
             self._list_of_selectors.pop(index)
     
-    def remove_selector_by_index(self, index):
+    def remove_selector_by_index(self, index : int) -> None:
         """Method to remove a selector from the pattern by index. If the index is out of range, an 'IndexError' exception is raised.
         
-        :type index: int
         :param index: the index which is used.
         """
         if type(index) is not int:
             raise TypeError("The type of the parameter 'index' must be 'int'.")
         self._list_of_selectors.pop(index)
     
-    def get_selector(self, index):
+    def get_selector(self, index : int) -> None:
         """Method to get a selector from the pattern by index. If the index is out of range, an 'IndexError' exception is raised.
         
-        :type index: int
         :param index: the index which is used.
         """
         if type(index) is not int:
             raise TypeError("The type of the parameter 'index' must be 'int'.")
         return self._list_of_selectors[index]
     
-    def copy(self):
+    def copy(self) -> 'Pattern':
         """Method to copy the Pattern.
         
-        :rtype: Pattern
         :return: the copy of the Pattern WITH THE SAME SELECTORS (THE SAME OBJECTS). This method does not copy the selectors of the list (it is not needed because the selectors are immutable).
         """
         new_list_of_selectors = self._list_of_selectors.copy()
@@ -92,30 +89,31 @@ class Pattern(object):
         new_pattern._list_of_selectors = new_list_of_selectors
         return new_pattern
     
-    def is_contained(self, pandas_dataframe):
+    def is_contained(self, pandas_dataframe : DataFrame) -> Series:
         """Method to check whether the pattern is contained in each row of the pandas.DataFrame passed by parameter. IMPORTANT: If an attribute name of a selector of the pattern is not in the pandas.DataFrame passed by parameter, a KeyError exception is raised.
         
-        :type pandas_dataframe: pandas.DataFrame
         :param pandas_dataframe: the pandas.DataFrame with which the pattern is checked.
-        :rtype: collection[bool]
         :return: whether the pattern is contained in each row of the pandas.DataFrame passed by parameter.
         """
         if type(pandas_dataframe) is not DataFrame:
             raise TypeError("The type of the parameter 'pandas_dataframe' must be 'pandas.DataFrame'.")
         final_result = Series([True] * len(pandas_dataframe)) # The empty pattern is contained in all the rows of a pandas DataFrame.
-        for selector in self._list_of_selectors:
-            current_attribute_name = selector.attribute_name
+        # For each selector, we process the whole corresponding attribute (i.e., the complete Series).
+        # If all the boolean values of 'final_result' are False, we can stop the process.
+        current_index = 0
+        while (final_result.sum() > 0) and (current_index < len(self._list_of_selectors)):
+            current_selector = self._list_of_selectors[current_index]
+            current_attribute_name = current_selector.attribute_name
             corresponding_Series = pandas_dataframe[current_attribute_name]
-            final_result = final_result & selector.match(current_attribute_name, corresponding_Series)
+            final_result = final_result & current_selector.match(current_attribute_name, corresponding_Series)
+            current_index = current_index + 1
         return final_result
     
     @staticmethod
-    def generate_from_str(input_str):
+    def generate_from_str(input_str : str) -> 'Pattern':
         """Static method to generate a Pattern from a str.
         
-        :type input_str: str
         :param input_str: the str from which to generate the Pattern. We assume the format defined by the following regular expressions: (1) '\[\]' (empty Pattern), (2) '\[selector\]' (Pattern with only one selector) or (3) '\[selector(, selector)+\]' (Pattern with more than one selector).
-        :rtype: Pattern
         :return: the Pattern generated from the str.
         """
         if type(input_str) is not str:
@@ -130,9 +128,9 @@ class Pattern(object):
                 list_of_selectors.append(Selector.generate_from_str(element))
             return Pattern(list_of_selectors)
     
-    def __eq__(self, other):
+    def __eq__(self, other : 'Pattern') -> bool:
         if not isinstance(other, Pattern):
-            raise TypeError("The type of the parameter must be 'Pattern'.")
+            raise TypeError("You are making a comparison with an object which is not an instance of the 'Pattern' class or of a subclass thereof.")
         if len(self._list_of_selectors) != len(other._list_of_selectors):
             return False # If they have different lengths, return False.
         for index in range(len(self._list_of_selectors)): # We check only the length of one list, because the length of the other list is the same.
@@ -140,9 +138,9 @@ class Pattern(object):
                 return False
         return True
     
-    def __ne__(self, other):
+    def __ne__(self, other : 'Pattern') -> bool:
         if not isinstance(other, Pattern):
-            raise TypeError("The type of the parameter must be 'Pattern'.")
+            raise TypeError("You are making a comparison with an object which is not an instance of the 'Pattern' class or of a subclass thereof.")
         if len(self._list_of_selectors) != len(other._list_of_selectors):
             return True # If they have different lengths, return True.
         for index in range(len(self._list_of_selectors)): # We check only the length of one list, because the length of the other list is the same.
@@ -150,7 +148,7 @@ class Pattern(object):
                 return True
         return False
     
-    def __str__(self):
+    def __str__(self) -> str:
         if len(self._list_of_selectors) == 0:
             return "[]"
         else:
@@ -162,15 +160,15 @@ class Pattern(object):
             result = result + str(self._list_of_selectors[-1]) + "]" # -1 -> The last element.
             return result
     
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._list_of_selectors)
     
-    def __contains__(self, item):
+    def __contains__(self, item : Selector) -> bool:
         if not isinstance(item, Selector):
-            raise TypeError("The type of the item must be 'Selector'.")
+            raise TypeError("You are using an object which is not an instance of the 'Selector' class or of a subclass thereof.")
         # We can use the bisection algorithm because the list is sorted.
         index = bisect.bisect_left(self._list_of_selectors, item)
         return (len(self._list_of_selectors) > 0) and (self._list_of_selectors[index] == item)
     
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Selector]:
         return iter(self._list_of_selectors)

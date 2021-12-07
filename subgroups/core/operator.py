@@ -11,7 +11,7 @@ from subgroups.exceptions import OperatorNotSupportedError
 from pandas import Series
 
 # Python annotations.
-from typing import Union
+from typing import Union, Literal
 
 class Operator(Enum):
     
@@ -77,35 +77,35 @@ class Operator(Enum):
     
     def __eq__(self, other : 'Operator') -> bool:
         if type(other) is not Operator:
-            raise TypeError("You are making a comparison with an object which type is not 'Operator' (method '__eq__').")
+            raise TypeError("You are making a comparison with an object whose type is not 'Operator'.")
         return self.value == other.value
     
     def __ne__(self, other : 'Operator') -> bool:
         if type(other) is not Operator:
-            raise TypeError("You are making a comparison with an object which type is not 'Operator' (method '__ne__').")
+            raise TypeError("You are making a comparison with an object whose type is not 'Operator'.")
         return self.value != other.value
     
     def __lt__(self, other : 'Operator') -> bool:
         if type(other) is not Operator:
-            raise TypeError("You are making a comparison with an object which type is not 'Operator' (method '__lt__').")
+            raise TypeError("You are making a comparison with an object whose type is not 'Operator'.")
         return self.value < other.value
     
     def __gt__(self, other : 'Operator') -> bool:
         if type(other) is not Operator:
-            raise TypeError("You are making a comparison with an object which type is not 'Operator' (method '__gt__').")
+            raise TypeError("You are making a comparison with an object whose type is not 'Operator'.")
         return self.value > other.value
     
     def __le__(self, other : 'Operator') -> bool:
         if type(other) is not Operator:
-            raise TypeError("You are making a comparison with an object which type is not 'Operator' (method '__le__').")
+            raise TypeError("You are making a comparison with an object whose type is not 'Operator'.")
         return self.value <= other.value
     
     def __ge__(self, other : 'Operator') -> bool:
         if type(other) is not Operator:
-            raise TypeError("You are making a comparison with an object which type is not 'Operator' (method '__ge__').")
+            raise TypeError("You are making a comparison with an object whose type is not 'Operator'.")
         return self.value >= other.value
     
-    def __str__(self):
+    def __str__(self) -> str:
         if self == Operator.EQUAL:
             return "="
         elif self == Operator.NOT_EQUAL:
@@ -119,7 +119,7 @@ class Operator(Enum):
         elif self == Operator.GREATER_OR_EQUAL:
             return ">="
         else:
-            raise OperatorNotSupportedError("This operator does not have a string representation (method '__str__').")
+            raise OperatorNotSupportedError("This operator does not have a string representation.")
     
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.value)

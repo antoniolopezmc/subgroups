@@ -10,68 +10,69 @@ from subgroups.core.operator import Operator
 import weakref
 from pandas import Series
 
+# Python annotations.
+from typing import Union
+
 class Selector(object):
     """This class represents a 'Selector'. A 'Selector' is an IMMUTABLE structure which contains an attribute name, an operator and a value.
     
-    :type attribute_name: str
     :param attribute_name: the attribute name. It must be a non-empty str.
-    :type operator: str
     :param operator: the operator between the attribute name and the value. If the value is of type str, only EQUAL and NOT EQUAL operators are available.
-    :type value: str, int or float
     :param value: the value.
     """
     
     __slots__ = "_attribute_name", "_operator", "_value", "__weakref__"
     
     # We implement a selector pool using Weak References.
-    _dict_of_selectors = weakref.WeakValueDictionary()
+    _dict_of_selectors : weakref.WeakValueDictionary[str, 'Selector'] = weakref.WeakValueDictionary()
     
-    def __new__(cls, attribute_name, operator, value):
+    def __new__(cls, attribute_name : str, operator : Operator, value : Union[str, int, float]) -> 'Selector':
         if type(attribute_name) is not str:
             raise TypeError("The type of the parameter 'attribute_name' must be 'str'.")
-        if not isinstance(operator, Operator):
-            raise TypeError("The parameter 'operator' is not a valid Operator.")
+        if type(operator) is not Operator:
+            raise TypeError("The type of the parameter 'operator' must be 'Operator'.")
         if (type(value) is not str) and (type(value) is not int) and (type(value) is not float):
             raise TypeError("The type of the parameter 'value' must be 'str', 'int' or 'float'.")
         if (type(value) is str) and (operator != Operator.EQUAL) and (operator != Operator.NOT_EQUAL):
             raise ValueError("If the type of the parameter 'value' is 'str', only EQUAL and NOT EQUAL operators are available.")
-        # This will be the key used in the dictionary.
-        # IMPORTANT: we use 'repr' in order to add simple quotes to the values of type str, but not to the values of numeric types.
+        # The key of the dictionary '_dict_of_selectors' will be a string representation of the selector.
+        # For this reason, we must check the value type in order to avoid errors.
         # - EXAMPLE: The selectors Selector("a", Operator.EQUAL, 23) and Selector("a", Operator.EQUAL, "23") must be different.
-        key = attribute_name + str(operator) + repr(value)
+        # In order to solve this problem, we are going to add simple quotes to the values of type str, but not to the values of numeric types.
+        value_for_dictionary_key = value
+        if type(value_for_dictionary_key) is str:
+            value_for_dictionary_key = "\'" + value_for_dictionary_key + "\'"
+        key = attribute_name + str(operator) + str(value_for_dictionary_key)
         if key in Selector._dict_of_selectors:
             return Selector._dict_of_selectors[key]
         else:
             new_instance = super().__new__(cls)
             new_instance._attribute_name = attribute_name
             new_instance._operator = operator
-            new_instance._value = value
+            new_instance._value = value # In this point, we use the initial value (without the simple quotes).
             Selector._dict_of_selectors[key] = new_instance
             return new_instance
     
-    def _get_attribute_name(self):
+    def _get_attribute_name(self) -> str:
         return self._attribute_name
     
     attribute_name = property(_get_attribute_name, None, None, "The attribute name.")
     
-    def _get_operator(self):
+    def _get_operator(self) -> Operator:
         return self._operator
     
     operator = property(_get_operator, None, None, "The operator between the attribute name and the value.")
     
-    def _get_value(self):
+    def _get_value(self) -> Union[str, int, float]:
         return self._value
     
     value = property(_get_value, None, None, "The value.")
     
-    def match(self, attribute_name, value):
+    def match(self, attribute_name : str, value : Union[str, int, float, Series]) -> Union[bool, Series]:
         """Method to check whether the parameters 'attribute_name' and 'value' match with the selector. In this case, "match" means that the expression ((attribute_name == self.attribute_name) and (value self.operator self.value)) is True. IMPORTANT: if the selector operator is not supported between value and self.value, a TypeError exception is raised.
         
-        :type attribute_name: str
         :param attribute_name: the attribute name which is compared with self.attribute_name.
-        :type value: str, int, float or pandas.Series
         :param value: the value which is compared with self.value. The value can be also of type 'pandas.Series' in order to allow comparisons with whole arrays.
-        :rtype: bool or collection[bool]
         :return: whether the parameters 'attribute_name' and 'value' match with the selector.
         """
         if type(attribute_name) is not str:
@@ -82,12 +83,10 @@ class Selector(object):
         return (attribute_name == self.attribute_name) and (self.operator.evaluate(value, self.value))
     
     @staticmethod
-    def generate_from_str(input_str):
+    def generate_from_str(input_str : str) -> 'Selector':
         """Static method to generate a Selector from a str.
         
-        :type input_str: str
         :param input_str: the str from which to generate the Selector. We assume the following format: <attribute_name><whitespace><operator><whitespace><value>. Be careful with the whitespaces: (1) each part of the selector must be separated by only one whitespace and (2) whitespaces at the left side of the str or at the right side of the str are not allowed.
-        :rtype: Selector
         :return: the Selector generated from the str.
         """
         if type(input_str) is not str:
@@ -106,19 +105,19 @@ class Selector(object):
             except ValueError: # If we cannot transform to int or float, we return the value as a str.
                 return Selector(input_str_split[0], new_operator, input_str_split[2])
     
-    def __eq__(self, other):
+    def __eq__(self, other : 'Selector') -> bool:
         if not isinstance(other, Selector):
-            raise TypeError("The type of the parameter must be 'Selector'.")
+            raise TypeError("You are making a comparison with an object which is not an instance of the 'Selector' class or of a subclass thereof.")
         return (self._attribute_name == other._attribute_name) and (self._operator == other._operator) and (self._value == other._value)
     
-    def __ne__(self, other):
+    def __ne__(self, other : 'Selector') -> bool:
         if not isinstance(other, Selector):
-            raise TypeError("The type of the parameter must be 'Selector'.")
+            raise TypeError("You are making a comparison with an object which is not an instance of the 'Selector' class or of a subclass thereof.")
         return (self._attribute_name != other._attribute_name) or (self._operator != other._operator) or (self._value != other._value)
     
-    def __lt__(self, other):
+    def __lt__(self, other : 'Selector') -> bool:
         if not isinstance(other, Selector):
-            raise TypeError("The type of the parameter must be 'Selector'.")
+            raise TypeError("You are making a comparison with an object which is not an instance of the 'Selector' class or of a subclass thereof.")
         if (self._attribute_name != other._attribute_name):
             return self._attribute_name < other._attribute_name
         elif (self._operator != other._operator):
@@ -132,9 +131,9 @@ class Selector(object):
                 return str(self._value) < str(other._value)
         return False
     
-    def __gt__(self, other):
+    def __gt__(self, other : 'Selector') -> bool:
         if not isinstance(other, Selector):
-            raise TypeError("The type of the parameter must be 'Selector'.")
+            raise TypeError("You are making a comparison with an object which is not an instance of the 'Selector' class or of a subclass thereof.")
         if (self._attribute_name != other._attribute_name):
             return self._attribute_name > other._attribute_name
         elif (self._operator != other._operator):
@@ -148,9 +147,9 @@ class Selector(object):
                 return str(self._value) > str(other._value)
         return False
     
-    def __le__(self, other):
+    def __le__(self, other : 'Selector') -> bool:
         if not isinstance(other, Selector):
-            raise TypeError("The type of the parameter must be 'Selector'.")
+            raise TypeError("You are making a comparison with an object which is not an instance of the 'Selector' class or of a subclass thereof.")
         if (self._attribute_name != other._attribute_name):
             return self._attribute_name <= other._attribute_name
         elif (self._operator != other._operator):
@@ -164,9 +163,9 @@ class Selector(object):
                 return str(self._value) <= str(other._value)
         return True
     
-    def __ge__(self, other):
+    def __ge__(self, other : 'Selector') -> bool:
         if not isinstance(other, Selector):
-            raise TypeError("The type of the parameter must be 'Selector'.")
+            raise TypeError("You are making a comparison with an object which is not an instance of the 'Selector' class or of a subclass thereof.")
         if (self._attribute_name != other._attribute_name):
             return self._attribute_name >= other._attribute_name
         elif (self._operator != other._operator):
@@ -180,14 +179,15 @@ class Selector(object):
                 return str(self._value) >= str(other._value)
         return True
     
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)
     
-    def __str__(self):
+    def __str__(self) -> str:
+        # When transforming the Selector to str, we have to be able to distinguish the value type (i.e., whether it is str or numeric).
         self_value = self._value
-        if type(self._value) is str:
+        if type(self_value) is str:
             self_value = "\'" + self_value + "\'"
         return self._attribute_name + " " + str(self._operator) + " " + str(self_value)
     
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(str(self))
