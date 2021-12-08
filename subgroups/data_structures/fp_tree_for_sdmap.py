@@ -14,7 +14,7 @@ from numpy import size, sum
 from subgroups.exceptions import InconsistentMethodParametersError
 
 # Python annotations.
-from typing import Union, Any
+from typing import Union
 
 class FPTreeForSDMap(object):
     """This class represents the FPTree data structure used in the SDMap algorithm.
@@ -40,7 +40,7 @@ class FPTreeForSDMap(object):
     def _get_root_node(self) -> FPTreeNode:
         return self._root_node
     
-    def _get_header_table(self) -> dict[Selector, list[Any]]:
+    def _get_header_table(self) -> dict[Selector, list[object]]:
         return self._header_table
     
     def _get_sorted_header_table(self) -> list:
