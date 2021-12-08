@@ -30,7 +30,7 @@ class Operator(Enum):
         
         :param left_element: the left element of the expression. It can be also of type 'pandas.Series' in order to allow comparisons with whole arrays.
         :param right_element: the right element of the expression. It can be also of type 'pandas.Series' in order to allow comparisons with whole arrays.
-        :return: whether the expression (left_element self right_element) is True. If case of both elements are of type Series, a Series in which each element is of type bool is returned.
+        :return: whether the expression (left_element self right_element) is True. In case of both elements are of type Series, a Series in which each element is of type bool is returned.
         """
         if (type(left_element) is not str) and (type(left_element) is not int) and (type(left_element) is not float) and (type(left_element) is not Series):
             raise TypeError("The type of the parameter 'left_element' must be 'str', 'int', 'float' or 'pandas.Series'.")

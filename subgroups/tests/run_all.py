@@ -10,7 +10,7 @@ from subgroups.tests.core.test_operator import *
 from subgroups.tests.core.test_selector import *
 from subgroups.tests.core.test_pattern import *
 from subgroups.tests.core.test_subgroup import *
-from subgroups.tests.quality_measures.test_all import *
+from subgroups.tests.quality_measures.test_quality_measures import *
 from subgroups.tests.utils.test_dataframe_filters import *
 from subgroups.tests.data_structures.test_fp_tree_node import *
 from subgroups.tests.data_structures.test_fp_tree_for_sdmap import *
