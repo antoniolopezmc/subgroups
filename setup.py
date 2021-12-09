@@ -109,8 +109,8 @@ if __name__ == "__main__":
         url="https://github.com/antoniolopezmc/subgroups",
         packages=find_packages(where='.', exclude=("build*", "dist*", "docs*")),
         install_requires=[
-            'pandas>=1.1.3',
-            'bitarray>=1.6.1'
+            'pandas>=1.3.4',
+            'bitarray>=2.3.0'
         ],
         classifiers=[
             "Programming Language :: Python :: 3",
