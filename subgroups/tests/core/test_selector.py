@@ -7,10 +7,16 @@
 """
 
 from subgroups.core.selector import Selector
+from weakref import WeakValueDictionary
 from subgroups.core.operator import Operator
 import unittest
 
 class TestSelector(unittest.TestCase):
+
+    def setUp(self) -> None:
+        # IMPORTANT: DO NOT NEVER DO THIS WHEN USING THE LIBRARY!!!
+        # - In this case, we have to do it in order to avoid stored selectors from previous tests and, therefore, to start this test with 0 selectors.
+        Selector._dict_of_selectors = WeakValueDictionary()
 
     def test_Selector_creation_process(self) -> None:
         # --------------------------------------------------------------

@@ -11,7 +11,7 @@ from pandas import DataFrame
 from subgroups.core.selector import Selector
 import unittest
 
-class TestSubgroup(unittest.TestCase):
+class TestDataFrameFilter(unittest.TestCase):
 
     def test_dataframe_filters_general(self):
         df1 = DataFrame({"a" : [1,2,3], "b" : [7,8,9], "c" : ["a", "b", "c"]})

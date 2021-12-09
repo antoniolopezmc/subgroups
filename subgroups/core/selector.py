@@ -42,7 +42,7 @@ class Selector(object):
         value_for_dictionary_key = value
         if type(value_for_dictionary_key) is str:
             value_for_dictionary_key = "\'" + value_for_dictionary_key + "\'"
-        key = attribute_name + str(operator) + str(value_for_dictionary_key)
+        key = attribute_name + " " + str(operator) + " " + str(value_for_dictionary_key)
         if key in Selector._dict_of_selectors:
             return Selector._dict_of_selectors[key]
         else:
