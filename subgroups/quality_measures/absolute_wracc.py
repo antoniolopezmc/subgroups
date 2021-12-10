@@ -6,7 +6,7 @@
 """This file contains a modification of the Weighted Relative Accuracy (WRAcc) quality measure. This new quality measure called AbsoluteWRAcc always returns the absolute value of the original WRAcc quality measure.
 """
 
-from subgroups.quality_measures._base import QualityMeasure
+from subgroups.quality_measures.quality_measure import QualityMeasure
 from subgroups.quality_measures.wracc import WRAcc
 
 # Python annotations.

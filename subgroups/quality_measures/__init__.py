@@ -1,4 +1,4 @@
-from subgroups.quality_measures._base import QualityMeasure
+from subgroups.quality_measures.quality_measure import QualityMeasure
 from subgroups.quality_measures.binomial_test import BinomialTest
 from subgroups.quality_measures.binomial_test_optimistic_estimate_1 import BinomialTestOptimisticEstimate1
 from subgroups.quality_measures.coverage import Coverage

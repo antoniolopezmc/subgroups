@@ -19,13 +19,13 @@ class QualityMeasure(ABC):
     
     ## We consider the following subgroup parameters. We can compute all the quality measures using these general elements. ##
     # true positives tp (rows covered by the subgroup description and by the subgroup target).
-    SUBGROUP_PARAMETER_tp : ClassVar[str] = "tp"
+    TRUE_POSITIVES : ClassVar[str] = "tp"
     # false positives fp (rows covered by the subgroup description but not by the subgroup target).
-    SUBGROUP_PARAMETER_fp : ClassVar[str] = "fp"
+    FALSE_POSITIVES : ClassVar[str] = "fp"
     # true population TP (rows covered by the subgroup target).
-    SUBGROUP_PARAMETER_TP : ClassVar[str] = "TP"
+    TRUE_POPULATION : ClassVar[str] = "TP"
     # false population FP (rows not covered by the subgroup target).
-    SUBGROUP_PARAMETER_FP : ClassVar[str] = "FP"
+    FALSE_POPULATION : ClassVar[str] = "FP"
     
     ### IMPORTANT ###
     ## There are other elements/parameters which are also used in the Subgroup Discovery literature. We define the following equivalences:

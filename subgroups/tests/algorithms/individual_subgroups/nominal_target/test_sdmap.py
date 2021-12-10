@@ -330,6 +330,14 @@ class TestSDMap(unittest.TestCase):
         sdmap.fit(df, target)
         self.assertEqual(sdmap.visited_nodes, 2)
 
+    def test_SDMap_additional_parameters_in_fit_method(self) -> None:
+        sdmap_1 = SDMap(WRAcc(), -1, minimum_tp=1, minimum_fp=1, additional_parameters_for_the_quality_measure={"tp" : 10, "fp" : 20, "TP" : 100, "FP" : 200})
+        self.assertEqual(len(sdmap_1._additional_parameters_for_the_quality_measure), 0)
+        sdmap_2 = SDMap(WRAcc(), -1, minimum_tp=1, minimum_fp=1, additional_parameters_for_the_quality_measure={"tp" : 10, "fp" : 20, "TP" : 1000})
+        self.assertEqual(len(sdmap_2._additional_parameters_for_the_quality_measure), 0)
+        sdmap_3 = SDMap(WRAcc(), -1, minimum_tp=1, minimum_fp=1, additional_parameters_for_the_quality_measure={"tp" : 10, "fp" : 20, "TP" : 100, "FP" : 200, "g" : 0.1})
+        self.assertEqual(len(sdmap_3._additional_parameters_for_the_quality_measure), 1)
+
     def test_SDMap_visited_and_pruned_nodes(self) -> None:
         df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
         target = ("class", "y")

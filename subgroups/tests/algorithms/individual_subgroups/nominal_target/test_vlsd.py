@@ -16,6 +16,9 @@ from subgroups.core.subgroup import Subgroup
 from os import remove
 import unittest
 
+# Python annotations.
+from typing import Union
+
 class TestVLSD(unittest.TestCase):
 
     def test_VLSD_init_method_1(self) -> None:
@@ -266,3 +269,14 @@ class TestVLSD(unittest.TestCase):
         self.assertIn(Subgroup.generate_from_str("Description: [a3 = k, a2 = q], Target: class = 'y'"), list_of_subgroups)
         file_to_read.close()
         remove("./results.txt")
+
+    def test_VLSD_additional_parameters_in_fit_method(self) -> None:
+        vlsd_1 = VLSD(WRAcc(), 0.1, WRAccOptimisticEstimate1(), 0.1, additional_parameters_for_the_quality_measure={"tp" : 10, "fp" : 20, "TP" : 100, "FP" : 200}, additional_parameters_for_the_optimistic_estimate={"tp" : 10, "fp" : 20, "TP" : 100, "FP" : 200})
+        self.assertEqual(len(vlsd_1._additional_parameters_for_the_quality_measure), 0)
+        self.assertEqual(len(vlsd_1._additional_parameters_for_the_optimistic_estimate), 0)
+        vlsd_2 = VLSD(WRAcc(), 0.1, WRAccOptimisticEstimate1(), 0.1, additional_parameters_for_the_quality_measure={"tp" : 10, "fp" : 20, "TP" : 1000}, additional_parameters_for_the_optimistic_estimate={"tp" : 10, "fp" : 20, "TP" : 1000})
+        self.assertEqual(len(vlsd_2._additional_parameters_for_the_quality_measure), 0)
+        self.assertEqual(len(vlsd_2._additional_parameters_for_the_optimistic_estimate), 0)
+        vlsd_3 = VLSD(WRAcc(), 0.1, WRAccOptimisticEstimate1(), 0.1, additional_parameters_for_the_quality_measure={"tp" : 10, "fp" : 20, "TP" : 100, "FP" : 200, "a" : 0.1}, additional_parameters_for_the_optimistic_estimate={"tp" : 10, "fp" : 20, "TP" : 100, "FP" : 200, "b" : 0.1})
+        self.assertEqual(len(vlsd_3._additional_parameters_for_the_quality_measure), 1)
+        self.assertEqual(len(vlsd_3._additional_parameters_for_the_optimistic_estimate), 1)

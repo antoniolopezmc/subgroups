@@ -6,7 +6,7 @@
 """Tests of the functionality contained in the folder 'quality_measures'.
 """
 
-from subgroups.quality_measures._base import QualityMeasure
+from subgroups.quality_measures.quality_measure import QualityMeasure
 from subgroups.quality_measures.support import Support
 from subgroups.quality_measures.coverage import Coverage
 from subgroups.quality_measures.wracc import WRAcc
@@ -30,7 +30,13 @@ import unittest
 
 class TestQualityMeasures(unittest.TestCase):
 
-    def test_quality_measures_general(self):
+    def test_quality_measures_value_of_class_variables(self) -> None:
+        self.assertEqual(QualityMeasure.TRUE_POSITIVES, "tp")
+        self.assertEqual(QualityMeasure.FALSE_POSITIVES, "fp")
+        self.assertEqual(QualityMeasure.TRUE_POPULATION, "TP")
+        self.assertEqual(QualityMeasure.FALSE_POPULATION, "FP")
+
+    def test_quality_measures_general(self) -> None:
         support = Support()
         coverage = Coverage()
         wracc = WRAcc()
@@ -149,7 +155,7 @@ class TestQualityMeasures(unittest.TestCase):
         self.assertEqual(len(f1_score.optimistic_estimate_of()), 0)
         self.assertEqual(len(youden.optimistic_estimate_of()), 0)
 
-    def test_quality_measures_compute(self):
+    def test_quality_measures_compute(self) -> None:
         tp = 3
         fp = 4
         TP = 5
@@ -161,7 +167,7 @@ class TestQualityMeasures(unittest.TestCase):
         p0 = TP / N # p0 = TP / ( TP + FP )
         tn = FP - fp
         fn = TP - tp
-        dict_of_parameters = dict({QualityMeasure.SUBGROUP_PARAMETER_tp : tp, QualityMeasure.SUBGROUP_PARAMETER_fp : fp, QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP, "g" : g})
+        dict_of_parameters = dict({QualityMeasure.TRUE_POSITIVES : tp, QualityMeasure.FALSE_POSITIVES : fp, QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP, "g" : g})
         # --------------------------------------------------
         self.assertEqual(Support()(dict_of_parameters), (tp / ( TP + FP )))
         self.assertEqual(Coverage()(dict_of_parameters), (( tp + fp ) / ( TP + FP )))

@@ -8,8 +8,8 @@
 
 from pandas import DataFrame
 from pandas.api.types import is_string_dtype
-from subgroups.algorithms._base import Algorithm
-from subgroups.quality_measures._base import QualityMeasure
+from subgroups.algorithms.algorithm import Algorithm
+from subgroups.quality_measures.quality_measure import QualityMeasure
 from subgroups.exceptions import InconsistentMethodParametersError, DatasetAttributeTypeError
 from subgroups.data_structures.fp_tree_for_sdmap import FPTreeForSDMap
 from subgroups.core.pattern import Pattern
@@ -37,19 +37,19 @@ def _delete_subgroup_parameters_from_a_dictionary(dict_of_parameters : dict[str,
     :param dict_of_parameters: the dictionary of parameters which is modified.
     """
     try:
-        del dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp]
+        del dict_of_parameters[QualityMeasure.TRUE_POSITIVES]
     except KeyError:
         pass
     try:
-        del dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp]
+        del dict_of_parameters[QualityMeasure.FALSE_POSITIVES]
     except KeyError:
         pass
     try:
-        del dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_TP]
+        del dict_of_parameters[QualityMeasure.TRUE_POPULATION]
     except KeyError:
         pass
     try:
-        del dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_FP]
+        del dict_of_parameters[QualityMeasure.FALSE_POPULATION]
     except KeyError:
         pass
 
@@ -153,7 +153,7 @@ class SDMap(Algorithm):
         TP = individual_result[4]
         FP = individual_result[5]
         # Compute the quality measure of the frequent pattern along with the target (i.e., the quality measure of the subgroup).
-        dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_tp : tp, QualityMeasure.SUBGROUP_PARAMETER_fp : fp, QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
+        dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : tp, QualityMeasure.FALSE_POSITIVES : fp, QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
         dict_of_parameters.update(self._additional_parameters_for_the_quality_measure) # type: ignore
         quality_measure_value = self._quality_measure.compute(dict_of_parameters) # type: ignore
         # Add the subgroup only if the quality measure value is greater or equal than the threshold.

@@ -8,7 +8,7 @@
 
 from collections.abc import Collection
 from bitarray import bitarray
-from subgroups.quality_measures._base import QualityMeasure
+from subgroups.quality_measures.quality_measure import QualityMeasure
 from subgroups.core.selector import Selector
 
 # Python annotations.
@@ -96,8 +96,8 @@ class VerticalList(object):
         if type(dict_of_parameters) is not dict:
             raise TypeError("The type of the parameter 'dict_of_parameters' must be 'dict'.")
         new_dict_of_parameters = dict_of_parameters.copy()
-        new_dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp] = self._get_tp() 
-        new_dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp] = self._get_fp()
+        new_dict_of_parameters[QualityMeasure.TRUE_POSITIVES] = self._get_tp() 
+        new_dict_of_parameters[QualityMeasure.FALSE_POSITIVES] = self._get_fp()
         return quality_measure.compute(new_dict_of_parameters)
     
     def join(self, other_vertical_list : 'VerticalList', quality_measure : QualityMeasure, dict_of_parameters : dict[str, Union[int, float]], return_None_if_n_is_0 : bool = False) -> Union['VerticalList', None]:
@@ -131,8 +131,8 @@ class VerticalList(object):
             new_list_of_selectors.append(other_vertical_list._list_of_selectors[-1])
             # Third, obtain the quality value.
             new_dict_of_parameters = dict_of_parameters.copy()
-            new_dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp] = new_tp 
-            new_dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp] = new_fp
+            new_dict_of_parameters[QualityMeasure.TRUE_POSITIVES] = new_tp 
+            new_dict_of_parameters[QualityMeasure.FALSE_POSITIVES] = new_fp
             new_quality_value = quality_measure.compute(new_dict_of_parameters)
             # Finally, create the object.
             result = VerticalList(new_list_of_selectors, [], [], 0, new_quality_value)

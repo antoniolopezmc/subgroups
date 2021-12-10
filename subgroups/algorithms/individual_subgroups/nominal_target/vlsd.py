@@ -8,8 +8,8 @@
 
 from pandas import DataFrame
 from pandas.api.types import is_string_dtype
-from subgroups.algorithms._base import Algorithm
-from subgroups.quality_measures._base import QualityMeasure
+from subgroups.algorithms.algorithm import Algorithm
+from subgroups.quality_measures.quality_measure import QualityMeasure
 from subgroups.exceptions import DatasetAttributeTypeError
 from subgroups.data_structures.vertical_list import VerticalList
 from subgroups.core.pattern import Pattern
@@ -26,19 +26,19 @@ def _delete_subgroup_parameters_from_a_dictionary(dict_of_parameters : dict[str,
     :param dict_of_parameters: the dictionary of parameters which is modified.
     """
     try:
-        del dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp]
+        del dict_of_parameters[QualityMeasure.TRUE_POSITIVES]
     except KeyError:
         pass
     try:
-        del dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp]
+        del dict_of_parameters[QualityMeasure.FALSE_POSITIVES]
     except KeyError:
         pass
     try:
-        del dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_TP]
+        del dict_of_parameters[QualityMeasure.TRUE_POPULATION]
     except KeyError:
         pass
     try:
-        del dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_FP]
+        del dict_of_parameters[QualityMeasure.FALSE_POPULATION]
     except KeyError:
         pass
 
@@ -179,7 +179,7 @@ class VLSD(Algorithm):
         TP = individual_result[2]
         FP = individual_result[3]
         # Compute the quality measure of the frequent pattern along with the target (i.e., the quality measure of the subgroup).
-        dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_tp : tp, QualityMeasure.SUBGROUP_PARAMETER_fp : fp, QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
+        dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : tp, QualityMeasure.FALSE_POSITIVES : fp, QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
         dict_of_parameters.update(self._additional_parameters_for_the_quality_measure)
         quality_measure_value = self._quality_measure.compute(dict_of_parameters)
         # Add the subgroup only if the quality measure value is greater or equal than the threshold.
@@ -241,7 +241,7 @@ class VLSD(Algorithm):
                     except KeyError:
                         registers_fp = [] # Empty sequence.
                     # Compute the optimistic estimate.
-                    dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_tp : len(registers_tp), QualityMeasure.SUBGROUP_PARAMETER_fp : len(registers_fp), QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
+                    dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : len(registers_tp), QualityMeasure.FALSE_POSITIVES : len(registers_fp), QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
                     dict_of_parameters.update(self._additional_parameters_for_the_optimistic_estimate) # type: ignore
                     optimistic_estimate_value = self._optimistic_estimate.compute(dict_of_parameters) # type: ignore
                     # Pruning: add the Vertical List only if the optimistic estimate value is greater or equal than the threshold.
@@ -290,7 +290,7 @@ class VLSD(Algorithm):
                 # Query M.
                 vertical_list_in_M = _query_triangular_matrix(M, s_x_last_selector, s_y_last_selector)
                 if (vertical_list_in_M is not None) and (vertical_list_in_M.quality_value >= self.oe_minimum_threshold):
-                    s_xy_dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
+                    s_xy_dict_of_parameters = {QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
                     s_xy_dict_of_parameters.update(self._additional_parameters_for_the_optimistic_estimate) # type: ignore
                     s_xy = s_x.join(s_y, self._optimistic_estimate, s_xy_dict_of_parameters, return_None_if_n_is_0 = True) # type: ignore
                     if (s_xy is not None) and (s_xy.quality_value >= self.oe_minimum_threshold):
@@ -344,7 +344,7 @@ class VLSD(Algorithm):
                 # Get the last selector of s_y. In this point, there is only one.
                 s_y_last_selector = s_y.list_of_selectors[-1]
                 # Get the quality value of the join of s_x and s_y.
-                s_xy_dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
+                s_xy_dict_of_parameters = {QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
                 s_xy_dict_of_parameters.update(self._additional_parameters_for_the_optimistic_estimate)
                 s_xy = s_x.join(s_y, self._optimistic_estimate, s_xy_dict_of_parameters, return_None_if_n_is_0 = True) # type: ignore
                 # Check whether n (i.e., tp+fp) is 0 or greater than 0 (in this case, 's_xy' will be None) and whether 's_xy' has quality enough.
