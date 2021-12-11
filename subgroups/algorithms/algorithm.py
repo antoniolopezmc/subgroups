@@ -3,14 +3,14 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-"""This file contains the implementation of the parent class for all the algorithms.
+"""This file contains the implementation of the root class for all the implemented algorithms. This class is an abstract class and it cannot be instantiated.
 """
 
 from abc import ABC, abstractmethod
 from pandas import DataFrame
 
 class Algorithm(ABC):
-    """This abstract class defines the parent class for all the algorithms.
+    """This abstract class defines the root class for all the implemented algorithms.
     """
     
     __slots__ = ()
