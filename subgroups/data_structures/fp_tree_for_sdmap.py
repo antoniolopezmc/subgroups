@@ -390,7 +390,7 @@ class FPTreeForSDMap(object):
         current_parent_node = parent_node
         for selector in list_of_selectors:
             # Get the child node with the current selector or None if it does not exist.
-            child_node_with_this_selector = current_parent_node.get_child_by_selector(selector) # type: ignore
+            child_node_with_this_selector = current_parent_node.get_child_by_selector(selector)
             # Check if the node exists or not and if the parameter 'target_match' is True or False.
             if (child_node_with_this_selector is not None):
                 # Increase the true positives tp and the false positives fp in the node.
@@ -405,7 +405,7 @@ class FPTreeForSDMap(object):
                 # Create a new FPTree Node.
                 new_fptreenode = FPTreeNode(selector, [fixed_tp, fixed_fp], None)
                 # Add it as a child of the current parent node.
-                current_parent_node.add_child(new_fptreenode) # type: ignore
+                current_parent_node.add_child(new_fptreenode)
                 # Check if the current selector is in the header table.
                 if selector in self._header_table:
                     # If it is in the header table, add the new node at the end of the horizontal list and increase the summation of tp and fp in the header table.

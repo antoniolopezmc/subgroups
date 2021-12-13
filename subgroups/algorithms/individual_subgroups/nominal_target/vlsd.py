@@ -12,6 +12,7 @@ from subgroups.algorithms.algorithm import Algorithm
 from subgroups.quality_measures.quality_measure import QualityMeasure
 from subgroups.exceptions import DatasetAttributeTypeError
 from subgroups.data_structures.vertical_list import VerticalList
+from subgroups.data_structures.vertical_list_with_bitsets import VerticalListWithBitsets
 from subgroups.core.pattern import Pattern
 from subgroups.core.operator import Operator
 from subgroups.core.selector import Selector
@@ -192,13 +193,13 @@ class VLSD(Algorithm):
                 # Create the subgroup.
                 subgroup = Subgroup(subgroup_description, Selector(target_as_tuple[0], Operator.EQUAL, target_as_tuple[1]))
                 # Write.
-                self._file.write(str(subgroup) + " ; ") # type: ignore
-                self._file.write("Quality Measure " + self._quality_measure.get_name() + " = " + str(quality_measure_value) + " ; ") # type: ignore
-                self._file.write("Optimistic Estimate " + self._optimistic_estimate.get_name() + " = " + str(individual_result[0].quality_value) + " ; ") # type: ignore
-                self._file.write("tp = " + str(tp) + " ; ") # type: ignore
-                self._file.write("fp = " + str(fp) + " ; ") # type: ignore
-                self._file.write("TP = " + str(TP) + " ; ") # type: ignore
-                self._file.write("FP = " + str(FP) + "\n") # type: ignore
+                self._file.write(str(subgroup) + " ; ")
+                self._file.write("Quality Measure " + self._quality_measure.get_name() + " = " + str(quality_measure_value) + " ; ")
+                self._file.write("Optimistic Estimate " + self._optimistic_estimate.get_name() + " = " + str(individual_result[0].quality_value) + " ; ")
+                self._file.write("tp = " + str(tp) + " ; ")
+                self._file.write("fp = " + str(fp) + " ; ")
+                self._file.write("TP = " + str(TP) + " ; ")
+                self._file.write("FP = " + str(FP) + "\n")
             # Increment the number of visited nodes.
             self._visited_nodes = self._visited_nodes + 1
         else: # If the quality measure is not greater or equal, increment the number of pruned nodes.
@@ -222,7 +223,7 @@ class VLSD(Algorithm):
         for column in pandas_dataframe.columns.drop(target[0]):
             # Use the 'groupby' method in order to group each value depending on whether appears with the target or not.
             # - The property 'indices' is a dictionary in which the key is the tuple "(column, target_attribute_as_a_mask)" and the value is a sequence of register indices in which that combination appears.
-            values_and_target_grouped = pandas_dataframe.groupby([column, target_attribute_as_a_mask]).indices # type: ignore
+            values_and_target_grouped = pandas_dataframe.groupby([column, target_attribute_as_a_mask]).indices
             # Set of values which have been already processed.
             processed_values = set()
             # Iterate through the tuples returned by the groupby method.
@@ -232,18 +233,18 @@ class VLSD(Algorithm):
                 if value not in processed_values:
                     # Registers which have the target.
                     try:
-                        registers_tp = values_and_target_grouped[(value,True)] # type: ignore
+                        registers_tp = values_and_target_grouped[(value,True)]
                     except KeyError:
                         registers_tp = [] # Empty sequence.
                     # Registers which do not have the target.
                     try:
-                        registers_fp = values_and_target_grouped[(value,False)] # type: ignore
+                        registers_fp = values_and_target_grouped[(value,False)]
                     except KeyError:
                         registers_fp = [] # Empty sequence.
                     # Compute the optimistic estimate.
                     dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : len(registers_tp), QualityMeasure.FALSE_POSITIVES : len(registers_fp), QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
-                    dict_of_parameters.update(self._additional_parameters_for_the_optimistic_estimate) # type: ignore
-                    optimistic_estimate_value = self._optimistic_estimate.compute(dict_of_parameters) # type: ignore
+                    dict_of_parameters.update(self._additional_parameters_for_the_optimistic_estimate)
+                    optimistic_estimate_value = self._optimistic_estimate.compute(dict_of_parameters)
                     # Pruning: add the Vertical List only if the optimistic estimate value is greater or equal than the threshold.
                     if optimistic_estimate_value >= self._oe_minimum_threshold:
                         # Create the Vertical List.
@@ -275,8 +276,8 @@ class VLSD(Algorithm):
             s_x = P[index_x]
             # Simulate the "pop_first" method.
             # --> IMPORTANT: we set None instead of directly delete the first element because deleting a element that is not the last in a python list is O(n),
-            #                because all the element at the right of the deleted element are moved one position to the left.
-            P[index_x] = None # type: ignore
+            #                because all the elements at the right of the deleted element are moved one position to the left.
+            P[index_x] = None
             index_x = index_x + 1
             # Get the last selector of s_x.
             s_x_last_selector = s_x.list_of_selectors[-1]
@@ -291,8 +292,8 @@ class VLSD(Algorithm):
                 vertical_list_in_M = _query_triangular_matrix(M, s_x_last_selector, s_y_last_selector)
                 if (vertical_list_in_M is not None) and (vertical_list_in_M.quality_value >= self.oe_minimum_threshold):
                     s_xy_dict_of_parameters = {QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
-                    s_xy_dict_of_parameters.update(self._additional_parameters_for_the_optimistic_estimate) # type: ignore
-                    s_xy = s_x.join(s_y, self._optimistic_estimate, s_xy_dict_of_parameters, return_None_if_n_is_0 = True) # type: ignore
+                    s_xy_dict_of_parameters.update(self._additional_parameters_for_the_optimistic_estimate)
+                    s_xy = s_x.join(s_y, self._optimistic_estimate, s_xy_dict_of_parameters, return_None_if_n_is_0 = True)
                     if (s_xy is not None) and (s_xy.quality_value >= self.oe_minimum_threshold):
                         # Add s_xy to V list.
                         V.append(s_xy)
@@ -346,7 +347,7 @@ class VLSD(Algorithm):
                 # Get the quality value of the join of s_x and s_y.
                 s_xy_dict_of_parameters = {QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
                 s_xy_dict_of_parameters.update(self._additional_parameters_for_the_optimistic_estimate)
-                s_xy = s_x.join(s_y, self._optimistic_estimate, s_xy_dict_of_parameters, return_None_if_n_is_0 = True) # type: ignore
+                s_xy = s_x.join(s_y, self._optimistic_estimate, s_xy_dict_of_parameters, return_None_if_n_is_0 = True)
                 # Check whether n (i.e., tp+fp) is 0 or greater than 0 (in this case, 's_xy' will be None) and whether 's_xy' has quality enough.
                 if (s_xy is not None) and (s_xy.quality_value >= self._oe_minimum_threshold):
                     # Add to the dictionary.
@@ -371,5 +372,5 @@ class VLSD(Algorithm):
                 self._search(P, M, target, TP, FP)
         # Close the file if it was opened before.
         if (self._file_path is not None):
-            self._file.close() # type: ignore
+            self._file.close()
             self._file = None

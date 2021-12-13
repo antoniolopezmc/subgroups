@@ -41,13 +41,13 @@ class Operator(Enum):
         elif self == Operator.NOT_EQUAL:
             return left_element != right_element
         elif self == Operator.LESS:
-            return left_element < right_element # type: ignore
+            return left_element < right_element
         elif self == Operator.GREATER:
-            return left_element > right_element # type: ignore
+            return left_element > right_element
         elif self == Operator.LESS_OR_EQUAL:
-            return left_element <= right_element # type: ignore
+            return left_element <= right_element
         elif self == Operator.GREATER_OR_EQUAL:
-            return left_element >= right_element # type: ignore
+            return left_element >= right_element
         else:
             raise OperatorNotSupportedError("This operator has not been added to the method 'evaluate'.")
     

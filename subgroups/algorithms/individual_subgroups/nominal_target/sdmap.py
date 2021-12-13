@@ -154,8 +154,8 @@ class SDMap(Algorithm):
         FP = individual_result[5]
         # Compute the quality measure of the frequent pattern along with the target (i.e., the quality measure of the subgroup).
         dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : tp, QualityMeasure.FALSE_POSITIVES : fp, QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
-        dict_of_parameters.update(self._additional_parameters_for_the_quality_measure) # type: ignore
-        quality_measure_value = self._quality_measure.compute(dict_of_parameters) # type: ignore
+        dict_of_parameters.update(self._additional_parameters_for_the_quality_measure)
+        quality_measure_value = self._quality_measure.compute(dict_of_parameters)
         # Add the subgroup only if the quality measure value is greater or equal than the threshold.
         if quality_measure_value >= self._minimum_quality_measure_value:
             # If applicable, write in the file defined in the __init__ method.
@@ -166,12 +166,12 @@ class SDMap(Algorithm):
                 # Create the subgroup.
                 subgroup = Subgroup(subgroup_description, Selector(target_as_tuple[0], Operator.EQUAL, target_as_tuple[1]))
                 # Write.
-                self._file.write(str(subgroup) + " ; ") # type: ignore
-                self._file.write("Quality Measure " + self._quality_measure.get_name() + " = " + str(quality_measure_value) + " ; ") # type: ignore
-                self._file.write("tp = " + str(tp) + " ; ") # type: ignore
-                self._file.write("fp = " + str(fp) + " ; ") # type: ignore
-                self._file.write("TP = " + str(TP) + " ; ") # type: ignore
-                self._file.write("FP = " + str(FP) + "\n") # type: ignore
+                self._file.write(str(subgroup) + " ; ")
+                self._file.write("Quality Measure " + self._quality_measure.get_name() + " = " + str(quality_measure_value) + " ; ")
+                self._file.write("tp = " + str(tp) + " ; ")
+                self._file.write("fp = " + str(fp) + " ; ")
+                self._file.write("TP = " + str(TP) + " ; ")
+                self._file.write("FP = " + str(FP) + "\n")
             # Increment the number of visited nodes.
             self._visited_nodes = self._visited_nodes + 1
         else: # If the quality measure is not greater or equal, increment the number of pruned nodes.
@@ -265,5 +265,5 @@ class SDMap(Algorithm):
                 self._file = open(self._file_path, "w")
             self._fpgrowth(fptree, None, target, TP, FP)
             if (self._file_path is not None):
-                self._file.close() # type: ignore
+                self._file.close()
                 self._file = None

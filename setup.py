@@ -37,7 +37,7 @@ class custom_build_py(build_py):
         tests_dir_in_build_directory = os.path.join(build_directory, "subgroups", "tests")
         # Make a backup of the original directory (the directory with the .py files).
         shutil.copytree("subgroups", "subgroups_original")
-        # Compile all the .py files (generating .pyc files).
+        # Compile all .py files (generating .pyc files).
         # - IMPORTANT: the extension will be still .py and the original file will be overwritten.
         custom_build_py._compile_all()
         # Run the "build_py" command.

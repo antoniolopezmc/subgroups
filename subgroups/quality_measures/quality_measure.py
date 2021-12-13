@@ -3,7 +3,7 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-"""This file contains the implementation of the root class for all the implemented quality measures. This class is an abstract class and it cannot be instantiated.
+"""This file contains the implementation of the root class of all the implemented quality measures. This class is an abstract class and cannot be instantiated.
 """
 
 from abc import ABC, abstractmethod
@@ -12,7 +12,7 @@ from abc import ABC, abstractmethod
 from typing import Union, ClassVar
 
 class QualityMeasure(ABC):
-    """This abstract class defines the root class for all the implemented quality measures.
+    """This abstract class defines the root class of all the implemented quality measures.
     """
     
     __slots__ = ()

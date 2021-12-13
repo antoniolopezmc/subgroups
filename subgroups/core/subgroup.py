@@ -63,7 +63,7 @@ class Subgroup(object):
         # Only the target attribute (in a Series).
         pandas_Series__target_attribute = pandas_dataframe[self._target._attribute_name]
         # We check the rows in which the description is contained.
-        description_is_contained = self._description.is_contained(pandas_DataFrame__all_except_the_target_attribute) # type: ignore
+        description_is_contained = self._description.is_contained(pandas_DataFrame__all_except_the_target_attribute)
         # We check the rows that match with the target.
         target_match = self._target.match(self._target._attribute_name, pandas_Series__target_attribute)
         # Rows that match with the target and in which the description is contained.
@@ -71,17 +71,17 @@ class Subgroup(object):
         # Compute the subgroup parameters.
         tp = (bool_Series_description_is_contained_AND_target_match).sum()
         fp = (description_is_contained & (~ target_match)).sum()
-        TP = target_match.sum() # type: ignore
+        TP = target_match.sum()
         FP = len(pandas_dataframe) - TP
         # Return depending on the function parameters specified above.
         if (use_description) and (use_target):
-            return (pandas_dataframe[bool_Series_description_is_contained_AND_target_match], tp, fp, TP, FP) # type: ignore
+            return (pandas_dataframe[bool_Series_description_is_contained_AND_target_match], tp, fp, TP, FP)
         elif (use_description) and (not use_target):
-            return (pandas_dataframe[description_is_contained], tp, fp, TP, FP) # type: ignore
+            return (pandas_dataframe[description_is_contained], tp, fp, TP, FP)
         elif (not use_description) and (use_target):
-            return (pandas_dataframe[target_match], tp, fp, TP, FP) # type: ignore
+            return (pandas_dataframe[target_match], tp, fp, TP, FP)
         else:
-            return (pandas_dataframe, tp, fp, TP, FP) # type: ignore
+            return (pandas_dataframe, tp, fp, TP, FP)
     
     @staticmethod
     def generate_from_str(input_str : str) -> 'Subgroup':

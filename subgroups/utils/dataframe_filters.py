@@ -28,6 +28,6 @@ def filter_by_list_of_selectors(pandas_dataframe : DataFrame, list_of_selectors 
         current_selector = list_of_selectors[current_index]
         current_attribute_name = current_selector.attribute_name
         corresponding_Series = pandas_dataframe[current_attribute_name]
-        final_result = final_result & current_selector.match(current_attribute_name, corresponding_Series) # type: ignore
+        final_result = final_result & current_selector.match(current_attribute_name, corresponding_Series)
         current_index = current_index + 1
     return pandas_dataframe[final_result]

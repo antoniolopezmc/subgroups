@@ -138,13 +138,13 @@ class TestOperator(unittest.TestCase):
         # --------------------------------------------------------------
 
     def test_Operator_evaluate_method_with_pandasSeries(self) -> None:
-        self.assertTrue((Operator.EQUAL.evaluate(Series([1,2,3,4,5]), 5) == Series([False, False, False, False, True])).all()) # type: ignore
-        self.assertTrue((Operator.EQUAL.evaluate(45, Series([1,2,3,4,5])) == Series([False, False, False, False, False])).all()) # type: ignore
-        self.assertTrue((Operator.NOT_EQUAL.evaluate("45", Series(["1","2","3","4","5"])) == Series([True, True, True, True, True])).all()) # type: ignore
-        self.assertTrue((Operator.NOT_EQUAL.evaluate(Series(["1","2","3","4","5"]), "5") == Series([True, True, True, True, False])).all()) # type: ignore
-        self.assertTrue((Operator.EQUAL.evaluate("45", Series([1,2,3,4,5])) == Series([False, False, False, False, False])).all()) # type: ignore
-        self.assertTrue((Operator.LESS.evaluate(45, Series([1,2,3,4,5])) == Series([False, False, False, False, False])).all()) # type: ignore
-        self.assertTrue((Operator.GREATER.evaluate(45, Series([1,2,3,4,5])) == Series([True, True, True, True, True])).all()) # type: ignore
+        self.assertTrue((Operator.EQUAL.evaluate(Series([1,2,3,4,5]), 5) == Series([False, False, False, False, True])).all())
+        self.assertTrue((Operator.EQUAL.evaluate(45, Series([1,2,3,4,5])) == Series([False, False, False, False, False])).all())
+        self.assertTrue((Operator.NOT_EQUAL.evaluate("45", Series(["1","2","3","4","5"])) == Series([True, True, True, True, True])).all())
+        self.assertTrue((Operator.NOT_EQUAL.evaluate(Series(["1","2","3","4","5"]), "5") == Series([True, True, True, True, False])).all())
+        self.assertTrue((Operator.EQUAL.evaluate("45", Series([1,2,3,4,5])) == Series([False, False, False, False, False])).all())
+        self.assertTrue((Operator.LESS.evaluate(45, Series([1,2,3,4,5])) == Series([False, False, False, False, False])).all())
+        self.assertTrue((Operator.GREATER.evaluate(45, Series([1,2,3,4,5])) == Series([True, True, True, True, True])).all())
 
     def test_Operator_generate_from_str_method(self) -> None:
         self.assertEqual(Operator.generate_from_str("="), Operator.EQUAL)
