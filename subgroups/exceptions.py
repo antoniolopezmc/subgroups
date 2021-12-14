@@ -29,3 +29,7 @@ class DatasetAttributeTypeError(TypeError):
 class DuplicateFpTreeNodeError(RuntimeError):
     """This exception is raised when attempting to add a FPTreeNode which already exists.
     """
+
+class VerticalListSizeError(ValueError):
+    """This exception is raised when comparing Vertical Lists with different dataset sizes.
+    """

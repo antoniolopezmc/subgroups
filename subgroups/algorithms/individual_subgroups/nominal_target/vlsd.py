@@ -13,6 +13,7 @@ from subgroups.quality_measures.quality_measure import QualityMeasure
 from subgroups.exceptions import DatasetAttributeTypeError
 from subgroups.data_structures.vertical_list import VerticalList
 from subgroups.data_structures.vertical_list_with_bitsets import VerticalListWithBitsets
+from subgroups.data_structures.vertical_list_with_sets import VerticalListWithSets
 from subgroups.core.pattern import Pattern
 from subgroups.core.operator import Operator
 from subgroups.core.selector import Selector
@@ -79,9 +80,13 @@ class VLSD(Algorithm):
     SORT_CRITERION_NO_ORDER : ClassVar[str] = "no-order"
     SORT_CRITERION : ClassVar[list[str]] = [SORT_CRITERION_QUALITY_ASCENDING, SORT_CRITERION_QUALITY_DESCENDING, SORT_CRITERION_NO_ORDER]
     
-    __slots__ = ("_quality_measure", "_q_minimum_threshold", "_optimistic_estimate", "_oe_minimum_threshold", "_additional_parameters_for_the_quality_measure", "_additional_parameters_for_the_optimistic_estimate", "_visited_nodes", "_pruned_nodes", "_sort_criterion_in_s1", "_sort_criterion_in_other_sizes", "_file_path", "_file")
+    VERTICAL_LISTS_WITH_BITSETS : ClassVar[str] = "bitsets"
+    VERTICAL_LISTS_WITH_SETS : ClassVar[str] = "sets"
+    VERTICAL_LISTS_IMPLEMENTATION : ClassVar[list[str]] = [VERTICAL_LISTS_WITH_BITSETS, VERTICAL_LISTS_WITH_SETS]
+
+    __slots__ = ("_quality_measure", "_q_minimum_threshold", "_optimistic_estimate", "_oe_minimum_threshold", "_additional_parameters_for_the_quality_measure", "_additional_parameters_for_the_optimistic_estimate", "_visited_nodes", "_pruned_nodes", "_sort_criterion_in_s1", "_sort_criterion_in_other_sizes", "_vertical_lists_implementation", "_file_path", "_file")
     
-    def __init__(self, quality_measure : QualityMeasure, q_minimum_threshold : Union[int, float], optimistic_estimate : QualityMeasure, oe_minimum_threshold : Union[int, float], additional_parameters_for_the_quality_measure : dict[str, Union[int, float]] = dict(), additional_parameters_for_the_optimistic_estimate : dict[str, Union[int, float]] = dict(), sort_criterion_in_s1 : str = "no-order", sort_criterion_in_other_sizes : str = "no-order", write_results_in_file : bool = False, file_path : Union[str, None] = None) -> None:
+    def __init__(self, quality_measure : QualityMeasure, q_minimum_threshold : Union[int, float], optimistic_estimate : QualityMeasure, oe_minimum_threshold : Union[int, float], additional_parameters_for_the_quality_measure : dict[str, Union[int, float]] = dict(), additional_parameters_for_the_optimistic_estimate : dict[str, Union[int, float]] = dict(), sort_criterion_in_s1 : str = SORT_CRITERION_NO_ORDER, sort_criterion_in_other_sizes : str = SORT_CRITERION_NO_ORDER, vertical_lists_implementation : str = VERTICAL_LISTS_WITH_SETS, write_results_in_file : bool = False, file_path : Union[str, None] = None) -> None:
         if not isinstance(quality_measure, QualityMeasure):
             raise TypeError("The parameter 'quality_measure' must be an instance of a subclass of the 'QualityMeasure' class.")
         if (type(q_minimum_threshold) is not int) and (type(q_minimum_threshold) is not float):
@@ -101,6 +106,8 @@ class VLSD(Algorithm):
             raise ValueError("The value of the parameter 'sort_criterion_in_s1' is not valid. See the documentation.")
         if (sort_criterion_in_other_sizes not in VLSD.SORT_CRITERION):
             raise ValueError("The value of the parameter 'sort_criterion_in_other_sizes' is not valid. See the documentation.")
+        if (vertical_lists_implementation not in VLSD.VERTICAL_LISTS_IMPLEMENTATION):
+            raise ValueError("The value of the parameter 'vertical_lists_implementation' is not valid. See the documentation.")
         if (type(write_results_in_file) is not bool):
             raise TypeError("The type of the parameter 'write_results_in_file' must be 'bool'")
         if ((type(file_path) is not str) and (file_path is not None)):
@@ -120,6 +127,7 @@ class VLSD(Algorithm):
         self._pruned_nodes = 0
         self._sort_criterion_in_s1 = sort_criterion_in_s1
         self._sort_criterion_in_other_sizes = sort_criterion_in_other_sizes
+        self._vertical_lists_implementation = vertical_lists_implementation
         if (write_results_in_file):
             self._file_path = file_path
         else:
@@ -247,8 +255,12 @@ class VLSD(Algorithm):
                     optimistic_estimate_value = self._optimistic_estimate.compute(dict_of_parameters)
                     # Pruning: add the Vertical List only if the optimistic estimate value is greater or equal than the threshold.
                     if optimistic_estimate_value >= self._oe_minimum_threshold:
-                        # Create the Vertical List.
-                        vl = VerticalList([Selector(column, Operator.EQUAL, value)], registers_tp, registers_fp, TP+FP, optimistic_estimate_value)
+                        # Create the Vertical List (depending on the specified implementation).
+                        vl = None
+                        if (self._vertical_lists_implementation == VLSD.VERTICAL_LISTS_WITH_BITSETS):
+                            vl = VerticalListWithBitsets([Selector(column, Operator.EQUAL, value)], registers_tp, registers_fp, TP+FP, optimistic_estimate_value)
+                        elif (self._vertical_lists_implementation == VLSD.VERTICAL_LISTS_WITH_SETS):
+                            vl = VerticalListWithSets([Selector(column, Operator.EQUAL, value)], registers_tp, registers_fp, TP+FP, optimistic_estimate_value)
                         # Add it to the final list.
                         result.append(vl)
                     # Finally, add the value to 'processed_values'.

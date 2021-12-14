@@ -50,13 +50,13 @@ class QualityMeasure(ABC):
         :param dict_of_parameters: python dictionary which contains all the necessary parameters used to compute this quality measure.
         :return: the computed value for the corresponding quality measure.
         """
-        pass
+        raise NotImplementedError("The 'compute' method from the 'QualityMeasure' abstract class is an abstract method.")
     
     @abstractmethod
     def get_name(self) -> str:
         """Method to get the quality measure name (equal to the class name).
         """
-        pass
+        raise NotImplementedError("The 'get_name' method from the 'QualityMeasure' abstract class is an abstract method.")
     
     @abstractmethod
     def optimistic_estimate_of(self) -> dict[str, 'QualityMeasure']:
@@ -64,7 +64,7 @@ class QualityMeasure(ABC):
         
         :return: a python dictionary in which the keys are the quality measure names and the values are the instances of those quality measures.
         """
-        pass
+        raise NotImplementedError("The 'optimistic_estimate_of' method from the 'QualityMeasure' abstract class is an abstract method.")
     
     @abstractmethod
     def __call__(self, dict_of_parameters : dict[str, Union[int, float]]) -> float:
@@ -73,4 +73,4 @@ class QualityMeasure(ABC):
         :param dict_of_parameters: python dictionary which contains all the needed parameters with which to compute this quality measure.
         :return: the computed value for the corresponding quality measure.
         """
-        pass
+        raise NotImplementedError("The '__call__' method from the 'QualityMeasure' abstract class is an abstract method.")

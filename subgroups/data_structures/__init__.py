@@ -2,4 +2,4 @@ from subgroups.data_structures.fp_tree_node import FPTreeNode
 from subgroups.data_structures.fp_tree_for_sdmap import FPTreeForSDMap
 from subgroups.data_structures.vertical_list import VerticalList
 from subgroups.data_structures.vertical_list_with_bitsets import VerticalListWithBitsets
-#from subgroups.data_structures.vertical_list_with_sets import VerticalListWithSets
+from subgroups.data_structures.vertical_list_with_sets import VerticalListWithSets

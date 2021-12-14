@@ -16,9 +16,6 @@ from subgroups.core.subgroup import Subgroup
 from os import remove
 import unittest
 
-# Python annotations.
-from typing import Union
-
 class TestVLSD(unittest.TestCase):
 
     def test_VLSD_init_method_1(self) -> None:
@@ -54,6 +51,7 @@ class TestVLSD(unittest.TestCase):
 
     def test_VLSD_init_method_2(self) -> None:
         VLSD(WRAcc(), -1, WRAccOptimisticEstimate1(), -0.85)
+        # WRAccOptimisticEstimate1 quality measure is not an optimistic stimate of the Qg quality measure.
         self.assertRaises(ValueError, VLSD, Qg(), -1, WRAccOptimisticEstimate1(), -0.85, additional_parameters_for_the_quality_measure={"Qg" : 0.2})
 
     def test_VLSD_fit_method_1(self) -> None:
@@ -70,8 +68,48 @@ class TestVLSD(unittest.TestCase):
     def test_VLSD_fit_method_2(self) -> None:
         df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
         target = ("class", "y")
+        ### VERTICAL LISTS IMPLEMENTED WITH SETS ###
         # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
-        vlsd = VLSD(WRAcc(), -1, WRAccOptimisticEstimate1(), -1, write_results_in_file=True, file_path="./results.txt")
+        vlsd = VLSD(WRAcc(), -1, WRAccOptimisticEstimate1(), -1, vertical_lists_implementation = VLSD.VERTICAL_LISTS_WITH_SETS, write_results_in_file=True, file_path="./results.txt")
+        self.assertEqual(vlsd._vertical_lists_implementation, VLSD.VERTICAL_LISTS_WITH_SETS)
+        vlsd.fit(df, target)
+        self.assertEqual(vlsd.visited_nodes, 25)
+        list_of_written_results = []
+        file_to_read = open("./results.txt", "r")
+        for line in file_to_read:
+            list_of_written_results.append(line)
+        list_of_subgroups = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]
+        self.assertIn(Subgroup.generate_from_str("Description: [a1 = a], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a1 = a, a2 = q], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a1 = a, a3 = f], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a1 = a, a3 = f, a2 = q], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a1 = b], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a1 = b, a2 = q], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a1 = b, a3 = g], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a1 = b, a3 = g, a2 = q], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a1 = c], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a1 = c, a2 = q], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a2 = q], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a2 = s], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a2 = s, a1 = c], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a2 = s, a3 = h], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a2 = s, a3 = h, a1 = c], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a3 = f], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a3 = f, a2 = q], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a3 = g], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a3 = g, a2 = q], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a3 = h], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a3 = h, a1 = c], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a3 = k], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a3 = k, a1 = c], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a3 = k, a1 = c, a2 = q], Target: class = 'y'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [a3 = k, a2 = q], Target: class = 'y'"), list_of_subgroups)
+        file_to_read.close()
+        remove("./results.txt")
+        ### VERTICAL LISTS IMPLEMENTED WITH BITSETS ###
+        # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
+        vlsd = VLSD(WRAcc(), -1, WRAccOptimisticEstimate1(), -1, vertical_lists_implementation = VLSD.VERTICAL_LISTS_WITH_BITSETS, write_results_in_file=True, file_path="./results.txt")
+        self.assertEqual(vlsd._vertical_lists_implementation, VLSD.VERTICAL_LISTS_WITH_BITSETS)
         vlsd.fit(df, target)
         self.assertEqual(vlsd.visited_nodes, 25)
         list_of_written_results = []

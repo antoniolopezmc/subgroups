@@ -22,7 +22,7 @@ class Algorithm(ABC):
         :param pandas_dataframe: the DataFrame which is scanned.
         :param target: a tuple with 2 elements: the target attribute name and the target value.
         """
-        pass
+        raise NotImplementedError("The 'fit' method from the 'Algorithm' abstract class is an abstract method.")
     
     @abstractmethod
     def _handle_individual_result(self, individual_result : object) -> None:
@@ -30,4 +30,4 @@ class Algorithm(ABC):
         
         :param individual_result: the individual result which is handled.
         """
-        pass
+        raise NotImplementedError("The '_handle_individual_result' method from the 'Algorithm' abstract class is an abstract method.")
