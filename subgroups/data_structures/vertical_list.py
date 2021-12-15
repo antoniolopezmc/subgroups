@@ -6,7 +6,7 @@
 """This file contains the implementation of the root class of all the implemented Vertical Lists (data structure used by the VLSD algorithm). Conceptually, a Vertical List is similar to a Subgroup. This class is an abstract class and cannot be instantiated.
 """
 
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 from subgroups.quality_measures.quality_measure import QualityMeasure
 from subgroups.core.selector import Selector
 from collections.abc import Collection

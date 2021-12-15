@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages, Command
+from setuptools import setup, Command
 from setuptools.command.build_py import build_py
 from distutils.command.clean import clean
 import shutil
@@ -31,7 +31,7 @@ class custom_build_py(build_py):
     
     def run(self):
         # First, we delete all "__pycache__" directories.
-        self.run_command("remove_all_pycache_directories")
+        self.run_command("clean_pycache")
         # Directory to build.
         build_directory = self.build_lib
         tests_dir_in_build_directory = os.path.join(build_directory, "subgroups", "tests")
@@ -56,7 +56,7 @@ class custom_build_py(build_py):
         # - IMPORTANT: this copy must be done after renaming the .py files to .pyc.
         shutil.copytree("subgroups/tests", tests_dir_in_build_directory)
 
-class remove_all_pycache_directories(Command):
+class clean_pycache(Command):
     """Command to remove all '__pycache__' directories.
     """
     
@@ -83,6 +83,7 @@ class custom_clean_command(clean):
     
     def run(self):
         super().run()
+        self.run_command("clean_pycache")
         if os.path.isdir("build"):
             shutil.rmtree("build")
         if os.path.isdir("dist"):
@@ -92,36 +93,11 @@ class custom_clean_command(clean):
 
 # Entry point of the python script.
 if __name__ == "__main__":
-    # Read the long description of the project (stored in the README.md file).
-    with open("README.md", "r", encoding="utf-8") as fh:
-        long_description = fh.read()
-    # Project properties.
+    # Setup function.
     setup(
-        name="subgroups",
-        version="0.0.3",
-        author="Antonio López Martínez-Carrasco",
-        author_email="antoniolopezmc1995@gmail.com",
-        maintainer="Antonio López Martínez-Carrasco",
-        maintainer_email="antoniolopezmc1995@gmail.com",
-        description="subgroups is a python library which contains a collection of subgroup discovery algorithms and other data analysis utilities.",
-        long_description=long_description,
-        long_description_content_type="text/markdown",
-        url="https://github.com/antoniolopezmc/subgroups",
-        packages=find_packages(where='.', exclude=("build*", "dist*", "docs*")),
-        install_requires=[
-            'pandas>=1.3.4',
-            'bitarray>=2.3.0'
-        ],
-        classifiers=[
-            "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3 :: Only",
-            "License :: OSI Approved :: BSD License",
-            "Operating System :: OS Independent",
-        ],
-        python_requires='>=3.9.0',
         cmdclass = {
             "build_py" : custom_build_py,
-            "remove_all_pycache_directories" : remove_all_pycache_directories,
+            "clean_pycache" : clean_pycache,
             "clean" : custom_clean_command
         },
     )
