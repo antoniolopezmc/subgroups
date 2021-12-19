@@ -13,17 +13,20 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../../'))
-
+# IMPORTANT: since we added "../../" directory to the first position of the path, 'subgroups' module is the one located in that directory, 
+#            not in the python modules directory.
+import subgroups
+from datetime import date
 
 # -- Project information -----------------------------------------------------
 
 project = 'subgroups'
-copyright = '2021, Antonio López Martínez-Carrasco'
+current_year = date.today().year
+copyright = str(current_year) + ', Antonio López Martínez-Carrasco'
 author = 'Antonio López Martínez-Carrasco'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.2'
-
+release = subgroups.__version__
 
 # -- General configuration ---------------------------------------------------
 
@@ -32,6 +35,7 @@ release = '0.0.2'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx_autodoc_typehints',
     #'sphinx.ext.viewcode', # Uncomment to view the button "source" in the generated documentation.
     'sphinx.ext.coverage',
     'sphinx.ext.githubpages'
@@ -57,3 +61,7 @@ html_theme = 'sphinx_rtd_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# -- Options for 'sphinx_autodoc_typehints'.
+
+typehints_fully_qualified = True

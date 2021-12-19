@@ -8,8 +8,8 @@
 
 from pandas import DataFrame
 from pandas.api.types import is_string_dtype
-from subgroups.algorithms._base import Algorithm
-from subgroups.quality_measures._base import QualityMeasure
+from subgroups.algorithms.algorithm import Algorithm
+from subgroups.quality_measures.quality_measure import QualityMeasure
 from subgroups.exceptions import InconsistentMethodParametersError, DatasetAttributeTypeError
 from subgroups.data_structures.fp_tree_for_sdmap import FPTreeForSDMap
 from subgroups.core.pattern import Pattern
@@ -18,10 +18,12 @@ from subgroups.core.selector import Selector
 from subgroups.core.subgroup import Subgroup
 from numpy import sum
 
-def _generate_all_combinations(list_of_selectors):
+# Python annotations.
+from typing import Union
+
+def _generate_all_combinations(list_of_selectors : list[Selector]):
     """Private method to generate all the combinations (including the empty list) of the list of selectors passed by parameter.
     
-    :type list_of_selectors: list[Selector]
     :param list_of_selectors: the list of selectors which is used.
     """
     if list_of_selectors == []:
@@ -29,55 +31,46 @@ def _generate_all_combinations(list_of_selectors):
     x = _generate_all_combinations(list_of_selectors[1:])
     return x + [[list_of_selectors[0]] + y for y in x]
 
-def _delete_subgroup_parameters_from_a_dictionary(dict_of_parameters):
+def _delete_subgroup_parameters_from_a_dictionary(dict_of_parameters : dict[str, Union[int, float]]):
     """Private method to delete the subgroup parameters (i.e., tp, fp, TP and FP) from a dictionary of parameters.
     
-    :type dict_of_parameters: dict[str, int or float]
     :param dict_of_parameters: the dictionary of parameters which is modified.
     """
     try:
-        del dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_tp]
+        del dict_of_parameters[QualityMeasure.TRUE_POSITIVES]
     except KeyError:
         pass
     try:
-        del dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_fp]
+        del dict_of_parameters[QualityMeasure.FALSE_POSITIVES]
     except KeyError:
         pass
     try:
-        del dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_TP]
+        del dict_of_parameters[QualityMeasure.TRUE_POPULATION]
     except KeyError:
         pass
     try:
-        del dict_of_parameters[QualityMeasure.SUBGROUP_PARAMETER_FP]
+        del dict_of_parameters[QualityMeasure.FALSE_POPULATION]
     except KeyError:
         pass
 
 class SDMap(Algorithm):
     """This class represents the SDMap algorithm. Two threshold types could be used: (1) the true positives tp and the false positives fp separately or (2) the subgroup description size n (n = tp + fp). This means that: (1) if 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and (2) if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.
     
-    :type quality_measure: QualityMeasure
     :param quality_measure: the quality measure which is used.
-    :type minimum_quality_measure_value: int or float
     :param minimum_quality_measure_value: the minimum quality measure value threshold.
-    :type minimum_tp: int or NoneType
     :param minimum_tp: the minimum true positives (tp) threshold.
-    :type minimum_fp: int or NoneType
     :param minimum_fp: the minimum false positives (fp) threshold.
-    :type minimum_n: int or NoneType
     :param minimum_n: the minimum subgroup description size (n) threshold.
-    :type additional_parameters_for_the_quality_measure: dict[str, int or float]
     :param additional_parameters_for_the_quality_measure: if the quality measure passed by parameter needs more parameters apart from tp, fp, TP and FP to be computed, they need to be specified here.
-    :type write_results_in_file: bool
     :param write_results_in_file: whether the results obtained will be written in a file. By default, False.
-    :type file_path: str or NoneType
     :param file_path: if 'write_results_in_file' is True, path of the file in which the results will be written.
     """
     
-    __slots__ = "_quality_measure", "_minimum_quality_measure_value", "_minimum_tp", "_minimum_fp", "_minimum_n", "_additional_parameters_for_the_quality_measure", "_visited_nodes", "_pruned_nodes", "_file_path", "_file"
+    __slots__ = ("_quality_measure", "_minimum_quality_measure_value", "_minimum_tp", "_minimum_fp", "_minimum_n", "_additional_parameters_for_the_quality_measure", "_visited_nodes", "_pruned_nodes", "_file_path", "_file")
     
-    def __init__(self, quality_measure, minimum_quality_measure_value, minimum_tp=None, minimum_fp=None, minimum_n=None, additional_parameters_for_the_quality_measure=dict(), write_results_in_file=False, file_path=None):
+    def __init__(self, quality_measure : QualityMeasure, minimum_quality_measure_value : Union[int, float], minimum_tp : Union[int, None] = None, minimum_fp : Union[int, None] = None, minimum_n : Union[int, None] = None, additional_parameters_for_the_quality_measure : dict[str, Union[int, float]] = dict(), write_results_in_file : bool = False, file_path : Union[str, None] = None) -> None:
         if not isinstance(quality_measure, QualityMeasure):
-            raise TypeError("The parameter 'quality_measure' must be a subclass of QualityMeasure.")
+            raise TypeError("The parameter 'quality_measure' must be an instance of a subclass of the 'QualityMeasure' class.")
         if (type(minimum_quality_measure_value) is not int) and (type(minimum_quality_measure_value) is not float):
             raise TypeError("The type of the parameter 'minimum_quality_measure_value' must be 'int' or 'float'.")
         if (type(minimum_tp) is not int) and (minimum_tp is not None):
@@ -115,22 +108,22 @@ class SDMap(Algorithm):
         else:
             raise InconsistentMethodParametersError("If 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.")
     
-    def _get_quality_measure(self):
+    def _get_quality_measure(self) -> QualityMeasure:
         return self._quality_measure
     
-    def _get_minimum_quality_measure_value(self):
+    def _get_minimum_quality_measure_value(self) -> Union[int, float]:
         return self._minimum_quality_measure_value
     
-    def _get_minimum_tp(self):
+    def _get_minimum_tp(self) -> Union[int, None]:
         return self._minimum_tp
     
-    def _get_minimum_fp(self):
+    def _get_minimum_fp(self) -> Union[int, None]:
         return self._minimum_fp
     
-    def _get_minimum_n(self):
+    def _get_minimum_n(self) -> Union[int, None]:
         return self._minimum_n
     
-    def _get_additional_parameters_for_the_quality_measure(self):
+    def _get_additional_parameters_for_the_quality_measure(self) -> dict[str, Union[int, float]]:
         return self._additional_parameters_for_the_quality_measure
     
     quality_measure = property(_get_quality_measure, None, None, "The quality measure which is used.")
@@ -140,20 +133,19 @@ class SDMap(Algorithm):
     minimum_n = property(_get_minimum_n, None, None, "The minimum subgroup description size (n) threshold.")
     additional_parameters_for_the_quality_measure = property(_get_additional_parameters_for_the_quality_measure, None, None, "The additional needed parameters with which to compute the quality measure.")
     
-    def _get_visited_nodes(self):
+    def _get_visited_nodes(self) -> int:
         return self._visited_nodes
     
-    def _get_pruned_nodes(self):
+    def _get_pruned_nodes(self) -> int:
         return self._pruned_nodes
     
     visited_nodes = property(_get_visited_nodes, None, None, "The visited nodes after executing the SDMap algorithm (before executing the 'fit' method, this attribute is 0).")
     pruned_nodes = property(_get_pruned_nodes, None, None, "The pruned nodes after executing the SDMap algorithm (before executing the 'fit' method, this attribute is 0).")
     
-    def _save_individual_result(self, individual_result):
-        """Private method to save a individual result and, if applicable, write it in a file.
+    def _handle_individual_result(self, individual_result : tuple[Pattern, tuple[str, str], int, int, int, int]) -> None:
+        """Private method to handle each individual result generated by the SDMap algorithm.
         
-        :type individual_result: tuple[Pattern, tuple[str, str], int, int, int, int]
-        :param individual_result: the individual result which is saved and, if applicable, written in the file. In this case, it is a subgroup description, a target as a tuple and the subgroup parameters tp, fp, TP and FP.
+        :param individual_result: the individual result which is handled. In this case, it is a subgroup description, a target as a tuple and the subgroup parameters tp, fp, TP and FP.
         """
         # Get the subgroup parameters.
         tp = individual_result[2]
@@ -161,7 +153,7 @@ class SDMap(Algorithm):
         TP = individual_result[4]
         FP = individual_result[5]
         # Compute the quality measure of the frequent pattern along with the target (i.e., the quality measure of the subgroup).
-        dict_of_parameters = {QualityMeasure.SUBGROUP_PARAMETER_tp : tp, QualityMeasure.SUBGROUP_PARAMETER_fp : fp, QualityMeasure.SUBGROUP_PARAMETER_TP : TP, QualityMeasure.SUBGROUP_PARAMETER_FP : FP}
+        dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : tp, QualityMeasure.FALSE_POSITIVES : fp, QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
         dict_of_parameters.update(self._additional_parameters_for_the_quality_measure)
         quality_measure_value = self._quality_measure.compute(dict_of_parameters)
         # Add the subgroup only if the quality measure value is greater or equal than the threshold.
@@ -185,19 +177,14 @@ class SDMap(Algorithm):
         else: # If the quality measure is not greater or equal, increment the number of pruned nodes.
             self._pruned_nodes = self._pruned_nodes + 1
     
-    def _fpgrowth(self, fptree, alpha, target, TP, FP):
+    def _fpgrowth(self, fptree : FPTreeForSDMap, alpha : Union[list[Selector], None], target : tuple[str, str], TP : int, FP : int) -> None:
         """Private method to run the adapted FPGrowth algorithm in order to generate frequent patterns.
         
-        :type fptree: FPTreeForSDMap
         :param fptree: the current FPTree. At the beginning, it is the FPTreeForSDMap generated from the complete dataset. Although, it will change between recursive calls to this method.
-        :type alpha: list[Selector]
-        :param alpha: a list of selectors.
-        :type target: tuple[str, str]
+        :param alpha: a list of selectors (or None, in the first call to this method).
         :param target: a tuple with 2 elements: the target attribute name and the target value.
-        :type TP: int
-        :param TP: the True Positives of the dataset (i.e., the number of instances in which the target appears).
-        :type FP: int
-        :param FP: the False Positives of the dataset (i.e., the number of instances in which the target does not appear).
+        :param TP: the true population of the dataset (i.e., the number of instances in which the target appears).
+        :param FP: the false population of the dataset (i.e., the number of instances in which the target does not appear).
         """
         # Check if fptree contains a single path.
         if fptree.there_is_a_single_path():
@@ -224,7 +211,7 @@ class SDMap(Algorithm):
                 tp = fptree.header_table[most_unfrequent_selector][0][0]
                 fp = fptree.header_table[most_unfrequent_selector][0][1]
                 # Save this result.
-                self._save_individual_result( (pattern, target, tp, fp, TP, FP) )
+                self._handle_individual_result( (pattern, target, tp, fp, TP, FP) )
         else:
             # Iterate throughout the selectors in the sorted header table of the fptree.
             for ai in fptree._sorted_header_table:
@@ -241,19 +228,17 @@ class SDMap(Algorithm):
                 tp = fptree.header_table[ai][0][0]
                 fp = fptree.header_table[ai][0][1]
                 # Save this result.
-                self._save_individual_result( (beta_as_Pattern, target, tp, fp, TP, FP) )
+                self._handle_individual_result( (beta_as_Pattern, target, tp, fp, TP, FP) )
                 # Build the conditional FPTree.
                 conditional_fp_tree = fptree.generate_conditional_fp_tree(beta_as_list, minimum_tp=self.minimum_tp, minimum_fp=self.minimum_fp, minimum_n=self.minimum_n)
                 # Recursive call.
                 if not conditional_fp_tree.is_empty():
                     self._fpgrowth(conditional_fp_tree, beta_as_list, target, TP, FP)
     
-    def fit(self, pandas_dataframe, target):
+    def fit(self, pandas_dataframe : DataFrame, target : tuple[str, str]) -> None:
         """Main method to run the SDMap algorithm. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
         
-        :type pandas_dataframe: pandas.DataFrame
         :param pandas_dataframe: the DataFrame which is scanned. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
-        :type target: tuple[str, str]
         :param target: a tuple with 2 elements: the target attribute name and the target value.
         """
         if type(pandas_dataframe) is not DataFrame:
