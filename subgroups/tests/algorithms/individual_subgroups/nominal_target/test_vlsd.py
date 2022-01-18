@@ -73,6 +73,8 @@ class TestVLSD(unittest.TestCase):
         vlsd = VLSD(WRAcc(), -1, WRAccOptimisticEstimate1(), -1, vertical_lists_implementation = VLSD.VERTICAL_LISTS_WITH_SETS, write_results_in_file=True, file_path="./results.txt")
         self.assertEqual(vlsd._vertical_lists_implementation, VLSD.VERTICAL_LISTS_WITH_SETS)
         vlsd.fit(df, target)
+        self.assertEqual(vlsd.generated_subgroups, 25)
+        self.assertEqual(vlsd.pruned_subgroups, 0)
         self.assertEqual(vlsd.visited_nodes, 25)
         list_of_written_results = []
         file_to_read = open("./results.txt", "r")
@@ -111,6 +113,8 @@ class TestVLSD(unittest.TestCase):
         vlsd = VLSD(WRAcc(), -1, WRAccOptimisticEstimate1(), -1, vertical_lists_implementation = VLSD.VERTICAL_LISTS_WITH_BITSETS, write_results_in_file=True, file_path="./results.txt")
         self.assertEqual(vlsd._vertical_lists_implementation, VLSD.VERTICAL_LISTS_WITH_BITSETS)
         vlsd.fit(df, target)
+        self.assertEqual(vlsd.generated_subgroups, 25)
+        self.assertEqual(vlsd.pruned_subgroups, 0)
         self.assertEqual(vlsd.visited_nodes, 25)
         list_of_written_results = []
         file_to_read = open("./results.txt", "r")
@@ -151,7 +155,7 @@ class TestVLSD(unittest.TestCase):
         # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
         vlsd = VLSD(WRAcc(), 0, WRAccOptimisticEstimate1(), 0, write_results_in_file=True, file_path="./results.txt")
         vlsd.fit(df, target)
-        self.assertEqual(vlsd.visited_nodes, 13)
+        self.assertEqual(vlsd.generated_subgroups, 13)
         list_of_written_results = []
         file_to_read = open("./results.txt", "r")
         for line in file_to_read:
@@ -179,7 +183,7 @@ class TestVLSD(unittest.TestCase):
         # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
         vlsd = VLSD(WRAcc(), 0.1, WRAccOptimisticEstimate1(), 0.1, write_results_in_file=True, file_path="./results.txt")
         vlsd.fit(df, target)
-        self.assertEqual(vlsd.visited_nodes, 12)
+        self.assertEqual(vlsd.generated_subgroups, 12)
         list_of_written_results = []
         file_to_read = open("./results.txt", "r")
         for line in file_to_read:
@@ -207,7 +211,7 @@ class TestVLSD(unittest.TestCase):
         vlsd = VLSD(WRAcc(), 0.1, WRAccOptimisticEstimate1(), 0.1, additional_parameters_for_the_quality_measure={"TP" : 100000, "g" : 0.5}, additional_parameters_for_the_optimistic_estimate={"FP" : 100000, "g" : 0.4}, write_results_in_file=True, file_path="./results.txt")
         self.assertEqual(len(vlsd.additional_parameters_for_the_quality_measure), 1)
         vlsd.fit(df, target)
-        self.assertEqual(vlsd.visited_nodes, 12)
+        self.assertEqual(vlsd.generated_subgroups, 12)
         list_of_written_results = []
         file_to_read = open("./results.txt", "r")
         for line in file_to_read:
@@ -234,7 +238,7 @@ class TestVLSD(unittest.TestCase):
         # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
         vlsd = VLSD(WRAcc(), -1, WRAccOptimisticEstimate1(), -1, sort_criterion_in_s1 = "quality-ascending", sort_criterion_in_other_sizes = "no-order", write_results_in_file=True, file_path="./results.txt")
         vlsd.fit(df, target)
-        self.assertEqual(vlsd.visited_nodes, 25)
+        self.assertEqual(vlsd.generated_subgroups, 25)
         list_of_written_results = []
         file_to_read = open("./results.txt", "r")
         for line in file_to_read:
@@ -274,7 +278,7 @@ class TestVLSD(unittest.TestCase):
         # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
         vlsd = VLSD(WRAcc(), -1, WRAccOptimisticEstimate1(), -1, sort_criterion_in_s1 = "no-order", sort_criterion_in_other_sizes = "quality-descending", write_results_in_file=True, file_path="./results.txt")
         vlsd.fit(df, target)
-        self.assertEqual(vlsd.visited_nodes, 25)
+        self.assertEqual(vlsd.generated_subgroups, 25)
         list_of_written_results = []
         file_to_read = open("./results.txt", "r")
         for line in file_to_read:
