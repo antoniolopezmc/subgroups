@@ -84,7 +84,7 @@ class VLSD(Algorithm):
     VERTICAL_LISTS_WITH_SETS : ClassVar[str] = "sets"
     VERTICAL_LISTS_IMPLEMENTATION : ClassVar[list[str]] = [VERTICAL_LISTS_WITH_BITSETS, VERTICAL_LISTS_WITH_SETS]
 
-    __slots__ = ("_quality_measure", "_q_minimum_threshold", "_optimistic_estimate", "_oe_minimum_threshold", "_additional_parameters_for_the_quality_measure", "_additional_parameters_for_the_optimistic_estimate", "_generated_subgroups", "_pruned_subgroups", "_sort_criterion_in_s1", "_sort_criterion_in_other_sizes", "_vertical_lists_implementation", "_file_path", "_file")
+    __slots__ = ("_quality_measure", "_q_minimum_threshold", "_optimistic_estimate", "_oe_minimum_threshold", "_additional_parameters_for_the_quality_measure", "_additional_parameters_for_the_optimistic_estimate", "_selected_subgroups", "_not_selected_subgroups", "_sort_criterion_in_s1", "_sort_criterion_in_other_sizes", "_vertical_lists_implementation", "_file_path", "_file")
     
     def __init__(self, quality_measure : QualityMeasure, q_minimum_threshold : Union[int, float], optimistic_estimate : QualityMeasure, oe_minimum_threshold : Union[int, float], additional_parameters_for_the_quality_measure : dict[str, Union[int, float]] = dict(), additional_parameters_for_the_optimistic_estimate : dict[str, Union[int, float]] = dict(), sort_criterion_in_s1 : str = SORT_CRITERION_NO_ORDER, sort_criterion_in_other_sizes : str = SORT_CRITERION_NO_ORDER, vertical_lists_implementation : str = VERTICAL_LISTS_WITH_BITSETS, write_results_in_file : bool = False, file_path : Union[str, None] = None) -> None:
         if not isinstance(quality_measure, QualityMeasure):
@@ -123,8 +123,8 @@ class VLSD(Algorithm):
         _delete_subgroup_parameters_from_a_dictionary(self._additional_parameters_for_the_quality_measure)
         self._additional_parameters_for_the_optimistic_estimate = additional_parameters_for_the_optimistic_estimate.copy()
         _delete_subgroup_parameters_from_a_dictionary(self._additional_parameters_for_the_optimistic_estimate)
-        self._generated_subgroups = 0
-        self._pruned_subgroups = 0
+        self._selected_subgroups = 0
+        self._not_selected_subgroups = 0
         self._sort_criterion_in_s1 = sort_criterion_in_s1
         self._sort_criterion_in_other_sizes = sort_criterion_in_other_sizes
         self._vertical_lists_implementation = vertical_lists_implementation
@@ -159,17 +159,17 @@ class VLSD(Algorithm):
     additional_parameters_for_the_quality_measure = property(_get_additional_parameters_for_the_quality_measure, None, None, "The additional needed parameters with which to compute the quality measure.")
     additional_parameters_for_the_optimistic_estimate = property(_get_additional_parameters_for_the_optimistic_estimate, None, None, "The additional needed parameters with which to compute the optimistic estimate.")
     
-    def _get_generated_subgroups(self) -> int:
-        return self._generated_subgroups
+    def _get_selected_subgroups(self) -> int:
+        return self._selected_subgroups
     
-    def _get_pruned_subgroups(self) -> int:
-        return self._pruned_subgroups
+    def _get_not_selected_subgroups(self) -> int:
+        return self._not_selected_subgroups
     
     def _get_visited_nodes(self) -> int:
-        return self._generated_subgroups + self._pruned_subgroups
+        return self._selected_subgroups + self._not_selected_subgroups
 
-    generated_subgroups = property(_get_generated_subgroups, None, None, "Number of generated subgroups after executing the VLSD algorithm (before executing the 'fit' method, this attribute is 0).")
-    pruned_subgroups = property(_get_pruned_subgroups, None, None, "Number of pruned subgroups after executing the VLSD algorithm (before executing the 'fit' method, this attribute is 0).")
+    selected_subgroups = property(_get_selected_subgroups, None, None, "Number of selected subgroups after executing the VLSD algorithm (before executing the 'fit' method, this attribute is 0).")
+    not_selected_subgroups = property(_get_not_selected_subgroups, None, None, "Number of not selected subgroups after executing the VLSD algorithm (before executing the 'fit' method, this attribute is 0).")
     visited_nodes = property(_get_visited_nodes, None, None, "Number of visited nodes after executing the VLSD algorithm (before executing the 'fit' method, this attribute is 0).")
 
     def _get_sort_criterion_in_s1(self) -> str:
@@ -212,10 +212,10 @@ class VLSD(Algorithm):
                 self._file.write("fp = " + str(fp) + " ; ")
                 self._file.write("TP = " + str(TP) + " ; ")
                 self._file.write("FP = " + str(FP) + "\n")
-            # Increment the number of visited nodes.
-            self._generated_subgroups = self._generated_subgroups + 1
-        else: # If the quality measure is not greater or equal, increment the number of pruned nodes.
-            self._pruned_subgroups = self._pruned_subgroups + 1
+            # Increment the number of selected subgroups.
+            self._selected_subgroups = self._selected_subgroups + 1
+        else: # If the quality measure is not greater or equal, increment the number of not selected subgroups.
+            self._not_selected_subgroups = self._not_selected_subgroups + 1
     
     # IMPORTANT: although the subgroup parameters TP and FP can be computed from 'pandas_dataframe', we also pass them by parameter in this method to avoid computing them twice (in the 'fit' method and in this method).
     def _generate_subgroups_s1(self, pandas_dataframe : DataFrame, target : tuple[str, str], TP : int, FP : int) -> list[VerticalList]:

@@ -60,8 +60,8 @@ class TestSDMap(unittest.TestCase):
         sdmap = SDMap(WRAcc(), -1, minimum_n=minimum_n)
         sdmap._fpgrowth(fp_tree, None, target, TP, FP)
         # Minimum WRAcc = -1 and minimum n = 0. For this reason, all possible nodes of the tree are built and all subgroups are generated.
-        self.assertEqual(sdmap.generated_subgroups, 25)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 25)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 25)
 
     def test_SDMap_fpgrowth_method_2(self) -> None:
@@ -76,8 +76,8 @@ class TestSDMap(unittest.TestCase):
         sdmap = SDMap(WRAcc(), -1, minimum_n=minimum_n)
         sdmap._fpgrowth(fp_tree, None, target, TP, FP)
         # Minimum WRAcc = -1 and minimum n = 2. For this reason, not all possible nodes of the tree are built (although all explored subgroups are generated). 
-        self.assertEqual(sdmap.generated_subgroups, 2)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 2)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 2)
 
     def test_SDMap_fpgrowth_method_3(self) -> None:
@@ -93,8 +93,8 @@ class TestSDMap(unittest.TestCase):
         sdmap = SDMap(WRAcc(), -1, minimum_tp=minimum_tp, minimum_fp=minimum_fp)
         sdmap._fpgrowth(fp_tree, None, target, TP, FP)
         # Minimum WRAcc = -1 and minimum n = 2 (1 + 1). For this reason, not all possible nodes of the tree are built (although all explored subgroups are generated). 
-        self.assertEqual(sdmap.generated_subgroups, 2)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 2)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 2)
 
     def test_SDMap_fpgrowth_method_4(self) -> None:
@@ -110,8 +110,8 @@ class TestSDMap(unittest.TestCase):
         sdmap = SDMap(WRAcc(), -1, minimum_tp=minimum_tp, minimum_fp=minimum_fp)
         sdmap._fpgrowth(fp_tree, None, target, TP, FP)
         # Minimum WRAcc = -1 and minimum n = 1 (1 + 0). For this reason, not all possible nodes of the tree are built (although all explored subgroups are generated). 
-        self.assertEqual(sdmap.generated_subgroups, 13)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 13)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 13)
 
     def test_SDMap_fit_method_1(self) -> None:
@@ -131,8 +131,8 @@ class TestSDMap(unittest.TestCase):
         # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
         sdmap = SDMap(WRAcc(), -1, minimum_n=0, write_results_in_file=True, file_path="./results.txt")
         sdmap.fit(df, target)
-        self.assertEqual(sdmap.generated_subgroups, 25)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 25)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 25)
         list_of_written_results = []
         file_to_read = open("./results.txt", "r")
@@ -173,8 +173,8 @@ class TestSDMap(unittest.TestCase):
         # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
         sdmap = SDMap(WRAcc(), -1, minimum_n=2, write_results_in_file=True, file_path="./results.txt")
         sdmap.fit(df, target)
-        self.assertEqual(sdmap.generated_subgroups, 2)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 2)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 2)
         list_of_written_results = []
         file_to_read = open("./results.txt", "r")
@@ -192,8 +192,8 @@ class TestSDMap(unittest.TestCase):
         # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
         sdmap = SDMap(WRAcc(), -1, minimum_tp=1, minimum_fp=1, write_results_in_file=True, file_path="./results.txt")
         sdmap.fit(df, target)
-        self.assertEqual(sdmap.generated_subgroups, 2)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 2)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 2)
         list_of_written_results = []
         file_to_read = open("./results.txt", "r")
@@ -211,8 +211,8 @@ class TestSDMap(unittest.TestCase):
         # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
         sdmap = SDMap(WRAcc(), -1, minimum_tp=1, minimum_fp=0, write_results_in_file=True, file_path="./results.txt")
         sdmap.fit(df, target)
-        self.assertEqual(sdmap.generated_subgroups, 13)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 13)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 13)
         list_of_written_results = []
         file_to_read = open("./results.txt", "r")
@@ -241,8 +241,8 @@ class TestSDMap(unittest.TestCase):
         # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
         sdmap = SDMap(WRAcc(), 0, minimum_tp=1, minimum_fp=0, write_results_in_file=True, file_path="./results.txt")
         sdmap.fit(df, target)
-        self.assertEqual(sdmap.generated_subgroups, 13)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 13)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 13)
         list_of_written_results = []
         file_to_read = open("./results.txt", "r")
@@ -271,8 +271,8 @@ class TestSDMap(unittest.TestCase):
         # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
         sdmap = SDMap(WRAcc(), 0.1, minimum_tp=1, minimum_fp=0, write_results_in_file=True, file_path="./results.txt")
         sdmap.fit(df, target)
-        self.assertEqual(sdmap.generated_subgroups, 12)
-        self.assertEqual(sdmap.pruned_subgroups, 1)
+        self.assertEqual(sdmap.selected_subgroups, 12)
+        self.assertEqual(sdmap.not_selected_subgroups, 1)
         self.assertEqual(sdmap.visited_nodes, 13)
         list_of_written_results = []
         file_to_read = open("./results.txt", "r")
@@ -300,8 +300,8 @@ class TestSDMap(unittest.TestCase):
         # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
         sdmap = SDMap(WRAcc(), 0.1, minimum_n=0, write_results_in_file=True, file_path="./results.txt")
         sdmap.fit(df, target)
-        self.assertEqual(sdmap.generated_subgroups, 12)
-        self.assertEqual(sdmap.pruned_subgroups, 13)
+        self.assertEqual(sdmap.selected_subgroups, 12)
+        self.assertEqual(sdmap.not_selected_subgroups, 13)
         self.assertEqual(sdmap.visited_nodes, 25)
         list_of_written_results = []
         file_to_read = open("./results.txt", "r")
@@ -330,8 +330,8 @@ class TestSDMap(unittest.TestCase):
         sdmap = SDMap(WRAcc(), -1, minimum_tp=1, minimum_fp=1, additional_parameters_for_the_quality_measure={"TP" : 100000, "g" : 0.5}, write_results_in_file=True, file_path="./results.txt")
         self.assertEqual(len(sdmap.additional_parameters_for_the_quality_measure), 1)
         sdmap.fit(df, target)
-        self.assertEqual(sdmap.generated_subgroups, 2)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 2)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 2)
         list_of_written_results = []
         file_to_read = open("./results.txt", "r")
@@ -356,8 +356,8 @@ class TestSDMap(unittest.TestCase):
         # IMPORTANT: the subgroup parameter TP will be deleted in the __init__ method.
         sdmap = SDMap(Qg(), -1, minimum_tp=1, minimum_fp=1, additional_parameters_for_the_quality_measure={"TP" : 100000, "g" : 0.5})
         sdmap.fit(df, target)
-        self.assertEqual(sdmap.generated_subgroups, 2)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 2)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 2)
 
     def test_SDMap_additional_parameters_in_fit_method(self) -> None:
@@ -368,88 +368,88 @@ class TestSDMap(unittest.TestCase):
         sdmap_3 = SDMap(WRAcc(), -1, minimum_tp=1, minimum_fp=1, additional_parameters_for_the_quality_measure={"tp" : 10, "fp" : 20, "TP" : 100, "FP" : 200, "g" : 0.1})
         self.assertEqual(len(sdmap_3._additional_parameters_for_the_quality_measure), 1)
 
-    def test_SDMap_generated_and_pruned_subgroups(self) -> None:
+    def test_SDMap_generated_and_not_selected_subgroups(self) -> None:
         df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
         target = ("class", "y")
         # ---------------------------------------
         sdmap = SDMap(WRAcc(), -1, minimum_n=0) # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
-        self.assertEqual(sdmap.generated_subgroups, 0)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 0)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 0)
         sdmap.fit(df, target)
-        self.assertEqual(sdmap.generated_subgroups, 25)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 25)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 25)
         # ---------------------------------------
         sdmap = SDMap(WRAcc(), -1, minimum_n=2) # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
-        self.assertEqual(sdmap.generated_subgroups, 0)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 0)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 0)
         sdmap.fit(df, target)
-        self.assertEqual(sdmap.generated_subgroups, 2)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 2)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 2)
         # ---------------------------------------
         sdmap = SDMap(WRAcc(), -1, minimum_tp=1, minimum_fp=1) # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
-        self.assertEqual(sdmap.generated_subgroups, 0)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 0)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 0)
         sdmap.fit(df, target)
-        self.assertEqual(sdmap.generated_subgroups, 2)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 2)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 2)
         # ---------------------------------------
         sdmap = SDMap(WRAcc(), -1, minimum_tp=1, minimum_fp=0) # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
-        self.assertEqual(sdmap.generated_subgroups, 0)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 0)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 0)
         sdmap.fit(df, target)
-        self.assertEqual(sdmap.generated_subgroups, 13)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 13)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 13)
         # ---------------------------------------
         sdmap = SDMap(WRAcc(), 0, minimum_tp=1, minimum_fp=0) # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
-        self.assertEqual(sdmap.generated_subgroups, 0)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 0)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 0)
         sdmap.fit(df, target)
-        self.assertEqual(sdmap.generated_subgroups, 13)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 13)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 13)
         # ---------------------------------------
         sdmap = SDMap(WRAcc(), 0.1, minimum_tp=1, minimum_fp=0) # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
-        self.assertEqual(sdmap.generated_subgroups, 0)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 0)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 0)
         sdmap.fit(df, target)
-        self.assertEqual(sdmap.generated_subgroups, 12)
-        self.assertEqual(sdmap.pruned_subgroups, 1)
+        self.assertEqual(sdmap.selected_subgroups, 12)
+        self.assertEqual(sdmap.not_selected_subgroups, 1)
         self.assertEqual(sdmap.visited_nodes, 13)
         # ---------------------------------------
         sdmap = SDMap(WRAcc(), 0.1, minimum_n=0) # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
-        self.assertEqual(sdmap.generated_subgroups, 0)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 0)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 0)
         sdmap.fit(df, target)
-        self.assertEqual(sdmap.generated_subgroups, 12)
-        self.assertEqual(sdmap.pruned_subgroups, 13)
+        self.assertEqual(sdmap.selected_subgroups, 12)
+        self.assertEqual(sdmap.not_selected_subgroups, 13)
         self.assertEqual(sdmap.visited_nodes, 25)
         # ---------------------------------------
         # ---------------------------------------
         sdmap = SDMap(WRAcc(), 0.2, minimum_n=2) # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
-        self.assertEqual(sdmap.generated_subgroups, 0)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 0)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 0)
         sdmap.fit(df, target)
-        self.assertEqual(sdmap.generated_subgroups, 0)
-        self.assertEqual(sdmap.pruned_subgroups, 2)
+        self.assertEqual(sdmap.selected_subgroups, 0)
+        self.assertEqual(sdmap.not_selected_subgroups, 2)
         self.assertEqual(sdmap.visited_nodes, 2)
         # ---------------------------------------
         sdmap = SDMap(WRAcc(), 0.2, minimum_n=0) # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
-        self.assertEqual(sdmap.generated_subgroups, 0)
-        self.assertEqual(sdmap.pruned_subgroups, 0)
+        self.assertEqual(sdmap.selected_subgroups, 0)
+        self.assertEqual(sdmap.not_selected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 0)
         sdmap.fit(df, target)
-        self.assertEqual(sdmap.generated_subgroups, 0)
-        self.assertEqual(sdmap.pruned_subgroups, 25)
+        self.assertEqual(sdmap.selected_subgroups, 0)
+        self.assertEqual(sdmap.not_selected_subgroups, 25)
         self.assertEqual(sdmap.visited_nodes, 25)
