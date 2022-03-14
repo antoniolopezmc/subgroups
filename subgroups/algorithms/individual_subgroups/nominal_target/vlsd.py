@@ -206,6 +206,8 @@ class VLSD(Algorithm):
                 subgroup = Subgroup(subgroup_description, Selector(target_as_tuple[0], Operator.EQUAL, target_as_tuple[1]))
                 # Write.
                 self._file.write(str(subgroup) + " ; ")
+                self._file.write("Sequence of instances tp = " + str(individual_result[0].sequence_of_instances_tp) + " ; ")
+                self._file.write("Sequence of instances fp = " + str(individual_result[0].sequence_of_instances_fp) + " ; ")
                 self._file.write("Quality Measure " + self._quality_measure.get_name() + " = " + str(quality_measure_value) + " ; ")
                 self._file.write("Optimistic Estimate " + self._optimistic_estimate.get_name() + " = " + str(individual_result[0].quality_value) + " ; ")
                 self._file.write("tp = " + str(tp) + " ; ")
@@ -234,7 +236,8 @@ class VLSD(Algorithm):
         # Iterate through the columns (except the target).
         for column in pandas_dataframe.columns.drop(target[0]):
             # Use the 'groupby' method in order to group each value depending on whether appears with the target or not.
-            # - The property 'indices' is a dictionary in which the key is the tuple "(column, target_attribute_as_a_mask)" and the value is a sequence of register indices in which that combination appears.
+            # - In this case, the property 'indices' is a dictionary in which the key is the tuple "(value, value)" and the
+            #   value is a sequence of register indices in which that combination appears.
             values_and_target_grouped = pandas_dataframe.groupby([column, target_attribute_as_a_mask]).indices
             # Set of values which have been already processed.
             processed_values = set()
@@ -291,8 +294,8 @@ class VLSD(Algorithm):
         while (index_x < (len(P)-1)):
             s_x = P[index_x]
             # Simulate the "pop_first" method.
-            # --> IMPORTANT: we set None instead of directly delete the first element because deleting a element that is not the last in a python list is O(n),
-            #                because all the elements at the right of the deleted element are moved one position to the left.
+            # --> IMPORTANT: we set None instead of directly delete the first element, because deleting an element that is not the last
+            #     in a python list is O(n), because all the elements at the right of the deleted element are moved one position to the left.
             P[index_x] = None
             index_x = index_x + 1
             # Get the last selector of s_x.
