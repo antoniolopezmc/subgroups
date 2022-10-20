@@ -18,21 +18,21 @@ class VerticalList(ABC):
     """This abstract class defines the root class of all the implemented Vertical Lists (data structure used by the VLSD algorithm). Conceptually, a Vertical List is similar to a Subgroup.
     """
     
-    __slots__ = ("_list_of_selectors", "_sequence_of_instances_tp", "_tp", "_sequence_of_instances_fp", "_fp", "_dataset_size", "_quality_value")
+    __slots__ = ("_list_of_selectors", "_sequence_of_instances_tp", "_tp", "_sequence_of_instances_fp", "_fp", "_number_of_dataset_instances", "_quality_value")
 
-    def __init__(self, list_of_selectors : list[Selector], sequence_of_instances_tp : Collection[int], sequence_of_instances_fp : Collection[int], dataset_size : int, quality_value : Union[int, float]) -> None:
+    def __init__(self, list_of_selectors : list[Selector], sequence_of_instances_tp : Collection[int], sequence_of_instances_fp : Collection[int], number_of_dataset_instances : int, quality_value : Union[int, float]) -> None:
         if type(list_of_selectors) is not list:
             raise TypeError("The type of the parameter 'list_of_selectors' must be 'list'.")
         if not isinstance(sequence_of_instances_tp, Collection):
             raise TypeError("The parameter 'sequence_of_instances_tp' must be an instance of a subclass of the 'Collection' class.")
         if not isinstance(sequence_of_instances_fp, Collection):
             raise TypeError("The parameter 'sequence_of_instances_fp' must be an instance of a subclass of the 'Collection' class.")
-        if (type(dataset_size) is not int):
-            raise TypeError("The type of the parameter 'dataset_size' must be 'int'.")
+        if (type(number_of_dataset_instances) is not int):
+            raise TypeError("The type of the parameter 'number_of_dataset_instances' must be 'int'.")
         if (type(quality_value) is not int) and (type(quality_value) is not float):
             raise TypeError("The type of the parameter 'quality_value' must be 'int' or 'float'.")
         self._list_of_selectors = list_of_selectors
-        self._dataset_size = dataset_size
+        self._number_of_dataset_instances = number_of_dataset_instances
         self._quality_value = quality_value
     
     def _get_list_of_selectors(self) -> list[Selector]:
@@ -73,8 +73,8 @@ class VerticalList(ABC):
         """
         raise NotImplementedError("The '_get_n' method from the 'VerticalList' abstract class is an abstract method.")
 
-    def _get_dataset_size(self) -> int:
-        return self._dataset_size
+    def _get_number_of_dataset_instances(self) -> int:
+        return self._number_of_dataset_instances
 
     def _get_quality_value(self) -> Union[int, float]:
         return self._quality_value
@@ -83,7 +83,7 @@ class VerticalList(ABC):
         self._quality_value = quality_value
 
     list_of_selectors = property(_get_list_of_selectors, None, None, "The list of selectors represented by the Vertical List.")
-    dataset_size = property(_get_dataset_size, None, None, "The size (i.e., the number of rows) of the dataset from which this Vertical List has been generated.")
+    number_of_dataset_instances = property(_get_number_of_dataset_instances, None, None, "Number of instances of the dataset from which this Vertical List has been generated.")
     quality_value = property(_get_quality_value, _set_quality_value, None, "The Vertical List quality value.")
 
     @abstractmethod
