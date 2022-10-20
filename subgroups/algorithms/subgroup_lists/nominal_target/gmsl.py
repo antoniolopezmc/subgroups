@@ -31,7 +31,7 @@ class GMSL(Algorithm):
     :param output_file_path: path of the file in which the results will be written.
     """
     
-    _selector_regex_pattern : ClassVar[str] = "[A-Za-z0-9_-]+ = ([A-Za-z0-9_-]+|'[A-Za-z0-9_-]+')"
+    _selector_regex_pattern : ClassVar[str] = "[&,\\.<>/=A-Za-z0-9_-]+ = ([&,\\.<>/=A-Za-z0-9_-]+|'[&,\\.<>/=A-Za-z0-9_-]+')"
     _pattern_regex_pattern : ClassVar[str] = "\\[" + _selector_regex_pattern + "(, " + _selector_regex_pattern + ")*\\]"
     INPUT_LINE_REGEX_PATTERN : ClassVar[str] = "^(?P<subgroup>Description: " + _pattern_regex_pattern + ", Target: " + _selector_regex_pattern + ")" +\
                                                " ; (?P<positive_bitarray>[01]+) ; (?P<negative_bitarray>[01]+)$"
