@@ -149,10 +149,10 @@ class GMSL(Algorithm):
         """
         self._output_file.write(str(individual_result) + "\n")
     
-    def _load_candidates(self, dataset_instances : int) -> tuple[List[Subgroup], List[bitarray], List[bitarray]]:
+    def _load_candidates(self, number_of_dataset_instances : int) -> tuple[List[Subgroup], List[bitarray], List[bitarray]]:
         """Private method to load the candidates.
 
-        :param dataset_instances: number of instances of the dataset from which the subgroups were extracted.
+        :param number_of_dataset_instances: number of instances of the dataset from which the subgroups were extracted.
         :return: a tuple with 3 lists representing the subgroups, their positive bitsets (considering the complete dataset) and their negative bitsets (considering the complete dataset).
         """
         list_of_subgroups = []
@@ -170,13 +170,13 @@ class GMSL(Algorithm):
                     positive_bitarray = bitarray( match_object.group("positive_bitarray"), endian="big")
                     negative_bitarray = bitarray( match_object.group("negative_bitarray"), endian="big")
                     error_in_bitarays = False
-                    if (len(positive_bitarray) != dataset_instances):
+                    if (len(positive_bitarray) != number_of_dataset_instances):
                         self._output_file.write("ERROR: subgroup in line " + str(line_number) + " from input file was not loaded.\n")
-                        self._output_file.write("\t- The length of the positive bitarray is not equal to 'dataset_instances'.\n")
+                        self._output_file.write("\t- The length of the positive bitarray is not equal to 'number_of_dataset_instances'.\n")
                         error_in_bitarays = True
-                    if (len(negative_bitarray) != dataset_instances):
+                    if (len(negative_bitarray) != number_of_dataset_instances):
                         self._output_file.write("ERROR: subgroup in line " + str(line_number) + " from input file was not loaded.\n")
-                        self._output_file.write("\t- The length of the negative bitarray is not equal to 'dataset_instances'.\n")
+                        self._output_file.write("\t- The length of the negative bitarray is not equal to 'number_of_dataset_instances'.\n")
                         error_in_bitarays = True
                     if not error_in_bitarays:
                         read_subgroups = read_subgroups + 1
@@ -200,8 +200,8 @@ class GMSL(Algorithm):
         if type(pandas_dataframe) is not DataFrame:
             raise TypeError("The type of the parameter 'pandas_dataframe' must be 'DataFrame'.")
         # Get the dataset size (number of instances).
-        dataset_instances = len(pandas_dataframe)
-        if dataset_instances == 0:
+        number_of_dataset_instances = len(pandas_dataframe)
+        if number_of_dataset_instances == 0:
             raise ValueError("The number of instances of 'pandas_dataframe' is not greater than 0.")
         if type(target) is not tuple:
             raise TypeError("The type of the parameter 'target' must be 'tuple'.")
@@ -214,17 +214,17 @@ class GMSL(Algorithm):
         # Create a list with empty subgroup lists.
         sl_list = []
         for _ in range(self._max_sl):
-            sl_list.append(SubgroupList(bitarray(mask.tolist(), endian = "big"), bitarray((~mask).tolist(), endian = "big"), dataset_instances))
+            sl_list.append(SubgroupList(bitarray(mask.tolist(), endian = "big"), bitarray((~mask).tolist(), endian = "big"), number_of_dataset_instances))
         # Open the output file.
         self._output_file = open(self._output_file_path, "w")
         # Write some dataset info in the output file.
         self._output_file.write("Dataset information:\n")
-        self._output_file.write("\t- Total number of instances: " + str(dataset_instances) + ".\n")
+        self._output_file.write("\t- Number of instances: " + str(number_of_dataset_instances) + ".\n")
         self._output_file.write("\t- Number of positive instances: " + str(sum(mask)) + ".\n")
         self._output_file.write("\t- Number of negative instances: " + str(len(mask) - sum(mask)) + ".\n")
         self._output_file.write("\t- Total number of attributes (including the target): " + str(len(pandas_dataframe.columns)) + ".\n\n\n")
         # Load the candidates from the input file.
-        subgroups, bitarrays_of_positives, bitarrays_of_negatives = self._load_candidates(dataset_instances)
+        subgroups, bitarrays_of_positives, bitarrays_of_negatives = self._load_candidates(number_of_dataset_instances)
         # Iterate through the subgroup lists.
         for current_sl in sl_list:
             # We use the empty subgroup only to be able to enter to the loop the first time, becase Python does not have do-while statement.
