@@ -74,7 +74,7 @@ class TestVLSD(unittest.TestCase):
         self.assertEqual(vlsd._vertical_lists_implementation, VLSD.VERTICAL_LISTS_WITH_SETS)
         vlsd.fit(df, target)
         self.assertEqual(vlsd.selected_subgroups, 25)
-        self.assertEqual(vlsd.not_selected_subgroups, 0)
+        self.assertEqual(vlsd.unselected_subgroups, 0)
         self.assertEqual(vlsd.visited_nodes, 25)
         list_of_written_results = []
         file_to_read = open("./results.txt", "r")
@@ -114,7 +114,7 @@ class TestVLSD(unittest.TestCase):
         self.assertEqual(vlsd._vertical_lists_implementation, VLSD.VERTICAL_LISTS_WITH_BITSETS)
         vlsd.fit(df, target)
         self.assertEqual(vlsd.selected_subgroups, 25)
-        self.assertEqual(vlsd.not_selected_subgroups, 0)
+        self.assertEqual(vlsd.unselected_subgroups, 0)
         self.assertEqual(vlsd.visited_nodes, 25)
         list_of_written_results = []
         file_to_read = open("./results.txt", "r")

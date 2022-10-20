@@ -500,7 +500,7 @@ class TestGMSL(unittest.TestCase):
         vlsd_alg.fit(df, target)
         expected_subgroups = 1599
         self.assertEqual(vlsd_alg.selected_subgroups, expected_subgroups)
-        self.assertEqual(vlsd_alg.not_selected_subgroups, 0)
+        self.assertEqual(vlsd_alg.unselected_subgroups, 0)
         self.assertEqual(vlsd_alg.visited_nodes, expected_subgroups)
         # Regular expression to read the results.
         selector_regex_pattern = "[A-Za-z0-9_-]+ = ([A-Za-z0-9_-]+|'[A-Za-z0-9_-]+')"
