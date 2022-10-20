@@ -25,6 +25,7 @@ def _generate_all_combinations(list_of_selectors : list[Selector]):
     """Private method to generate all the combinations (including the empty list) of the list of selectors passed by parameter.
     
     :param list_of_selectors: the list of selectors which is used.
+    :return: all combinations (including the empty list) of the list of selectors passed by parameter.
     """
     if list_of_selectors == []:
         return [[]]
@@ -32,7 +33,7 @@ def _generate_all_combinations(list_of_selectors : list[Selector]):
     return x + [[list_of_selectors[0]] + y for y in x]
 
 def _delete_subgroup_parameters_from_a_dictionary(dict_of_parameters : dict[str, Union[int, float]]):
-    """Private method to delete the subgroup parameters (i.e., tp, fp, TP and FP) from a dictionary of parameters.
+    """Private method to delete the subgroup parameters (i.e., tp, fp, TP and FP) from a dictionary of parameters. IMPORTANT: this method modifies the parameter, does not return a new dictionary.
     
     :param dict_of_parameters: the dictionary of parameters which is modified.
     """
@@ -66,7 +67,7 @@ class SDMap(Algorithm):
     :param file_path: if 'write_results_in_file' is True, path of the file in which the results will be written.
     """
     
-    __slots__ = ("_quality_measure", "_minimum_quality_measure_value", "_minimum_tp", "_minimum_fp", "_minimum_n", "_additional_parameters_for_the_quality_measure", "_selected_subgroups", "_not_selected_subgroups", "_file_path", "_file")
+    __slots__ = ("_quality_measure", "_minimum_quality_measure_value", "_minimum_tp", "_minimum_fp", "_minimum_n", "_additional_parameters_for_the_quality_measure", "_unselected_subgroups", "_selected_subgroups", "_file_path", "_file")
     
     def __init__(self, quality_measure : QualityMeasure, minimum_quality_measure_value : Union[int, float], minimum_tp : Union[int, None] = None, minimum_fp : Union[int, None] = None, minimum_n : Union[int, None] = None, additional_parameters_for_the_quality_measure : dict[str, Union[int, float]] = dict(), write_results_in_file : bool = False, file_path : Union[str, None] = None) -> None:
         if not isinstance(quality_measure, QualityMeasure):
@@ -96,8 +97,8 @@ class SDMap(Algorithm):
             self._minimum_tp = minimum_tp
             self._minimum_fp = minimum_fp
             self._minimum_n = minimum_n
+            self._unselected_subgroups = 0
             self._selected_subgroups = 0
-            self._not_selected_subgroups = 0
             self._additional_parameters_for_the_quality_measure = additional_parameters_for_the_quality_measure.copy()
             _delete_subgroup_parameters_from_a_dictionary(self._additional_parameters_for_the_quality_measure)
             if (write_results_in_file):
@@ -133,17 +134,17 @@ class SDMap(Algorithm):
     minimum_n = property(_get_minimum_n, None, None, "The minimum subgroup description size (n) threshold.")
     additional_parameters_for_the_quality_measure = property(_get_additional_parameters_for_the_quality_measure, None, None, "The additional needed parameters with which to compute the quality measure.")
     
+    def _get_unselected_subgroups(self) -> int:
+        return self._unselected_subgroups
+
     def _get_selected_subgroups(self) -> int:
         return self._selected_subgroups
-    
-    def _get_not_selected_subgroups(self) -> int:
-        return self._not_selected_subgroups
-    
-    def _get_visited_nodes(self) -> int:
-        return self._selected_subgroups + self._not_selected_subgroups
 
+    def _get_visited_nodes(self) -> int:
+        return self._unselected_subgroups + self._selected_subgroups
+
+    unselected_subgroups = property(_get_unselected_subgroups, None, None, "Number of unselected subgroups after executing the SDMap algorithm (before executing the 'fit' method, this attribute is 0).")
     selected_subgroups = property(_get_selected_subgroups, None, None, "Number of selected subgroups after executing the SDMap algorithm (before executing the 'fit' method, this attribute is 0).")
-    not_selected_subgroups = property(_get_not_selected_subgroups, None, None, "Number of not selected subgroups after executing the SDMap algorithm (before executing the 'fit' method, this attribute is 0).")
     visited_nodes = property(_get_visited_nodes, None, None, "Number of visited nodes after executing the SDMap algorithm (before executing the 'fit' method, this attribute is 0).")
 
     def _handle_individual_result(self, individual_result : tuple[Pattern, tuple[str, str], int, int, int, int]) -> None:
@@ -178,8 +179,8 @@ class SDMap(Algorithm):
                 self._file.write("FP = " + str(FP) + "\n")
             # Increment the number of selected subgroups.
             self._selected_subgroups = self._selected_subgroups + 1
-        else: # If the quality measure is not greater or equal, increment the number of not selected subgroups.
-            self._not_selected_subgroups = self._not_selected_subgroups + 1
+        else: # If the quality measure is not greater or equal, increment the number of unselected subgroups.
+            self._unselected_subgroups = self._unselected_subgroups + 1
     
     def _fpgrowth(self, fptree : FPTreeForSDMap, alpha : Union[list[Selector], None], target : tuple[str, str], TP : int, FP : int) -> None:
         """Private method to run the adapted FPGrowth algorithm in order to generate frequent patterns.

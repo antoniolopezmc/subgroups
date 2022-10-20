@@ -22,23 +22,23 @@ class VerticalListWithBitsets(VerticalList):
     :param list_of_selectors: the list of selectors represented by the Vertical List.
     :param sequence_of_instances_tp: the sequence of IDs of the dataset instances which are covered by the selectors ('list_of_selectors') and also by the target. The number of elements in this sequence would be the true positives tp of the equivalent subgroup with the same list of selectors and with the same target.
     :param sequence_of_instances_fp: the sequence of IDs of the dataset instances which are covered by the selectors ('list_of_selectors'), but not by the target. The number of elements in this sequence would be the false positives fp of the equivalent subgroup with the same list of selectors and with the same target.
-    :param dataset_size: the total number of instances in the dataset.
+    :param number_of_dataset_instances: number of instances of the dataset.
     :param quality_value: the Vertical List quality value.
     """
     
     __slots__ = ()
     
-    def __init__(self, list_of_selectors : list[Selector], sequence_of_instances_tp : Collection[int], sequence_of_instances_fp : Collection[int], dataset_size : int, quality_value : Union[int, float]) -> None:
+    def __init__(self, list_of_selectors : list[Selector], sequence_of_instances_tp : Collection[int], sequence_of_instances_fp : Collection[int], number_of_dataset_instances : int, quality_value : Union[int, float]) -> None:
         # Call to __init__ method of the parent class.
-        super().__init__(list_of_selectors, sequence_of_instances_tp, sequence_of_instances_fp, dataset_size, quality_value)
+        super().__init__(list_of_selectors, sequence_of_instances_tp, sequence_of_instances_fp, number_of_dataset_instances, quality_value)
         # sequence of instances tp.
-        self._sequence_of_instances_tp = bitarray(dataset_size, endian = "big")
+        self._sequence_of_instances_tp = bitarray(number_of_dataset_instances, endian = "big")
         self._sequence_of_instances_tp.setall(0)
         for elem in sequence_of_instances_tp:
             self._sequence_of_instances_tp[elem] = 1
         self._tp = len(sequence_of_instances_tp) # The length of the parameter, not of the attribute.
         # sequence of instances fp.
-        self._sequence_of_instances_fp = bitarray(dataset_size, endian = "big")
+        self._sequence_of_instances_fp = bitarray(number_of_dataset_instances, endian = "big")
         self._sequence_of_instances_fp.setall(0)
         for elem in sequence_of_instances_fp:
             self._sequence_of_instances_fp[elem] = 1
@@ -107,8 +107,8 @@ class VerticalListWithBitsets(VerticalList):
             raise TypeError("The type of the parameter 'dict_of_parameters' must be 'dict'.")
         if type(return_None_if_n_is_0) is not bool:
             raise TypeError("The type of the parameter 'return_None_if_n_is_0' must be 'bool'.")
-        if (self._dataset_size != other_vertical_list._dataset_size):
-            raise VerticalListSizeError("Vertical Lists with different 'dataset_size' value cannot be joined.")
+        if (self._number_of_dataset_instances != other_vertical_list._number_of_dataset_instances):
+            raise VerticalListSizeError("Vertical Lists with different 'number_of_dataset_instances' value cannot be joined.")
         # Initially, the result is None.
         result = None
         # First, make the intersection of both sequences (using the AND operator, because both sequences are bitarrays).
@@ -132,7 +132,7 @@ class VerticalListWithBitsets(VerticalList):
             result._sequence_of_instances_fp = new_sequence_of_instances_fp
             result._tp = new_tp
             result._fp = new_fp
-            result._dataset_size = self._dataset_size
+            result._number_of_dataset_instances = self._number_of_dataset_instances
         # Return the result.
         return result
     

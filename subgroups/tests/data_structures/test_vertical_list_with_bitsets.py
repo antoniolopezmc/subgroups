@@ -108,8 +108,8 @@ class TestVerticalListWithBitsets(unittest.TestCase):
         self.assertIsNone(vl_5.join(vl_6, Coverage(), {"TP" : TP, "FP" : FP}, return_None_if_n_is_0 = True))
 
     def test_vertical_list_3(self) -> None:
-        vl_1 = VerticalListWithBitsets([Selector("at1", Operator.EQUAL, "a")], [0], [], 3, -45) # dataset_size = 3
-        vl_2 = VerticalListWithBitsets([Selector("at2", Operator.EQUAL, "b")], [0], [1], 5, -45) # dataset_size = 5
+        vl_1 = VerticalListWithBitsets([Selector("at1", Operator.EQUAL, "a")], [0], [], 3, -45) # number_of_dataset_instances = 3
+        vl_2 = VerticalListWithBitsets([Selector("at2", Operator.EQUAL, "b")], [0], [1], 5, -45) # number_of_dataset_instances = 5
         self.assertRaises(VerticalListSizeError, vl_1.join, vl_2, Coverage(), {"TP" : 5, "FP" : 5})
 
     def test_vertical_list_str_method(self) -> None:

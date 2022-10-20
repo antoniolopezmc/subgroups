@@ -383,7 +383,7 @@ class TestGMSL(unittest.TestCase):
         self.assertEqual(len(sl), 3)
     
     def test_GMSL_load_candidates_method_1(self) -> None:
-        dataset_size = 5 # Number of rows from the original dataset (i.e., from which the subgroups were extracted).
+        number_of_dataset_instances = 5 # Number of instances of the original dataset (i.e., from which the subgroups were extracted).
         number_of_subgroups = 11 # Number of subgroups from the input file.
         input_file_path = "./tmp_input.txt"
         input_file_content = "Description: [a = 'g'], Target: target = 'y' ; 00000 ; 00001\nDescription: [a = 'q'], Target: target = 'y' ; 00100 ; 10000\nDescription: [a = 'r'], Target: target = 'y' ; 00010 ; 00000\nDescription: [a = 'w'], Target: target = 'y' ; 00000 ; 01000\nDescription: [b = 'g'], Target: target = 'y' ; 00010 ; 00000\nDescription: [b = 'q'], Target: target = 'y' ; 00000 ; 11001\nDescription: [b = 'v'], Target: target = 'y' ; 00100 ; 00000\nDescription: [c = 'g'], Target: target = 'y' ; 00000 ; 00001\nDescription: [c = 'q'], Target: target = 'y' ; 00100 ; 10000\nDescription: [c = 'r'], Target: target = 'y' ; 00010 ; 00000\nDescription: [c = 'w'], Target: target = 'y' ; 00000 ; 01000"
@@ -393,7 +393,7 @@ class TestGMSL(unittest.TestCase):
         output_file_path = "./tmp_output.txt"
         gmsl_alg = GMSL(input_file_path, 5, 0.0, output_file_path)
         gmsl_alg._output_file = open(output_file_path, "w")
-        subgroups, bitarrays_of_positives, bitarrays_of_negatives = gmsl_alg._load_candidates(dataset_size)
+        subgroups, bitarrays_of_positives, bitarrays_of_negatives = gmsl_alg._load_candidates(number_of_dataset_instances)
         self.assertEqual(len(subgroups), number_of_subgroups)
         self.assertEqual(len(bitarrays_of_positives), number_of_subgroups)
         self.assertEqual(len(bitarrays_of_negatives), number_of_subgroups)
@@ -402,7 +402,7 @@ class TestGMSL(unittest.TestCase):
         remove(output_file_path)
     
     def test_GMSL_load_candidates_method_2(self) -> None:
-        dataset_size = 5 # Number of rows from the original dataset (i.e., from which the subgroups were extracted).
+        number_of_dataset_instances = 5 # Number of instances of the original dataset (i.e., from which the subgroups were extracted).
         number_of_subgroups = 11 # Number of subgroups from the input file.
         input_file_path = "./tmp_input.txt"
         input_file_content = "Description: [a = 'g'], Target: target = 'y' ; 00000 ; 00001\nDescription: [a = 'q'], Target: target = 'y' ; 00100 ; 10000\nDescription: [a = 'r'], Target: target = 'y' ; 00010 ; 00000\nDescription: [a = 'w'], Target: target = 'y' ; 00000 ; 01000\nDescription: [b = 21], Target: target = 'y' ; 00010 ; 00000\nDescription: [b = 22], Target: target = 'y' ; 00000 ; 11001\nDescription: [b = 23], Target: target = 'y' ; 00100 ; 00000\nDescription: [c = 'g'], Target: target = 'y' ; 00000 ; 00001\nDescription: [c = 'q'], Target: target = 'y' ; 00100 ; 10000\nDescription: [c = 'r'], Target: target = 'y' ; 00010 ; 00000\nDescription: [c = 'w'], Target: target = 'y' ; 00000 ; 01000"
@@ -412,7 +412,7 @@ class TestGMSL(unittest.TestCase):
         output_file_path = "./tmp_output.txt"
         gmsl_alg = GMSL(input_file_path, 5, 0.0, output_file_path)
         gmsl_alg._output_file = open(output_file_path, "w")
-        subgroups, bitarrays_of_positives, bitarrays_of_negatives = gmsl_alg._load_candidates(dataset_size)
+        subgroups, bitarrays_of_positives, bitarrays_of_negatives = gmsl_alg._load_candidates(number_of_dataset_instances)
         self.assertEqual(len(subgroups), number_of_subgroups)
         self.assertEqual(len(bitarrays_of_positives), number_of_subgroups)
         self.assertEqual(len(bitarrays_of_negatives), number_of_subgroups)
@@ -421,7 +421,7 @@ class TestGMSL(unittest.TestCase):
         remove(output_file_path)
     
     def test_GMSL_load_candidates_method_3(self) -> None:
-        dataset_size = 5 # Number of rows from the original dataset (i.e., from which the subgroups were extracted).
+        number_of_dataset_instances = 5 # Number of instances of the original dataset (i.e., from which the subgroups were extracted).
         number_of_subgroups = 11 # Number of subgroups from the input file.
         input_file_path = "./tmp_input.txt"
         input_file_content = "Description: [a = g], Target: target = 'y' ; 00000 ; 00001\nDescription: [a = 'q'], Target: target = 'y' ; 00100 ; 10000\nDescription: [a = 'r'], Target: target = 'y' ; 00010 ; 00000\nDescription: [a = 'w'], Target: target = 'y' ; 00000 ; 01000\nDescription: [b = 'g'], Target: target = 'y' ; 00010 ; 00000\nDescription: [b = 'q'], Target: target = 'y' ; 00000 ; 11001\nDescription: [b = 'v'], Target: target = 'y' ; 00100 ; 00000\nDescription: [c = 'g'], Target: target = 'y' ; 00000 ; 00001\nDescription: [c = 'q'], Target: target = 'y' ; 00100 ; 10000\nDescription: [c = r], Target: target = 'y' ; 00010 ; 00000\nDescription: [c = 'w'], Target: target = 'y' ; 00000 ; 01000"
@@ -431,7 +431,7 @@ class TestGMSL(unittest.TestCase):
         output_file_path = "./tmp_output.txt"
         gmsl_alg = GMSL(input_file_path, 5, 0.0, output_file_path)
         gmsl_alg._output_file = open(output_file_path, "w")
-        subgroups, bitarrays_of_positives, bitarrays_of_negatives = gmsl_alg._load_candidates(dataset_size)
+        subgroups, bitarrays_of_positives, bitarrays_of_negatives = gmsl_alg._load_candidates(number_of_dataset_instances)
         self.assertEqual(len(subgroups), number_of_subgroups)
         self.assertEqual(len(bitarrays_of_positives), number_of_subgroups)
         self.assertEqual(len(bitarrays_of_negatives), number_of_subgroups)
@@ -440,7 +440,7 @@ class TestGMSL(unittest.TestCase):
         remove(output_file_path)
     
     def test_GMSL_load_candidates_method_4(self) -> None:
-        dataset_size = 5 # Number of rows from the original dataset (i.e., from which the subgroups were extracted).
+        number_of_dataset_instances = 5 # Number of instances of the original dataset (i.e., from which the subgroups were extracted).
         number_of_subgroups = 11 # Number of subgroups from the input file.
         input_file_path = "./tmp_input.txt"
         input_file_content = "Description: [a = g, Target: target = 'y' ; 00000 ; 00001\ndescription: [a = 'q'], Target: target = 'y' ; 00100 ; 10000\nDescription: [a = 'r'], Target: target = 'y' ; 0001 ; 00000\nDescription: [a = 'w'], Target: target = 'y'; 00000 ; 01000\nDescription: [b = 'g'], Target: target = 'y' ; 00010 ; 00000\nDescription: [b = 'q'], Target: target = 'y' ; 00000 ; 11001\nDescription: [b = 'v'], Target: target = 'y' ; 00100 ; 00000\nDescription: [c = 'g'], Target: target = 'y' ; 00000 ; 00001\nDescription: [c = 'q'], Target: target = 'y' ; 00100 ; 10000\nDescription: [c = r], Target: target = 'y' ; 00010 ; 00000\nDescription: [c = 'w'], Target: target = 'y' ; 00000 ; 01000"
@@ -450,7 +450,7 @@ class TestGMSL(unittest.TestCase):
         output_file_path = "./tmp_output.txt"
         gmsl_alg = GMSL(input_file_path, 5, 0.0, output_file_path)
         gmsl_alg._output_file = open(output_file_path, "w")
-        subgroups, bitarrays_of_positives, bitarrays_of_negatives = gmsl_alg._load_candidates(dataset_size)
+        subgroups, bitarrays_of_positives, bitarrays_of_negatives = gmsl_alg._load_candidates(number_of_dataset_instances)
         self.assertEqual(len(subgroups), 7)
         self.assertEqual(len(bitarrays_of_positives), 7)
         self.assertEqual(len(bitarrays_of_negatives), 7)
@@ -459,7 +459,7 @@ class TestGMSL(unittest.TestCase):
         remove(output_file_path)
     
     def test_GMSL_load_candidates_method_5(self) -> None:
-        dataset_size = 5 # Number of rows from the original dataset (i.e., from which the subgroups were extracted).
+        number_of_dataset_instances = 5 # Number of instances of the original dataset (i.e., from which the subgroups were extracted).
         number_of_subgroups = 11 # Number of subgroups from the input file.
         input_file_path = "./tmp_input.txt"
         input_file_content = "Description: [a = g], Target: target == 'y' ; 00000 ; 00001\nDescription: [a != 'q'], Target: target = 'y' ; 00100 ; 10000\nDescription: [a < 'r'], Target: target = 'y' ; 00010 ; 00000\nDescription: [a = 'w'], Target: target = 'y' ; 00000 ; 01000\nDescription: [b = 'g'], Target: target = 'y' ; 00010 ; 00000\nDescription: [b = 'q'], Target: target = 'y' ; 00000 ; 11001\nDescription: [b = 'v'], Target: target = 'y' ; 00100 ; 00000\nDescription: [c = 'g'], Target: target = 'y' ; 00000 ; 00001\nDescription: [c = 'q'], Target: target = 'y' ; 00100 ; 10000\nDescription: [c = r], Target: target = 'y' ; 00010 ; 00000\nDescription: [c = 'w'], Target: target = 'y' ; 00000 ; 01000"
@@ -469,7 +469,7 @@ class TestGMSL(unittest.TestCase):
         output_file_path = "./tmp_output.txt"
         gmsl_alg = GMSL(input_file_path, 5, 0.0, output_file_path)
         gmsl_alg._output_file = open(output_file_path, "w")
-        subgroups, bitarrays_of_positives, bitarrays_of_negatives = gmsl_alg._load_candidates(dataset_size)
+        subgroups, bitarrays_of_positives, bitarrays_of_negatives = gmsl_alg._load_candidates(number_of_dataset_instances)
         self.assertEqual(len(subgroups), 8)
         self.assertEqual(len(bitarrays_of_positives), 8)
         self.assertEqual(len(bitarrays_of_negatives), 8)
@@ -500,7 +500,7 @@ class TestGMSL(unittest.TestCase):
         vlsd_alg.fit(df, target)
         expected_subgroups = 1599
         self.assertEqual(vlsd_alg.selected_subgroups, expected_subgroups)
-        self.assertEqual(vlsd_alg.not_selected_subgroups, 0)
+        self.assertEqual(vlsd_alg.unselected_subgroups, 0)
         self.assertEqual(vlsd_alg.visited_nodes, expected_subgroups)
         # Regular expression to read the results.
         selector_regex_pattern = "[A-Za-z0-9_-]+ = ([A-Za-z0-9_-]+|'[A-Za-z0-9_-]+')"

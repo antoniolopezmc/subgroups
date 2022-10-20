@@ -12,30 +12,30 @@ from subgroups.core.subgroup import Subgroup
 class SubgroupList(object):
     """This class represents a Subgroup List.
     
-    :param bitarray_of_positives: the bitarray of the dataset instances which are covered by the target (its length must be equal to the number of instances from the dataset).
-    :param bitarray_of_negatives: the bitarray of the dataset instances which are not covered by the target (its length must be equal to the number of instances from the dataset).
-    :param dataset_instances: total number of instances from the dataset.
+    :param bitarray_of_positives: the bitarray of the dataset instances which are covered by the target (its length must be equal to the number of instances of the dataset).
+    :param bitarray_of_negatives: the bitarray of the dataset instances which are not covered by the target (its length must be equal to the number of instances of the dataset).
+    :param number_of_dataset_instances: number of instances of the dataset.
     """
 
     __slots__ = ("_default_rule_bitarray_of_positives", "_default_rule_bitarray_of_negatives", "_dataset_target_distribution", "_list_of_subgroups", "_subgroups_bitarrays_of_positives", "_subgroups_bitarrays_of_negatives")
 
-    def __init__(self, dataset_target_bitarray_of_positives : bitarray, dataset_target_bitarray_of_negatives : bitarray, dataset_instances : int) -> None:
+    def __init__(self, dataset_target_bitarray_of_positives : bitarray, dataset_target_bitarray_of_negatives : bitarray, number_of_dataset_instances : int) -> None:
         if type(dataset_target_bitarray_of_positives) is not bitarray:
             raise TypeError("The type of the parameter 'dataset_target_bitarray_of_positives' must be 'bitarray'.")
         if type(dataset_target_bitarray_of_negatives) is not bitarray:
             raise TypeError("The type of the parameter 'dataset_target_bitarray_of_negatives' must be 'bitarray'.")
-        if type(dataset_instances) is not int:
-            raise TypeError("The type of the parameter 'dataset_instances' must be 'int'.")
-        if dataset_instances != len(dataset_target_bitarray_of_positives):
-            raise ValueError("The length of 'dataset_target_bitarray_of_positives' is not equal to 'dataset_instances'.")
-        if dataset_instances != len(dataset_target_bitarray_of_negatives):
-            raise ValueError("The length of 'dataset_target_bitarray_of_negatives' is not equal to 'dataset_instances'.")
+        if type(number_of_dataset_instances) is not int:
+            raise TypeError("The type of the parameter 'number_of_dataset_instances' must be 'int'.")
+        if number_of_dataset_instances != len(dataset_target_bitarray_of_positives):
+            raise ValueError("The length of 'dataset_target_bitarray_of_positives' is not equal to 'number_of_dataset_instances'.")
+        if number_of_dataset_instances != len(dataset_target_bitarray_of_negatives):
+            raise ValueError("The length of 'dataset_target_bitarray_of_negatives' is not equal to 'number_of_dataset_instances'.")
         # Default rule.
         self._default_rule_bitarray_of_positives = dataset_target_bitarray_of_positives.copy() # We make a copy to avoid aliasing.
         self._default_rule_bitarray_of_negatives = dataset_target_bitarray_of_negatives.copy() # We make a copy to avoid aliasing.
         # Target distribution considering the complete dataset.
         # -> (number of positive instances, total number of instances)
-        self._dataset_target_distribution = (dataset_target_bitarray_of_positives.count(1), dataset_instances)
+        self._dataset_target_distribution = (dataset_target_bitarray_of_positives.count(1), number_of_dataset_instances)
         # List of individual subgroups.
         self._list_of_subgroups = []
         self._subgroups_bitarrays_of_positives = []
@@ -56,7 +56,7 @@ class SubgroupList(object):
     def _get_dataset_number_of_negatives(self) -> int:
         return self._dataset_target_distribution[1] - self._dataset_target_distribution[0]
 
-    def _get_dataset_instances(self) -> int:
+    def _get_number_of_dataset_instances(self) -> int:
         return self._dataset_target_distribution[1]
 
     default_rule_bitarray_of_positives = property(_get_default_rule_bitarray_of_positives, None, None, "The bitarray of the dataset instances which are covered by the target.")
@@ -64,7 +64,7 @@ class SubgroupList(object):
     dataset_target_distribution = property(_get_dataset_target_distribution, None, None, "Target distribution considering the complete dataset.")
     dataset_number_of_positives = property(_get_dataset_number_of_positives, None, None, "Number of instances (considering the complete dataset) which are covered by the target.")
     dataset_number_of_negatives = property(_get_dataset_number_of_negatives, None, None, "Number of instances (considering the complete dataset) which are not covered by the target.")
-    dataset_instances = property(_get_dataset_instances, None, None, "Number of instances from the dataset.")
+    number_of_dataset_instances = property(_get_number_of_dataset_instances, None, None, "Number of instances of the dataset.")
 
     def is_empty(self) -> bool:
         return (len(self._list_of_subgroups) == 0)
@@ -82,9 +82,9 @@ class SubgroupList(object):
             raise TypeError("The type of the parameter 'bitarray_of_positives' must be 'bitarray'.")
         if type(bitarray_of_negatives) is not bitarray:
             raise TypeError("The type of the parameter 'bitarray_of_negatives' must be 'bitarray'.")
-        if self.dataset_instances != len(bitarray_of_positives):
+        if self.number_of_dataset_instances != len(bitarray_of_positives):
             raise ValueError("The length of 'bitarray_of_positives' is not equal to the dataset size.")
-        if self.dataset_instances != len(bitarray_of_negatives):
+        if self.number_of_dataset_instances != len(bitarray_of_negatives):
             raise ValueError("The length of 'bitarray_of_negatives' is not equal to the dataset size.")
         # First, we make a copy of both bitarrays to avoid aliasing.
         bitarray_of_positives_copy = bitarray_of_positives.copy()
