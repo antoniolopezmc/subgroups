@@ -255,10 +255,18 @@ class GMSL(Algorithm):
                             best_subgroup_comp_gain = current_subgroup_compression_gain
                             best_subgroup_index = current_index
                 if best_subgroup is not None:
+                    # Add the best subgroup candidate to the model.
                     current_sl.add_subgroup(best_subgroup, bitarrays_of_positives[best_subgroup_index], bitarrays_of_negatives[best_subgroup_index])
+                    # Delete the best subgroup candidate.
                     subgroups[best_subgroup_index] = None
                     bitarrays_of_positives[best_subgroup_index] = None
                     bitarrays_of_negatives[best_subgroup_index] = None
+                    # Delete all refinements of the best subgroup candidate.
+                    for deletion_index in range(len(subgroups)):
+                        if (subgroups[deletion_index] is not None) and (best_subgroup.is_refinement(subgroups[deletion_index], refinement_of_itself=False)): # refinement_of_itself=False -> in this case, the value does not matter, since the original subgroup was already deleted (i.e., both subgroups will not be equals).
+                            subgroups[deletion_index] = None
+                            bitarrays_of_positives[deletion_index] = None
+                            bitarrays_of_negatives[deletion_index] = None
             self._handle_individual_result(current_sl)
         # Close the output file.
         self._output_file.close()
