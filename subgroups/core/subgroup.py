@@ -83,6 +83,15 @@ class Subgroup(object):
         else:
             return (pandas_dataframe, tp, fp, TP, FP)
     
+    def is_refinement(self, refinement_candidate : 'Subgroup', refinement_of_itself : bool) -> bool:
+        """Method to check whether 'refinement_candidate' is a refinement of this (i.e., of 'self'). A subgroup Y is a refinements of other subgroup X, if the description of Y is a refinement of the description of X, and the targets are equal.
+        
+        :param refinement_candidate: subgroup candidate to be a refinement of this (i.e., of 'self').
+        :param refinement_of_itself: is a pattern a refinement of itself (in this case, the description of a subgroup)? Sometimes it may be better to assume yes and sometimes no. Therefore, if both subgroups are equal (i.e., the descriptions of both subgroups and the targets), then this method returns the value of 'refinement_of_itself'.
+        :return: whether 'refinement_candidate' is a refinement of this (i.e., 'self').
+        """
+        return self.description.is_refinement(refinement_candidate.description, refinement_of_itself) and (self.target == refinement_candidate.target)
+    
     @staticmethod
     def generate_from_str(input_str : str) -> 'Subgroup':
         """Static method to generate a Subgroup from a str.

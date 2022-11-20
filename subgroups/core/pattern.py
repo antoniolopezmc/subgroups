@@ -109,6 +109,23 @@ class Pattern(object):
             current_index = current_index + 1
         return final_result
     
+    def is_refinement(self, refinement_candidate : 'Pattern', refinement_of_itself : bool) -> bool:
+        """Method to check whether 'refinement_candidate' is a refinement of this (i.e., of 'self').
+        
+        :param refinement_candidate: pattern candidate to be a refinement of this (i.e., of 'self').
+        :param refinement_of_itself: is a pattern a refinement of itself? Sometimes it may be better to assume yes and sometimes no. Therefore, if both patterns are equal, then this method returns the value of 'refinement_of_itself'.
+        :return: whether 'refinement_candidate' is a refinement of this (i.e., 'self').
+        """
+        # TODO: implementing it more efficiently (i.e., not using sets), and verify whether it is actually more efficient. 
+        self_as_set = set(self._list_of_selectors)
+        refinement_candidate_as_set = set(refinement_candidate._list_of_selectors)
+        if (len(self_as_set) > len(refinement_candidate_as_set)):
+            return False
+        elif self_as_set == refinement_candidate_as_set:
+            return refinement_of_itself
+        else:
+            return self_as_set.issubset(refinement_candidate_as_set)
+    
     @staticmethod
     def generate_from_str(input_str : str) -> 'Pattern':
         r"""Static method to generate a Pattern from a str.

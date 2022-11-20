@@ -9,6 +9,7 @@
 from subgroups.core.pattern import Pattern
 from subgroups.core.selector import Selector
 from subgroups.core.operator import Operator
+from subgroups.core.subgroup import Subgroup
 from pandas import Series, DataFrame
 import unittest
 
@@ -90,3 +91,37 @@ class TestPattern(unittest.TestCase):
         self.assertTrue((Pattern.generate_from_str("[a < 25, b >= 25, c = 'b']").is_contained(DataFrame({"a" : [1,2,3], "b" : [7,125,9], "c" : ["a", "b", "c"]})) == Series([False, True, False])).all())
         self.assertTrue((Pattern.generate_from_str("[a < 25, b >= 25, c = 'b']").is_contained(DataFrame({"a" : [1,2,3], "b" : [71,125,25], "c" : ["b", "b", "b"]})) == Series([True, True, True])).all())
         self.assertRaises(KeyError, Pattern.generate_from_str("[age < 25, name = 'name1', att2 >= 25, age > 78]").is_contained, DataFrame({"a" : [1,2,3], "b" : [7,8,9], "c" : ["a", "b", "c"]}))
+
+    def test_Pattern_is_refinement_method(self) -> None:
+        s1 = Subgroup.generate_from_str("Description: [lug_boot = 'high'], Target: safety = 'acc'")
+        s2 = Subgroup.generate_from_str("Description: [doors = '4'], Target: safety = 'acc'")
+        s3 = Subgroup.generate_from_str("Description: [doors = '4', lug_boot = 'high'], Target: safety = 'acc'")
+        s4 = Subgroup.generate_from_str("Description: [lug_boot = 'high', at5 = 'v', doors = '4'], Target: safety = 'acc'")
+        s5 = Subgroup.generate_from_str("Description: [at5 = 'v'], Target: safety = 'acc'")
+        s6 = Subgroup.generate_from_str("Description: [at7 = 'z'], Target: safety = 'acc'")
+        s7 = Subgroup.generate_from_str("Description: [at5 = 'v', lug_boot = 'high', doors = '4'], Target: safety = 'acc'")
+        s8 = Subgroup.generate_from_str("Description: [lug_boot = 'high', at5 = 'v'], Target: safety = 'acc'")
+        self.assertTrue(s1.description.is_refinement(s3.description, refinement_of_itself = False))
+        self.assertTrue(s1.description.is_refinement(s4.description, refinement_of_itself = False))
+        self.assertTrue(s2.description.is_refinement(s3.description, refinement_of_itself = False))
+        self.assertTrue(s2.description.is_refinement(s4.description, refinement_of_itself = False))
+        self.assertFalse(s3.description.is_refinement(s1.description, refinement_of_itself = False))
+        self.assertFalse(s4.description.is_refinement(s1.description, refinement_of_itself = False))
+        self.assertFalse(s3.description.is_refinement(s2.description, refinement_of_itself = False))
+        self.assertFalse(s4.description.is_refinement(s2.description, refinement_of_itself = False))
+        self.assertFalse(s1.description.is_refinement(s1.description, refinement_of_itself = False))
+        self.assertFalse(s2.description.is_refinement(s2.description, refinement_of_itself = False))
+        self.assertFalse(s4.description.is_refinement(s7.description, refinement_of_itself = False))
+        self.assertTrue(s8.description.is_refinement(s7.description, refinement_of_itself = False))
+        self.assertFalse(s5.description.is_refinement(s1.description, refinement_of_itself = False))
+        self.assertFalse(s5.description.is_refinement(s3.description, refinement_of_itself = False))
+        self.assertFalse(s6.description.is_refinement(s1.description, refinement_of_itself = False))
+        self.assertFalse(s6.description.is_refinement(s3.description, refinement_of_itself = False))
+        self.assertFalse(s1.description.is_refinement(s5.description, refinement_of_itself = False))
+        self.assertFalse(s3.description.is_refinement(s5.description, refinement_of_itself = False))
+        self.assertFalse(s1.description.is_refinement(s6.description, refinement_of_itself = False))
+        self.assertFalse(s3.description.is_refinement(s6.description, refinement_of_itself = False))
+        self.assertFalse(s1.description.is_refinement(s1.description, refinement_of_itself = False))
+        self.assertFalse(s2.description.is_refinement(s2.description, refinement_of_itself = False))
+        self.assertTrue(s1.description.is_refinement(s1.description, refinement_of_itself = True))
+        self.assertTrue(s2.description.is_refinement(s2.description, refinement_of_itself = True))
