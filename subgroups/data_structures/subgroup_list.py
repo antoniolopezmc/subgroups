@@ -17,7 +17,7 @@ class SubgroupList(object):
     :param number_of_dataset_instances: number of instances of the dataset.
     """
 
-    __slots__ = ("_default_rule_bitarray_of_positives", "_default_rule_bitarray_of_negatives", "_dataset_target_distribution", "_list_of_subgroups", "_subgroups_bitarrays_of_positives", "_subgroups_bitarrays_of_negatives")
+    __slots__ = ("_default_rule_bitarray_of_positives", "_default_rule_bitarray_of_negatives", "_dataset_target_distribution", "_list_of_subgroups", "_subgroups_bitarrays_of_positives", "_subgroups_bitarrays_of_negatives", "_subgroups_original_bitarrays_of_positives", "_subgroups_original_bitarrays_of_negatives")
 
     def __init__(self, dataset_target_bitarray_of_positives : bitarray, dataset_target_bitarray_of_negatives : bitarray, number_of_dataset_instances : int) -> None:
         if type(dataset_target_bitarray_of_positives) is not bitarray:
@@ -38,8 +38,12 @@ class SubgroupList(object):
         self._dataset_target_distribution = (dataset_target_bitarray_of_positives.count(1), number_of_dataset_instances)
         # List of individual subgroups.
         self._list_of_subgroups = []
+        # Lists of bitarrays considering the position of the subgroup in the list.
         self._subgroups_bitarrays_of_positives = []
         self._subgroups_bitarrays_of_negatives = []
+        # Lists of bitarrays considering the subgroup individually (i.e., with respect to the complete dataset).
+        self._subgroups_original_bitarrays_of_positives = []
+        self._subgroups_original_bitarrays_of_negatives = []
 
     def _get_default_rule_bitarray_of_positives(self) -> bitarray:
         return self._default_rule_bitarray_of_positives
@@ -86,7 +90,10 @@ class SubgroupList(object):
             raise ValueError("The length of 'bitarray_of_positives' is not equal to the dataset size.")
         if self.number_of_dataset_instances != len(bitarray_of_negatives):
             raise ValueError("The length of 'bitarray_of_negatives' is not equal to the dataset size.")
-        # First, we make a copy of both bitarrays to avoid aliasing.
+        # First, we make a copy of both bitarrays to avoid aliasing and store these bitarrays.
+        self._subgroups_original_bitarrays_of_positives.append(bitarray_of_positives.copy())
+        self._subgroups_original_bitarrays_of_negatives.append(bitarray_of_negatives.copy())
+        # Next, we make again a copy of both bitarrays to avoid aliasing.
         bitarray_of_positives_copy = bitarray_of_positives.copy()
         bitarray_of_negatives_copy = bitarray_of_negatives.copy()
         ## IMPORTANT: the bitsets passed by parameters consider the complete dataset.
@@ -107,10 +114,12 @@ class SubgroupList(object):
         """Method to delete the last individual subgroup from the subgroup list. If the subgroup list is empty, this method does nothing.
         """
         if (len(self._list_of_subgroups) > 0):
-            # Delete the last element of the 3 lists.
+            # Delete the last element of the 5 lists.
             self._list_of_subgroups.pop()
             subgroup_positives = self._subgroups_bitarrays_of_positives.pop()
             subgroup_negatives = self._subgroups_bitarrays_of_negatives.pop()
+            self._subgroups_original_bitarrays_of_positives.pop()
+            self._subgroups_original_bitarrays_of_negatives.pop()
             # Update the default rule (after deleting the last subgroup, it covers more rows).
             self._default_rule_bitarray_of_positives |= subgroup_positives
             self._default_rule_bitarray_of_negatives |= subgroup_negatives
@@ -126,14 +135,28 @@ class SubgroupList(object):
         if type(index) is not int:
             raise TypeError("The type of the parameter 'index' must be 'int'.")
         return self._subgroups_bitarrays_of_positives[index]
-
+    
     def get_subgroup_bitarray_of_negatives(self, index : int) -> bitarray:
         """Get the bitarray of negatives of the subgroup in the position 'index'. This bitarray depends on the position of the subgroup in the list (i.e., it DOES NOT consider the complete dataset).
         """
         if type(index) is not int:
             raise TypeError("The type of the parameter 'index' must be 'int'.")
         return self._subgroups_bitarrays_of_negatives[index]
-
+    
+    def get_subgroup_original_bitarray_of_positives(self, index : int) -> bitarray:
+        """Get the original bitarray of positives of the subgroup in the position 'index'. This bitarray considers the subgroup individually (i.e., with respect to the complete dataset).
+        """
+        if type(index) is not int:
+            raise TypeError("The type of the parameter 'index' must be 'int'.")
+        return self._subgroups_original_bitarrays_of_positives[index]
+    
+    def get_subgroup_original_bitarray_of_negatives(self, index : int) -> bitarray:
+        """Get the original bitarray of negatives of the subgroup in the position 'index'. This bitarray considers the subgroup individually (i.e., with respect to the complete dataset).
+        """
+        if type(index) is not int:
+            raise TypeError("The type of the parameter 'index' must be 'int'.")
+        return self._subgroups_original_bitarrays_of_negatives[index]
+    
     def __len__(self) -> int:
         return len(self._list_of_subgroups)
 
@@ -146,10 +169,17 @@ class SubgroupList(object):
         for index in range(len(self._list_of_subgroups)):
             positive_instances_covered = self._subgroups_bitarrays_of_positives[index].count(1)
             negative_instances_covered = self._subgroups_bitarrays_of_negatives[index].count(1)
+            original_positive_instances_covered = self._subgroups_original_bitarrays_of_positives[index].count(1)
+            original_negative_instances_covered = self._subgroups_original_bitarrays_of_negatives[index].count(1)
             result = result + "s" + str(index+1) + ": " + str(self._list_of_subgroups[index]) + "\n" + \
-                              "\tpositive instances covered: " + str(positive_instances_covered) + "\n" + \
-                              "\tnegative instances covered: " + str(negative_instances_covered) + "\n" + \
-                              "\ttotal instances covered: " + str(positive_instances_covered + negative_instances_covered) + "\n"
+                              "\tConsidering its position in the list:\n" + \
+                              "\t- positive instances covered: " + str(positive_instances_covered) + "\n" + \
+                              "\t- negative instances covered: " + str(negative_instances_covered) + "\n" + \
+                              "\t- total instances covered: " + str(positive_instances_covered + negative_instances_covered) + "\n" + \
+                              "\tConsidering it individually:\n" + \
+                              "\t- positive instances covered: " + str(original_positive_instances_covered) + "\n" + \
+                              "\t- negative instances covered: " + str(original_negative_instances_covered) + "\n" + \
+                              "\t- total instances covered: " + str(original_positive_instances_covered + original_negative_instances_covered) + "\n"
         positive_instances_covered = self._default_rule_bitarray_of_positives.count(1)
         negative_instances_covered = self._default_rule_bitarray_of_negatives.count(1)
         result = result + "default rule:\n" + \

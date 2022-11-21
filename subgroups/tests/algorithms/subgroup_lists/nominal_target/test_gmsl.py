@@ -15,9 +15,6 @@ from bitarray import bitarray
 from math import comb
 from numpy import log2
 from os import remove
-from subgroups.algorithms import VLSD
-from subgroups.quality_measures import WRAcc, WRAccOptimisticEstimate1
-from regex import compile
 from subgroups.exceptions import DatasetAttributeTypeError
 import unittest
 
@@ -483,59 +480,3 @@ class TestGMSL(unittest.TestCase):
         self.assertRaises(TypeError, gmsl_alg.fit, DataFrame({"a" : ["1", "2", "3", "4"], "target" : ["4", "5", "6", "7"]}), "aaa")
         self.assertRaises(ValueError, gmsl_alg.fit, DataFrame({}), ("a", "a"))
         self.assertRaises(DatasetAttributeTypeError, gmsl_alg.fit, DataFrame({"a" : [1, 2, 3, 4], "target" : ["4", "5", "6", "7"]}), ("a", "a"))
-    
-    def test_GMSL_fit_method_2(self) -> None:
-        # Dataset.
-        dataset_url = "https://archive.ics.uci.edu/ml/machine-learning-databases/car/car.data"
-        df = read_csv(dataset_url, names=["buying", "maint", "doors", "persons", "lug_boot", "safety"])
-        df.reset_index(drop=True, inplace=True)
-        target = ("safety", "unacc")
-        self.assertEqual(len(df), 1728)
-        self.assertEqual(len(df.columns), 6)
-        # VLSD algorithm.
-        vlsd_results_tmp_file_path = "./vlsd_results_tmp.txt"
-        vlsd_alg = VLSD(WRAcc(), -1, WRAccOptimisticEstimate1(), -1, \
-                        vertical_lists_implementation = VLSD.VERTICAL_LISTS_WITH_BITSETS, \
-                        write_results_in_file = True, file_path = vlsd_results_tmp_file_path)
-        vlsd_alg.fit(df, target)
-        expected_subgroups = 1599
-        self.assertEqual(vlsd_alg.selected_subgroups, expected_subgroups)
-        self.assertEqual(vlsd_alg.unselected_subgroups, 0)
-        self.assertEqual(vlsd_alg.visited_nodes, expected_subgroups)
-        # Regular expression to read the results.
-        selector_regex_pattern = "[A-Za-z0-9_-]+ = ([A-Za-z0-9_-]+|'[A-Za-z0-9_-]+')"
-        pattern_regex_pattern = "\\[" + selector_regex_pattern + "(, " + selector_regex_pattern + ")*\\]"
-        input_line_regex_pattern = "^(?P<subgroup>Description: " + pattern_regex_pattern + ", Target: " + selector_regex_pattern + ")" +\
-                                   " ; Sequence of instances tp = bitarray\\('(?P<positive_bitarray>[01]+)'\\)" +\
-                                   " ; Sequence of instances fp = bitarray\\('(?P<negative_bitarray>[01]+)'\\) ; .+$"
-        input_line_regex_object = compile(input_line_regex_pattern)
-        # Generate the correct input file for the GMSL algorithm.
-        vlsd_results_file_path = "./vlsd_results.txt"
-        vlsd_results_file = open(vlsd_results_file_path, "w")
-        with open(vlsd_results_tmp_file_path, "r") as vlsd_results_tmp_file:
-            for line in vlsd_results_tmp_file: # Read line by line.
-                match_object = input_line_regex_object.fullmatch(line.rstrip("\n"))
-                self.assertIsNotNone(match_object)
-                subgroup = match_object.group("subgroup")
-                positive_bitarray = match_object.group("positive_bitarray")
-                negative_bitarray = match_object.group("negative_bitarray")
-                useful_line = subgroup + " ; " + positive_bitarray + " ; " + negative_bitarray + "\n"
-                vlsd_results_file.write(useful_line)
-        vlsd_results_file.close()
-        # GMSL algorithm.
-        # beta = 0.0
-        gmsl_results_file_path = "./gmsl_results.txt"
-        gmsl_alg = GMSL(vlsd_results_file_path, 3, 0.0, gmsl_results_file_path)
-        gmsl_alg.fit(df, target)
-        # beta = 0.5
-        gmsl_results_file_path = "./gmsl_results.txt"
-        gmsl_alg = GMSL(vlsd_results_file_path, 3, 0.5, gmsl_results_file_path)
-        gmsl_alg.fit(df, target)
-        # beta = 1.0
-        gmsl_results_file_path = "./gmsl_results.txt"
-        gmsl_alg = GMSL(vlsd_results_file_path, 3, 1.0, gmsl_results_file_path)
-        gmsl_alg.fit(df, target)
-        # Remove files.
-        remove(vlsd_results_tmp_file_path)
-        remove(vlsd_results_file_path)
-        remove(gmsl_results_file_path)

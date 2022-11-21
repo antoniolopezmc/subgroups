@@ -31,6 +31,19 @@ def universal_code_for_integer(input_integer_value : int) -> float:
             current_log_value = log2(current_log_value)
     return result
 
+@lru_cache(maxsize=1000)
+def universal_code_for_integer_with_maximum(input_integer_value : int, maximum_integer_value : int) -> float:
+    """Compute the universal code LN(i) for the input integer value, when a maximum integer value exists.
+
+    :param input_integer_value: integer value on which to compute the universal code.
+    :param maximum_integer_value: maximum integer value existing.
+    :return: the universal code LN(i) for the input integer value.
+    """
+    probability_until_max = sum([2 ** (-universal_code_for_integer(i)) for i in range(1, maximum_integer_value+1)])
+    probability_left = 1 - probability_until_max
+    probability_input_integer_value = (2 ** (-universal_code_for_integer(input_integer_value))) + (probability_left/maximum_integer_value)
+    return -log2(probability_input_integer_value)
+
 ## "Computing the Multinomial Stochastic Complexity in Sub-Linear Time" paper.
 ##      L -> number_of_categories.
 ##      n -> number_of_samples.
