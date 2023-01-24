@@ -8,7 +8,7 @@
 
 from subgroups.core.selector import Selector
 from subgroups.core.pattern import Pattern
-from pandas import DataFrame
+from pandas import DataFrame, Series
 
 class Subgroup(object):
     """This class represents a 'Subgroup'. A 'Subgroup' has a description (Pattern) and a target variable of interest (Selector).
@@ -44,20 +44,18 @@ class Subgroup(object):
     description = property(_get_description, None, None, "The description.")
     target = property(_get_target, None, None, "The target variable of interest.")
     
-    def filter(self, pandas_dataframe : DataFrame, use_description : bool = True, use_target : bool = True) -> tuple[DataFrame, int, int, int, int]:
-        """Method to filter a pandas DataFrame, retrieving only the rows covered by the subgroup.
+    def filter(self, pandas_dataframe : DataFrame) -> tuple[Series, Series, Series]:
+        """Method to filter a pandas DataFrame, retrieving only certain information related to this subgroup.
         
-        :param pandas_dataframe: the DataFrame which is filtered.
-        :param use_description: whether the subgroup description is used in the filtering process. By default, True.
-        :param use_target: whether the subgroup target is used in the filtering process. By default, True.
-        :return: a tuple of the form: (DataFrame, tp, fp, TP, FP). The first element is the DataFrame obtained after the filtering process. The other elements are the following subgroup parameters: the true positives tp (rows covered by the description and the target), the false positives fp (rows covered by the description but not by the target), the true population TP (rows covered by the target) and the false population FP (rows not covered by the target). IMPORTANT: the subgroup parameters are obtained with the complete subgroup (i.e., using the description and using the target). This means that, for a given DataFrame, they always have the same value no matter the values of the parameters 'use_description' and 'use_target'.
+        :param pandas_dataframe: the DataFrame which is filtered. IMPORTANT: If an attribute name of a selector of the subgroup is not in the pandas.DataFrame passed by parameter, a KeyError exception is raised.
+        :return: a tuple of the form: (Series, Series, Series). \
+It is formed by the following elements: \
+(1) a pandas Series of booleans of the same size as pandas_dataframe indicating whether rows are covered by the description and the target, \
+(2) a pandas Series of booleans of the same size as pandas_dataframe indicating whether rows are covered by the description but not by the target, and \
+(3) a pandas Series of booleans of the same size as pandas_dataframe indicating whether rows are covered by the target.
         """
         if type(pandas_dataframe) is not DataFrame:
             raise TypeError("The type of the parameter 'pandas_dataframe' must be 'pandas.Dataframe'.")
-        if type(use_description) is not bool:
-            raise TypeError("The type of the parameter 'use_description' must be 'bool'.")
-        if type(use_target) is not bool:
-            raise TypeError("The type of the parameter 'use_target' must be 'bool'.")
         # Original dataframe without the target attribute.
         pandas_DataFrame__all_except_the_target_attribute = pandas_dataframe[pandas_dataframe.columns.drop(self._target._attribute_name)]
         # Only the target attribute (in a Series).
@@ -68,20 +66,10 @@ class Subgroup(object):
         target_match = self._target.match(self._target._attribute_name, pandas_Series__target_attribute)
         # Rows that match with the target and in which the description is contained.
         bool_Series_description_is_contained_AND_target_match = description_is_contained & target_match
-        # Compute the subgroup parameters.
-        tp = (bool_Series_description_is_contained_AND_target_match).sum()
-        fp = (description_is_contained & (~ target_match)).sum()
-        TP = target_match.sum()
-        FP = len(pandas_dataframe) - TP
+        # Rows that do not match with the target and in which the description is contained.
+        bool_Series_description_is_contained_AND_target_do_not_match = description_is_contained & (~target_match)
         # Return depending on the function parameters specified above.
-        if (use_description) and (use_target):
-            return (pandas_dataframe[bool_Series_description_is_contained_AND_target_match], tp, fp, TP, FP)
-        elif (use_description) and (not use_target):
-            return (pandas_dataframe[description_is_contained], tp, fp, TP, FP)
-        elif (not use_description) and (use_target):
-            return (pandas_dataframe[target_match], tp, fp, TP, FP)
-        else:
-            return (pandas_dataframe, tp, fp, TP, FP)
+        return (bool_Series_description_is_contained_AND_target_match, bool_Series_description_is_contained_AND_target_do_not_match, target_match)
     
     def is_refinement(self, refinement_candidate : 'Subgroup', refinement_of_itself : bool) -> bool:
         """Method to check whether 'refinement_candidate' is a refinement of this (i.e., of 'self'). A subgroup Y is a refinements of other subgroup X, if the description of Y is a refinement of the description of X, and the targets are equal.
