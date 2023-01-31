@@ -123,6 +123,7 @@ class AlgorithmSDMapStar(Algorithm):
             self._file = None
             self._k_subgroups = []
             self._pruned_subgroups = 0
+            self._conditional_pruned_branches = 0
         else:
             raise InconsistentMethodParametersError("If 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.")
 
@@ -156,6 +157,8 @@ class AlgorithmSDMapStar(Algorithm):
     def _get_pruned_subgroups(self) -> int:
         return self._pruned_subgroups
 
+    def _get_conditional_pruned_branches(self) -> int:
+        return self._conditional_pruned_branches
 
     quality_measure = property(_get_quality_measure, None, None, "The quality measure which is used.")
     optimistic_estimate = property(_get_optimistic_estimate, None, None, "The optimistic estimate of the quality measure which is used.")
@@ -167,6 +170,7 @@ class AlgorithmSDMapStar(Algorithm):
     k_subgroups = property(_get_k_subgroups, None, None, "The list of the k subgroups used to prune.")
     num_subgroups = property(_get_num_subgroups, None, None, "The maximum number of subgroups in 'k_subgroups'.")
     pruned_subgroups = property(_get_pruned_subgroups, None, None, "The number of pruned subgroups.")
+    conditional_pruned_branches = property(_get_conditional_pruned_branches, None, None, "The number of conditional pruned branches.")
 
     def _get_unselected_subgroups(self) -> int:
         return self._unselected_subgroups
@@ -315,12 +319,11 @@ class AlgorithmSDMapStar(Algorithm):
                 # Build the conditional FPTree.
                 if (self.num_subgroups > 0):
                     # Call conditionalFPTree with prune
-                    conditional_fptree, branchPrunned = fptree.getConditionalFPTreeStar(beta_as_list, minimum_tp=self.minimum_tp, minimum_fp=self.minimum_fp, minimum_n=self.minimum_n,min_quality_measure =  self.k_subgroups[0], optimistic_estimate = self._optimistic_estimate)
-                    self.conditionedBranchsPrunned += branchPrunned
+                    conditional_fptree, pruned_branches = fptree.generate_conditional_fp_tree_star(beta_as_list, minimum_tp=self.minimum_tp, minimum_fp=self.minimum_fp, minimum_n=self.minimum_n,min_optimistic_estimate =  self.k_subgroups[0], optimistic_estimate = self._optimistic_estimate, additional_parameters=self._additional_parameters_for_the_optimistic_estimate)
+                    self._conditional_pruned_branches += pruned_branches
                 else:
                     # Call conditionalFPTree wihtout prune
-                    conditional_fptree = fptree.getConditionalFPTree(beta_as_list, minimum_tp=self.minimum_tp, minimum_fp=self.minimum_fp, minimum_n=self.minimum_n)
-                #####conditional_fp_tree = fptree.generate_conditional_fp_tree(beta_as_list, minimum_tp=self.minimum_tp, minimum_fp=self.minimum_fp, minimum_n=self.minimum_n)
+                    conditional_fptree = fptree.generate_conditional_fp_tree(beta_as_list, minimum_tp=self.minimum_tp, minimum_fp=self.minimum_fp, minimum_n=self.minimum_n)
                 # Recursive call.
                 if not conditional_fptree.is_empty():
                     self._fpgrowth(conditional_fptree, beta_as_list, target, TP, FP)
