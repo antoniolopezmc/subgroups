@@ -189,3 +189,6 @@ class Pattern(object):
     
     def __iter__(self) -> Iterator[Selector]:
         return iter(self._list_of_selectors)
+    
+    def __hash__(self) -> int:
+        return hash(str(self))

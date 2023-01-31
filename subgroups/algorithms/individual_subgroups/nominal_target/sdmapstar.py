@@ -255,7 +255,7 @@ class AlgorithmSDMapStar(Algorithm):
                 tp = fptree.header_table[most_unfrequent_selector][0][0]
                 fp = fptree.header_table[most_unfrequent_selector][0][1]
                 if (self.num_subgroups > 0):
-                    #update de K subgroups
+                    #update the K subgroups
                     self._updateKSubgroups(tp,fp)
                     # if k subgroups treshold is higher than the optimistic estimate, we omit the conditional tree
                     dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : tp, QualityMeasure.FALSE_POSITIVES : fp, QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
