@@ -3,17 +3,17 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-"""Tests of the functionality contained in the file 'algorithms/pwslm.py'.
+"""Tests of the functionality contained in the file 'algorithms/dslm.py'.
 """
 
-from subgroups.algorithms.subgroup_lists.nominal_target.pwslm import PWSLM
+from subgroups.algorithms.subgroup_lists.nominal_target.dslm import DSLM
 from subgroups.core import Subgroup, Pattern, Selector, Operator
 from bitarray import bitarray
 import unittest
 
-class TestPWSLM(unittest.TestCase):
+class TestDSLM(unittest.TestCase):
     
-    def test_PWSLM_counter_of_subgroups_1(self) -> None:
+    def test_DSLM_counter_of_subgroups_1(self) -> None:
         # We suppose a data with 41 instances.
         dataset_number_of_instances = 41
         ## Counters.
@@ -46,7 +46,7 @@ class TestPWSLM(unittest.TestCase):
         self.assertEqual(positive_counter_of_subgroups, [1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,0])
         self.assertEqual(negative_counter_of_subgrouos, [1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,0])
     
-    def test_PWSLM_counter_of_subgroups_2(self) -> None:
+    def test_DSLM_counter_of_subgroups_2(self) -> None:
         # We suppose a data with 40 instances.
         dataset_number_of_instances = 40
         ## Counters.
@@ -66,7 +66,7 @@ class TestPWSLM(unittest.TestCase):
         self.assertEqual(positive_counter_of_subgroups, [1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0])
         self.assertEqual(negative_counter_of_subgrouos, [0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0])
     
-    def test_PWSLM_compute_overlap_factor_function_1(self) -> None:
+    def test_DSLM_compute_overlap_factor_function_1(self) -> None:
         ###################
         #### EXAMPLE 1 ####
         ###################
@@ -76,8 +76,8 @@ class TestPWSLM(unittest.TestCase):
         bitarray_of_negatives = bitarray("0000110000001100000011000000110000001100", endian = "big")
         positive_counter_of_subgroups = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         negative_counter_of_subgroups = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-        positive_overlap_factor = PWSLM._compute_positive_overlap_factor(subgroup, bitarray_of_positives, positive_counter_of_subgroups)
-        negative_overlap_factor = PWSLM._compute_negative_overlap_factor(subgroup, bitarray_of_negatives, negative_counter_of_subgroups)
+        positive_overlap_factor = DSLM._compute_positive_overlap_factor(subgroup, bitarray_of_positives, positive_counter_of_subgroups)
+        negative_overlap_factor = DSLM._compute_negative_overlap_factor(subgroup, bitarray_of_negatives, negative_counter_of_subgroups)
         self.assertEqual(positive_overlap_factor, 0.0)
         self.assertEqual(negative_overlap_factor, 0.0)
         ###################
@@ -89,8 +89,8 @@ class TestPWSLM(unittest.TestCase):
         bitarray_of_negatives = bitarray("0000110000001100000011000000110000001100", endian = "big")
         positive_counter_of_subgroups = [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         negative_counter_of_subgroups = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0]
-        positive_overlap_factor = PWSLM._compute_positive_overlap_factor(subgroup, bitarray_of_positives, positive_counter_of_subgroups)
-        negative_overlap_factor = PWSLM._compute_negative_overlap_factor(subgroup, bitarray_of_negatives, negative_counter_of_subgroups)
+        positive_overlap_factor = DSLM._compute_positive_overlap_factor(subgroup, bitarray_of_positives, positive_counter_of_subgroups)
+        negative_overlap_factor = DSLM._compute_negative_overlap_factor(subgroup, bitarray_of_negatives, negative_counter_of_subgroups)
         self.assertEqual(positive_overlap_factor, 2/3)
         self.assertEqual(positive_overlap_factor, 2/sum(positive_counter_of_subgroups))
         self.assertEqual(negative_overlap_factor, 4/6)
@@ -104,8 +104,8 @@ class TestPWSLM(unittest.TestCase):
         bitarray_of_negatives = bitarray("0000110000001100000011000000110000011100", endian = "big")
         positive_counter_of_subgroups = [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         negative_counter_of_subgroups = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0]
-        positive_overlap_factor = PWSLM._compute_positive_overlap_factor(subgroup, bitarray_of_positives, positive_counter_of_subgroups)
-        negative_overlap_factor = PWSLM._compute_negative_overlap_factor(subgroup, bitarray_of_negatives, negative_counter_of_subgroups)
+        positive_overlap_factor = DSLM._compute_positive_overlap_factor(subgroup, bitarray_of_positives, positive_counter_of_subgroups)
+        negative_overlap_factor = DSLM._compute_negative_overlap_factor(subgroup, bitarray_of_negatives, negative_counter_of_subgroups)
         self.assertEqual(positive_overlap_factor, 2/3)
         self.assertEqual(positive_overlap_factor, 2/sum(positive_counter_of_subgroups))
         self.assertEqual(negative_overlap_factor, 6/6)
@@ -119,12 +119,12 @@ class TestPWSLM(unittest.TestCase):
         bitarray_of_negatives = bitarray("0000000000000000000000000000000000000000", endian = "big")
         positive_counter_of_subgroups = [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         negative_counter_of_subgroups = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0]
-        positive_overlap_factor = PWSLM._compute_positive_overlap_factor(subgroup, bitarray_of_positives, positive_counter_of_subgroups)
-        negative_overlap_factor = PWSLM._compute_negative_overlap_factor(subgroup, bitarray_of_negatives, negative_counter_of_subgroups)
+        positive_overlap_factor = DSLM._compute_positive_overlap_factor(subgroup, bitarray_of_positives, positive_counter_of_subgroups)
+        negative_overlap_factor = DSLM._compute_negative_overlap_factor(subgroup, bitarray_of_negatives, negative_counter_of_subgroups)
         self.assertEqual(positive_overlap_factor, 1.0)
         self.assertEqual(negative_overlap_factor, 0.0)
     
-    def test_PWSLM_compute_overlap_factor_function_2(self) -> None:
+    def test_DSLM_compute_overlap_factor_function_2(self) -> None:
         # s1 -> This is the only subgroup in the list.
         s1 = Subgroup(Pattern([Selector("at1", Operator.EQUAL, "a")]), Selector("target", Operator.EQUAL, "value1"))
         s1_bitarray_of_positives = bitarray("1111111111111111111100000000000000000000", endian = "big")
@@ -136,8 +136,8 @@ class TestPWSLM(unittest.TestCase):
         s2_bitarray_of_positives = bitarray("1100000000000000000000000000000000000001", endian = "big")
         s2_bitarray_of_negatives = bitarray("0000000000000000000000000000000000000011", endian = "big")
         # Overlap factors between s2 and the previous subgroups (i.e., s1).
-        positive_of_s2 = PWSLM._compute_positive_overlap_factor(s2, s2_bitarray_of_positives, positive_counter_of_subgroups)
-        negative_of_s2 = PWSLM._compute_negative_overlap_factor(s2, s2_bitarray_of_negatives, negative_counter_of_subgroups)
+        positive_of_s2 = DSLM._compute_positive_overlap_factor(s2, s2_bitarray_of_positives, positive_counter_of_subgroups)
+        negative_of_s2 = DSLM._compute_negative_overlap_factor(s2, s2_bitarray_of_negatives, negative_counter_of_subgroups)
         self.assertEqual(positive_of_s2, 2/20)
         self.assertEqual(positive_of_s2, 2/sum(positive_counter_of_subgroups))
         self.assertEqual(negative_of_s2, 2/20)
@@ -147,8 +147,8 @@ class TestPWSLM(unittest.TestCase):
         s3_bitarray_of_positives = bitarray("1000000000000000000000000000000000000011", endian = "big")
         s3_bitarray_of_negatives = bitarray("1100000000000000000000000000000000000111", endian = "big")
         # Overlap factors between s3 and the previous subgroups (i.e., s1).
-        positive_of_s3 = PWSLM._compute_positive_overlap_factor(s3, s3_bitarray_of_positives, positive_counter_of_subgroups)
-        negative_of_s3 = PWSLM._compute_negative_overlap_factor(s3, s3_bitarray_of_negatives, negative_counter_of_subgroups)
+        positive_of_s3 = DSLM._compute_positive_overlap_factor(s3, s3_bitarray_of_positives, positive_counter_of_subgroups)
+        negative_of_s3 = DSLM._compute_negative_overlap_factor(s3, s3_bitarray_of_negatives, negative_counter_of_subgroups)
         self.assertEqual(positive_of_s3, 1/20)
         self.assertEqual(positive_of_s3, 1/sum(positive_counter_of_subgroups))
         self.assertEqual(negative_of_s3, 3/20)
@@ -158,7 +158,7 @@ class TestPWSLM(unittest.TestCase):
         # In the negative instances, there is more overlap between s3 ans s1 than between s2 and s1.
         self.assertGreater(negative_of_s3, negative_of_s2)
 
-    def test_PWSLM_compute_overlap_factor_function_3(self) -> None:
+    def test_DSLM_compute_overlap_factor_function_3(self) -> None:
         # s1 -> This is the only subgroup in the list.
         s1 = Subgroup(Pattern([Selector("at1", Operator.EQUAL, "a")]), Selector("target", Operator.EQUAL, "value1"))
         s1_bitarray_of_positives = bitarray("1111111111111111111100000000000000000000", endian = "big")
@@ -169,15 +169,15 @@ class TestPWSLM(unittest.TestCase):
         s2 = Subgroup(Pattern([Selector("at2", Operator.EQUAL, "b")]), Selector("target", Operator.EQUAL, "value1"))
         s2_bitarray_of_positives = bitarray("1111111111111111111100000000000000000000", endian = "big")
         s2_bitarray_of_negatives = bitarray("0000000000000000000000000000000000000000", endian = "big")
-        positive_of_s2 = PWSLM._compute_positive_overlap_factor(s2, s2_bitarray_of_positives, positive_counter_of_subgroups)
-        negative_of_s2 = PWSLM._compute_negative_overlap_factor(s2, s2_bitarray_of_negatives, negative_counter_of_subgroups)
+        positive_of_s2 = DSLM._compute_positive_overlap_factor(s2, s2_bitarray_of_positives, positive_counter_of_subgroups)
+        negative_of_s2 = DSLM._compute_negative_overlap_factor(s2, s2_bitarray_of_negatives, negative_counter_of_subgroups)
         self.assertEqual(positive_of_s2, 20/20)
         self.assertEqual(negative_of_s2, 0.0)
         # s3 -> candidate.
         s3 = Subgroup(Pattern([Selector("at3", Operator.EQUAL, "c")]), Selector("target", Operator.EQUAL, "value1"))
         s3_bitarray_of_positives = bitarray("0000000000000000000000000000000000000000", endian = "big")
         s3_bitarray_of_negatives = bitarray("0000000000000000000011111111111111111111", endian = "big")
-        positive_of_s3 = PWSLM._compute_positive_overlap_factor(s3, s3_bitarray_of_positives, positive_counter_of_subgroups)
-        negative_of_s3 = PWSLM._compute_negative_overlap_factor(s3, s3_bitarray_of_negatives, negative_counter_of_subgroups)
+        positive_of_s3 = DSLM._compute_positive_overlap_factor(s3, s3_bitarray_of_positives, positive_counter_of_subgroups)
+        negative_of_s3 = DSLM._compute_negative_overlap_factor(s3, s3_bitarray_of_negatives, negative_counter_of_subgroups)
         self.assertEqual(positive_of_s3, 1.0)
         self.assertEqual(negative_of_s3, 20/20)

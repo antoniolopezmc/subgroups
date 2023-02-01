@@ -3,7 +3,7 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-"""This file contains the implementation of the PWSLM algorithm.
+"""This file contains the implementation of the DSLM algorithm.
 """
 
 from subgroups.algorithms.subgroup_lists.nominal_target.psld import PSLD
@@ -14,8 +14,8 @@ from bitarray import bitarray
 from pandas.api.types import is_string_dtype
 from subgroups.exceptions import DatasetAttributeTypeError
 
-class PWSLM(PSLD):
-    """This class represents the PWSLM algorithm.
+class DSLM(PSLD):
+    """This class represents the DSLM algorithm.
     
     :param input_file_path: path of the file from which the subgroups and their bitarrays will be read.
     :param max_sl: maximum number of subgroups lists to generate.
@@ -95,7 +95,7 @@ class PWSLM(PSLD):
         return subgroup_sum/total_sum
     
     def fit(self, pandas_dataframe : DataFrame, target : tuple[str, str]) -> None:
-        """Main method to run the PWSLM algorithm. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported.
+        """Main method to run the DSLM algorithm. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported.
         
         :param pandas_dataframe: the DataFrame which is scanned. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported.
         :param target: a tuple with 2 elements: the target attribute name and the target value.
@@ -153,16 +153,16 @@ class PWSLM(PSLD):
                     if current_subgroup is not None:
                         current_bitarray_of_positives = bitarrays_of_positives[current_index]
                         current_bitarray_of_negatives = bitarrays_of_negatives[current_index]
-                        delta_data_model_candidate, candidate_number_of_positives, candidate_number_of_negatives = PWSLM._compute_delta_data_model_candidate(pandas_dataframe, current_sl, current_subgroup, current_bitarray_of_positives, current_bitarray_of_negatives)
+                        delta_data_model_candidate, candidate_number_of_positives, candidate_number_of_negatives = DSLM._compute_delta_data_model_candidate(pandas_dataframe, current_sl, current_subgroup, current_bitarray_of_positives, current_bitarray_of_negatives)
                         candidate_number_of_rows = candidate_number_of_positives + candidate_number_of_negatives
                         if candidate_number_of_rows == 0:
                             current_subgroup_compression_gain = 0.0
                             current_subgroup_positive_overlap_factor = 1.0
                             current_subgroup_negative_overlap_factor = 1.0
                         else:
-                            delta_model_candidate = PWSLM._compute_delta_model_candidate(pandas_dataframe, current_sl, current_subgroup)
-                            current_subgroup_positive_overlap_factor = PWSLM._compute_positive_overlap_factor(current_subgroup, current_bitarray_of_positives, positive_counter_of_subgroups)
-                            current_subgroup_negative_overlap_factor = PWSLM._compute_negative_overlap_factor(current_subgroup, current_bitarray_of_negatives, negative_counter_of_subgroups)
+                            delta_model_candidate = DSLM._compute_delta_model_candidate(pandas_dataframe, current_sl, current_subgroup)
+                            current_subgroup_positive_overlap_factor = DSLM._compute_positive_overlap_factor(current_subgroup, current_bitarray_of_positives, positive_counter_of_subgroups)
+                            current_subgroup_negative_overlap_factor = DSLM._compute_negative_overlap_factor(current_subgroup, current_bitarray_of_negatives, negative_counter_of_subgroups)
                             ############################################
                             # EXTREMELY IMPORTANT: "1 - ", because we want to penalize the most overlapping subgroups (i.e., the more overlapping, the value closer to 0).
                             ############################################
