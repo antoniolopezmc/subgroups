@@ -13,15 +13,16 @@ from typing import Union
 
 from subgroups.core.selector import Selector
 from subgroups.core.pattern import Pattern
+from bitarray import bitarray
 
 class BitsetDictionary(dict):
     """ Internal class to implement the dicttionaries used in the bitset. This dictionary only allows to insert a Pattern or a Selector as key. If a Selector is inserted, it is converted to a Pattern.
     """
     def __setitem__(self, key, value) -> None:
         if (type(key)==Selector):
-            super().__setitem__(Pattern([key]),value)
+            super().__setitem__(str(Pattern([key])),value)
         elif (type(key)==Pattern):
-            super().__setitem__(key, value)
+            super().__setitem__(str(key), value)
         else:
             raise TypeError("The key must be a Selector or a Pattern.")
 
@@ -34,7 +35,7 @@ class BitsetBSD(object):
     def __init__(self):
         """Method to initialize an object of type 'BitsetBSD'.
         """
-        # For each dictionary, the key is the pattern and the value is a list of boolean for each row of the pandas dataframe.
+        # For each dictionary, the key is a string representation of a pattern and the value is a bitarray that stores for each row whether it follows the pattern.
         self._bitset_pos = BitsetDictionary()
         self._bitset_neg = BitsetDictionary()
 
@@ -116,15 +117,15 @@ class BitsetBSD(object):
                     list_of_selectors.append(new_selector)
                     if(target_match):
                         if new_selector not in self.bitset_pos:
-                            self.bitset_pos[new_selector] = ([False] * positive_counts)+[True]
+                            self.bitset_pos[new_selector] = (bitarray([0]) * positive_counts)+bitarray([1])
                         else:
-                            self.bitset_pos[new_selector] = self.bitset_pos[new_selector]+ [True]
+                            self.bitset_pos[new_selector] += [1]
 
                     else:
                         if new_selector not in self.bitset_neg:
-                            self.bitset_neg[new_selector] = ([False] * negative_counts)+ [True]
+                            self.bitset_neg[new_selector] = (bitarray([0]) * negative_counts)+ bitarray([1])
                         else:
-                            self.bitset_neg[new_selector] = self.bitset_neg[new_selector] + [True]
+                            self.bitset_neg[new_selector] += [1]
 
             if (target_match):
                 self.bitset_pos = self._update_bitset(list_of_selectors,self.bitset_pos)
@@ -145,11 +146,11 @@ class BitsetBSD(object):
             raise TypeError("Parameter 'negative_counts' must be a int.")
         for selector in self.bitset_neg.keys():
             if selector not in self.bitset_pos:
-                self.bitset_pos[selector] = [False] * positive_counts
+                self.bitset_pos[selector] = bitarray([0]) * positive_counts
 
         for selector in self.bitset_pos.keys():
             if selector not in self.bitset_neg:
-                self.bitset_neg[selector] = [False] * negative_counts
+                self.bitset_neg[selector] = bitarray([0]) * negative_counts
 
 
 
