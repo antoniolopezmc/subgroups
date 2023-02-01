@@ -56,7 +56,7 @@ def _delete_subgroup_parameters_from_a_dictionary(dict_of_parameters : dict[str,
         pass
 
 
-class AlgorithmSDMapStar(Algorithm):
+class SDMapStar(Algorithm):
     """This class represents the algorithm SDMapStar (algorithm for subgroup discovery).
 
 
