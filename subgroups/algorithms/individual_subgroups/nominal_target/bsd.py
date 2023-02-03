@@ -44,7 +44,7 @@ def _delete_subgroup_parameters_from_a_dictionary(dict_of_parameters : dict[str,
         pass
 
 
-class AlgorithmBSD(Algorithm):
+class BSD(Algorithm):
     """This class represents the algorithm BSD (algorithm for subgroup discovery).
 
     
@@ -154,26 +154,26 @@ class AlgorithmBSD(Algorithm):
         
 
         # if optimistic estimate > min or k-subgroups is not full
-        if(oe > self.k_subgroups[0][0] or len(self.k_subgroups) < self.num_subgroups):
+        if(oe > self._k_subgroups[0][0] or len(self._k_subgroups) < self.num_subgroups):
             newSelRel.append((oe, sCurr))
             CcondPos,CcondNeg = self._attach(cCurrPos, cCurrNeg, CcondPos, CcondNeg, sCurr, selCond)
             #if quality > min or k-subgroups is not full
-            if quality > self.k_subgroups[0][0] or len(self.k_subgroups) < self.num_subgroups:
+            if quality > self._k_subgroups[0][0] or len(self._k_subgroups) < self.num_subgroups:
                 if selCond:
                     sg = selCond.copy().add_selector(sCurr)
                 else:
                     sg = Pattern(sCurr)
-                r= self._checkRel(self.k_subgroups, cCurrPos, cCurrNeg,quality,sg)
+                r= self._checkRel(self._k_subgroups, cCurrPos, cCurrNeg,quality,sg)
                 #r = True
                 if r:
 
                                         # (quality, subgroup, bits)
-                    self.k_subgroups.append((quality, sg, cCurrPos + cCurrNeg,oe,(tp,fp)))
-                    self.k_subgroups = sorted(self.k_subgroups, reverse=False)
+                    self._k_subgroups.append((quality, sg, cCurrPos + cCurrNeg,oe,(tp,fp)))
+                    self._k_subgroups = sorted(self._k_subgroups, reverse=False)
                     self._checkRelevancies(cCurrPos, cCurrNeg, sg)
-                    if len(self.k_subgroups) > self.num_subgroups:
+                    if len(self._k_subgroups) > self.num_subgroups:
                         #remove lowest quality subgroup
-                        self.k_subgroups.pop(0)
+                        self._k_subgroups.pop(0)
                         self._unselected_subgroups += 1
                 else:
                     self._unselected_subgroups += 1
@@ -186,7 +186,7 @@ class AlgorithmBSD(Algorithm):
 
     
     def _BSD(self,selCond : str, selRel:list, CcondPos:dict, CcondNeg:dict, depth:int) -> list:
-        """Private method to run the algorithm BSD  and generate frequent patterns.
+        """Private method to run the BSD algorithm and generate frequent patterns.
 
         :param selCond: string of conditioned selectors
         :param selRel: list of relevant selectors
@@ -240,7 +240,7 @@ class AlgorithmBSD(Algorithm):
             newSelRelAux = list(newSelRelAux)
             for s in newSelRel:
                 #if optimistic estimate > min
-                if (s[0]> self.k_subgroups[0][0]):
+                if (s[0]> self._k_subgroups[0][0]):
                     if selCond:
                         selCondAux = selCond.copy().add_selector(s[1])
                     else:
@@ -283,10 +283,10 @@ class AlgorithmBSD(Algorithm):
 
 
     def _checkRelevancies(self,cCurrPos : bitarray, cCurrNeg : bitarray ,sg : str) -> None:
-        """Internal method to check relevacies in k_subgroups.
+        """Internal method to check relevacies in _k_subgroups.
         :param cCurrPos: bitarray of positive instances
         :param cCurrNeg: bitarray of negative instances
-        :param sg: Pattern in k_subgroups used to check relevancies
+        :param sg: Pattern in _k_subgroups used to check relevancies
         """
 
         if type(cCurrPos) is not bitarray:
@@ -296,12 +296,12 @@ class AlgorithmBSD(Algorithm):
         if type(sg) is not Pattern:
             raise TypeError("Parameter 'sg' must be a Pattern.")
 
-        if len(self.k_subgroups[0][2]) == 0:
-            self.k_subgroups.pop(0)
+        if len(self._k_subgroups[0][2]) == 0:
+            self._k_subgroups.pop(0)
 
         aux =[]
         FPSg = self._cardinality(cCurrNeg)
-        for tuple in self.k_subgroups:
+        for tuple in self._k_subgroups:
 
             if tuple[1] == sg:
                 # tuple is relevant
@@ -321,14 +321,14 @@ class AlgorithmBSD(Algorithm):
 
             if FPAnd == FPSg:
                 #tuple is irrelevant
-                self.unselected_subgroups += 1
+                self._unselected_subgroups += 1
                 self._irrelevants.append((tuple[1], tuple[0], tuple[2]))
             else:
                 # tuple is relevant
                 aux.append(tuple)
 
 
-        self.k_subgroups = aux
+        self._k_subgroups = aux
 
 
     def _checkRel(self,res:list,ccurrPos:bitarray,ccurrNeg:bitarray,quality:float, sCurr:Pattern) -> bool:
@@ -476,75 +476,3 @@ class AlgorithmBSD(Algorithm):
             self._file.write("FP = " + str(self._FP) + "\n")
 
             
-
-
-
-            
-
-    def to_file(self,  columns, total, printIrrelevants=False, printOE=False, printRS=True, path="BSD_output.txt"):
-        """Method to write the result of the algorithm BSD to a text file.
-        :type columns: Index
-        :param columns: Index with the columns.
-        :type total: float
-        :param total: time.
-        :type printIrrelevants: bool
-        :param printIrrelevants: print the Irrelevant Set.
-        :type printOE: bool
-        :param printOE: print the Optimistic Estimate.
-        :type printRS: bool
-        :param printRS: print the Result Set.
-        :type path: str
-        :param path: path of the file where results will be written.
-        """
-
-        if type(path) is not str:
-            raise TypeError("Parameter 'path' must be a string (str).")
-        if type(printIrrelevants) is not bool:
-            raise TypeError("Parameter 'printIrrelevants' must be a bool.")
-        if type(printOE) is not bool:
-            raise TypeError("Parameter 'printOE' must be a bool.")
-        if type(printRS) is not bool:
-            raise TypeError("Parameter 'printRS' must be a bool.")
-        if type(total) is not float:
-            raise TypeError("Parameter 'total' must be a float.")
-
-        path = "pruebasBSD/"+str(columns.size) + "_K" + str(self.numSubgroups) +"_"+ str(self.maxDepth) + "_" + path
-        file = open(path, "w")
-        file.write("Algoritmo=BSD, K=" +  str(self.numSubgroups) + ", Max.Depth=" + str(self.maxDepth) + ", Min.Supp=")
-        file.write(str(self.min_support) + ", MedidaCalidad=" + str(self.qualityMeasure.getName()) + "\n")
-        pos = str(columns).find("[")
-        pos2 = str(columns).find("]")
-        columnas = str(columns)[pos + 1:pos2].rstrip()
-        columnas = columnas.replace("\n", "")
-        file.write("Atributos: " + str(columns.size) + "\n" + columnas + "\n")
-        file.write("Target: " + self.tuple_target_attribute_value[0] + " = " + self.tuple_target_attribute_value[1] + "\n")
-        file.write("Time: " + str(total) + " s\n")
-        file.write("Subgrupos visitados: " + str(self.hypothesis) + "\n")
-        file.write("Subgrupos podados: "+ str(self.prunneds) + "\n" )
-        file.write("Subgrupos resultado: " + str(len(self.k_subgroups)) + "\n")
-        file.write("Subgrupos irrelevantes: " + str(len(self.irrelevants)) + "\n")
-
-        #if flag is actived, print result set
-        if printRS:
-            file.write("\nRESULT SET\n")
-            for sublist in self.k_subgroups:
-                subgroup = sublist[1]
-
-                qm = sublist[0]
-                file.write("AND(" + str(subgroup) + "), ")
-                file.write("QUALITY(" + self.qualityMeasure.getName() + " = " + str(qm) + ")")
-                # if flag is actived, print optimistic estimate
-                if printOE:
-                    file.write(", Optimistic Estimate(" + str(sublist[3]) + ")\n")
-                else:
-                    file.write("\n")
-        # if flag is actived, print irrelevants
-        if printIrrelevants:
-            file.write("\nIRRELEVANTS\n")
-            for sub in self.irrelevants:
-                file.write("AND(" + sub[0] + "), ")
-                file.write("QUALITY(" + self.qualityMeasure.getName() + " = " + str(sub[1]) + ")\n")
-
-
-
-        file.close()
