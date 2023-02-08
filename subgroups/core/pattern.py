@@ -78,7 +78,11 @@ class Pattern(object):
         if type(index) is not int:
             raise TypeError("The type of the parameter 'index' must be 'int'.")
         return self._list_of_selectors[index]
-    
+
+    def get_list_of_selectors(self):
+        """Method to get a COPY of the list of selectors of the pattern (to avoid the insertions of new selectors to the list in no order way)."""
+        return self._list_of_selectors.copy()
+
     def copy(self) -> 'Pattern':
         """Method to copy the Pattern.
         

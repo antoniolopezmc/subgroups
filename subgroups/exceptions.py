@@ -33,3 +33,6 @@ class DuplicateFpTreeNodeError(RuntimeError):
 class VerticalListSizeError(ValueError):
     """This exception is raised when comparing Vertical Lists with different dataset sizes.
     """
+class EmptyDatasetError(RuntimeError):
+    """Exception raised when the input dataset is empty.
+    """
