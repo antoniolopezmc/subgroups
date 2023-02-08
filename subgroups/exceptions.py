@@ -36,3 +36,6 @@ class VerticalListSizeError(ValueError):
 class EmptyDatasetError(RuntimeError):
     """Exception raised when the input dataset is empty.
     """
+class AbstractClassError(RuntimeError):
+    """Exception raised by abstract classes.
+    """
