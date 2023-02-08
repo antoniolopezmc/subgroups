@@ -73,7 +73,7 @@ class SDMapStar(Algorithm):
 
     """
 
-    __slots__ = ("_quality_measure", "_optimistic_estimate" , "_minimum_quality_measure_value", "_minimum_tp", "_minimum_fp", "_minimum_n", "_additional_parameters_for_the_quality_measure", "_unselected_subgroups", "_selected_subgroups", "_file_path", "_file")
+    __slots__ = ("_quality_measure", "_optimistic_estimate" , "_minimum_quality_measure_value", "_minimum_tp", "_minimum_fp", "_minimum_n", "_additional_parameters_for_the_quality_measure", "_unselected_subgroups", "_selected_subgroups", "_file_path", "_file", "_num_subgroups","_additional_parameters_for_the_optimistic_estimate","_k_subgroups","_pruned_subgroups","_conditional_pruned_branches")
 
     def __init__(self, quality_measure : QualityMeasure, optimistic_estimate: QualityMeasure, minimum_quality_measure_value : Union[int, float], minimum_tp : Union[int, None] = None, minimum_fp : Union[int, None] = None, minimum_n : Union[int, None] = None, additional_parameters_for_the_quality_measure : dict[str, Union[int, float]] = dict(), additional_parameters_for_the_optimistic_estimate : dict[str, Union[int, float]] = dict(), write_results_in_file : bool = False, file_path : Union[str, None] = None, num_subgroups : int = 0) -> None:
         if not isinstance(quality_measure, QualityMeasure):
@@ -256,7 +256,7 @@ class SDMapStar(Algorithm):
                 fp = fptree.header_table[most_unfrequent_selector][0][1]
                 if (self.num_subgroups > 0):
                     #update the K subgroups
-                    self._updateKSubgroups(tp,fp)
+                    self._updateKSubgroups(tp,fp,TP,FP)
                     # if k subgroups treshold is higher than the optimistic estimate, we omit the conditional tree
                     dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : tp, QualityMeasure.FALSE_POSITIVES : fp, QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
                     dict_of_parameters.update(self._additional_parameters_for_the_optimistic_estimate)
@@ -270,7 +270,7 @@ class SDMapStar(Algorithm):
 
             optimistics_estimates = []
             sorted_selectors = []
-            if (self.numSubgroups > 0):
+            if (self.num_subgroups > 0):
                 # sort the selectors to select the most promising first
                 for selector in fptree.header_table:
 
@@ -302,7 +302,7 @@ class SDMapStar(Algorithm):
                 if (self.num_subgroups > 0):
                     aux = fptree.header_table[selector][0]
                     #update k subgroups (tp,fp)
-                    self.updateKSubgroups(aux[0],aux[1])
+                    self._updateKSubgroups(aux[0],aux[1],TP,FP)
                     # if k subgroups treshold is higher than the optimistic estimate, we omit the conditional tree
                     dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : aux[0], QualityMeasure.FALSE_POSITIVES : aux[1], QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
                     dict_of_parameters.update(self._additional_parameters_for_the_optimistic_estimate)
@@ -329,7 +329,7 @@ class SDMapStar(Algorithm):
                     self._fpgrowth(conditional_fptree, beta_as_list, target, TP, FP)
 
                     
-    def updateKSubgroups(self,tp:int,fp:int) -> None:
+    def _updateKSubgroups(self,tp:int,fp:int,TP:int,FP:int) -> None:
         """Internal method to update k subgroups.
         :param tp: true positives
         :param fp: false positives
@@ -339,8 +339,12 @@ class SDMapStar(Algorithm):
             raise TypeError("Parameter 'tp' must be a int.")
         if (type(fp) is not int):
             raise TypeError("Parameter 'fp' must be a int.")
+        # if (type(TP) is not int):
+        #     raise TypeError("Parameter 'TP' must be a int.")
+        # if (type(FP) is not int):
+        #     raise TypeError("Parameter 'FP' must be a int.")
 
-        dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : tp, QualityMeasure.FALSE_POSITIVES : fp, QualityMeasure.TRUE_POPULATION : self.TP, QualityMeasure.FALSE_POPULATION : self.FP}
+        dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : tp, QualityMeasure.FALSE_POSITIVES : fp, QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
         dict_of_parameters.update(self._additional_parameters_for_the_optimistic_estimate)
         quality_value = self.quality_measure.compute(dict_of_parameters)
         #if k-subgroups is not full
@@ -366,17 +370,17 @@ class SDMapStar(Algorithm):
         for column in pandas_dataframe.columns:
             if not is_string_dtype(pandas_dataframe[column]):
                 raise DatasetAttributeTypeError("Error in attribute '" + str(column) + "'. This algorithm only supports nominal attributes (i.e., type 'str').")
+        # Obtain TP and FP of the dataset.
+        TP = sum(pandas_dataframe[target[0]] == target[1])
+        FP = len(pandas_dataframe.index) - TP
         # Create an empty FPTreeForSDMap.
-        fptree = FPTreeForSDMapStar()
+        fptree = FPTreeForSDMapStar(TP,FP)
         # Generate the set of frequent selectors.
         set_of_frequent_selectors = fptree.generate_set_of_frequent_selectors(pandas_dataframe, target, minimum_tp=self.minimum_tp, minimum_fp=self.minimum_fp, minimum_n=self.minimum_n)
         # Build the FPTree.
         fptree.build_tree(pandas_dataframe, set_of_frequent_selectors, target)
         # Only if the fptree is not empty ...
         if not fptree.is_empty():
-            # Obtain TP and FP of the dataset.
-            TP = sum(pandas_dataframe[target[0]] == target[1])
-            FP = len(pandas_dataframe.index) - TP
             # Call to the adapated FPGrowth algorithm in order to obtain frequent patterns. In this point, we also open and close the file.
             if (self._file_path is not None):
                 self._file = open(self._file_path, "w")

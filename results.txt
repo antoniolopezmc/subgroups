@@ -1,0 +1,17 @@
+Description: [a2 = 'q'], Target: class = 'y' ; Quality Measure WRAcc = 0.12499999999999997 ; tp = 2 ; fp = 1 ; TP = 2 ; FP = 2
+Description: [a3 = 'k'], Target: class = 'y' ; Quality Measure WRAcc = 0.125 ; tp = 1 ; fp = 0 ; TP = 2 ; FP = 2
+Description: [a1 = 'c', a3 = 'k'], Target: class = 'y' ; Quality Measure WRAcc = 0.125 ; tp = 1 ; fp = 0 ; TP = 2 ; FP = 2
+Description: [a2 = 'q', a3 = 'k'], Target: class = 'y' ; Quality Measure WRAcc = 0.125 ; tp = 1 ; fp = 0 ; TP = 2 ; FP = 2
+Description: [a1 = 'c', a2 = 'q', a3 = 'k'], Target: class = 'y' ; Quality Measure WRAcc = 0.125 ; tp = 1 ; fp = 0 ; TP = 2 ; FP = 2
+Description: [a3 = 'g'], Target: class = 'y' ; Quality Measure WRAcc = 0.125 ; tp = 1 ; fp = 0 ; TP = 2 ; FP = 2
+Description: [a1 = 'b', a3 = 'g'], Target: class = 'y' ; Quality Measure WRAcc = 0.125 ; tp = 1 ; fp = 0 ; TP = 2 ; FP = 2
+Description: [a2 = 'q', a3 = 'g'], Target: class = 'y' ; Quality Measure WRAcc = 0.125 ; tp = 1 ; fp = 0 ; TP = 2 ; FP = 2
+Description: [a1 = 'b', a2 = 'q', a3 = 'g'], Target: class = 'y' ; Quality Measure WRAcc = 0.125 ; tp = 1 ; fp = 0 ; TP = 2 ; FP = 2
+Description: [a1 = 'b'], Target: class = 'y' ; Quality Measure WRAcc = 0.125 ; tp = 1 ; fp = 0 ; TP = 2 ; FP = 2
+Description: [a1 = 'b', a2 = 'q'], Target: class = 'y' ; Quality Measure WRAcc = 0.125 ; tp = 1 ; fp = 0 ; TP = 2 ; FP = 2
+Description: [a1 = 'c'], Target: class = 'y' ; Quality Measure WRAcc = 0.0 ; tp = 1 ; fp = 1 ; TP = 2 ; FP = 2
+Description: [a1 = 'c', a2 = 'q'], Target: class = 'y' ; Quality Measure WRAcc = 0.125 ; tp = 1 ; fp = 0 ; TP = 2 ; FP = 2
+Description: [a3 = 'h'], Target: class = 'y' ; Quality Measure WRAcc = -0.125 ; tp = 0 ; fp = 1 ; TP = 2 ; FP = 2
+Description: [a3 = 'f'], Target: class = 'y' ; Quality Measure WRAcc = -0.125 ; tp = 0 ; fp = 1 ; TP = 2 ; FP = 2
+Description: [a2 = 's'], Target: class = 'y' ; Quality Measure WRAcc = -0.125 ; tp = 0 ; fp = 1 ; TP = 2 ; FP = 2
+Description: [a1 = 'a'], Target: class = 'y' ; Quality Measure WRAcc = -0.125 ; tp = 0 ; fp = 1 ; TP = 2 ; FP = 2

@@ -29,10 +29,10 @@ class FPTreeForSDMapStar(FPTreeForSDMap):
         :param FP: The number of false positives in the dataset.
         """
         super().__init__()
-        if (type(TP) is not int ):
-            raise TypeError("The TP parameter must be an integer.")
-        if (type(FP) is not int ):
-            raise TypeError("The FP parameter must be an integer.")
+        # if (type(TP) is not int ):
+        #     raise TypeError("The TP parameter must be an integer.")
+        # if (type(FP) is not int ):
+        #     raise TypeError("The FP parameter must be an integer.")
         self._TP = TP
         self._FP = FP
 
@@ -81,10 +81,10 @@ class FPTreeForSDMapStar(FPTreeForSDMap):
         pruned_branches = 0
         while(current_node_in_the_horizontal_list is not None):
             # SDMapStar pruning. We only use the nodes which have an optimistic estimate greater than the minimum optimistic estimate threshold.
-            current_node_tp = current_node_in_the_path.counters[0]
-            current_node_fp = current_node_in_the_path.counters[1]
+            current_node_tp = current_node_in_the_horizontal_list.counters[0]
+            current_node_fp = current_node_in_the_horizontal_list.counters[1]
             dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : current_node_tp, QualityMeasure.FALSE_POSITIVES : current_node_fp, QualityMeasure.TRUE_POPULATION : self._TP, QualityMeasure.FALSE_POPULATION : self._FP}
-            dict_of_parameters.update(self._additional_parameters_for_the_quality_measure)
+            dict_of_parameters.update(additional_parameters)
             oe = optimistic_estimate.compute(dict_of_parameters)
             if oe < min_optimistic_estimate:
                 current_node_in_the_horizontal_list = current_node_in_the_horizontal_list._node_link
