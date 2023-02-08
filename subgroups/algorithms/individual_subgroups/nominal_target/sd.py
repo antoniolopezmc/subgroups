@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 # Contributors:
-#    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
+#    Álvaro Riquelme Tornel <alvaroriquelmetornel@gmail.com>
 
-"""This file contains the implementation of the SDMap algorithm.
+"""This file contains the implementation of the SD algorithm.
 """
 import pandas
 from pandas import DataFrame
