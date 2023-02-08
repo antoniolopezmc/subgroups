@@ -10,6 +10,7 @@ from pandas import DataFrame
 
 # Python annotations.
 from typing import Union
+from subgroups.core.operator import Operator
 
 from subgroups.core.selector import Selector
 from subgroups.core.pattern import Pattern
@@ -18,11 +19,24 @@ from bitarray import bitarray
 class BitsetDictionary(dict):
     """ Internal class to implement the dicttionaries used in the bitset. This dictionary only allows to insert a Pattern or a Selector as key. If a Selector is inserted, it is converted to a Pattern.
     """
+
+    def __iter__(self):
+        for key in super().__iter__():
+            yield Pattern.generate_from_str(key)
+
     def __setitem__(self, key, value) -> None:
         if (type(key)==Selector):
             super().__setitem__(str(Pattern([key])),value)
         elif (type(key)==Pattern):
             super().__setitem__(str(key), value)
+        else:
+            raise TypeError("The key must be a Selector or a Pattern.")
+    
+    def __getitem__(self, key) -> bitarray:
+        if (type(key)==Selector):
+            return super().__getitem__(str(Pattern([key])))
+        elif (type(key)==Pattern):
+            return super().__getitem__(str(key))
         else:
             raise TypeError("The key must be a Selector or a Pattern.")
 
@@ -110,28 +124,27 @@ class BitsetBSD(object):
             # Iterate over dataframe column names, except the target. ONLY DISCRETE/NOMINAL ATTRIBUTES.
             for column in columns_without_target:
                 if (type(pandas_dataframe[column].loc[0]) is str):  # Only check the first element, because all elements of the column are of the same type.
-                    new_selector = Selector(column, Selector.OPERATOR_EQUAL, row[column])
-                    new_selector = str(new_selector)
+                    new_selector = Selector(column, Operator.EQUAL, row[column])
                     if new_selector not in set_of_frequent_selectors:
                         continue
                     list_of_selectors.append(new_selector)
                     if(target_match):
-                        if new_selector not in self.bitset_pos:
-                            self.bitset_pos[new_selector] = (bitarray([0]) * positive_counts)+bitarray([1])
+                        if new_selector not in self._bitset_pos:
+                            self._bitset_pos[new_selector] = (bitarray([0]) * positive_counts)+bitarray([1])
                         else:
-                            self.bitset_pos[new_selector] += [1]
+                            self._bitset_pos[new_selector] += [1]
 
                     else:
-                        if new_selector not in self.bitset_neg:
-                            self.bitset_neg[new_selector] = (bitarray([0]) * negative_counts)+ bitarray([1])
+                        if new_selector not in self._bitset_neg:
+                            self._bitset_neg[new_selector] = (bitarray([0]) * negative_counts)+ bitarray([1])
                         else:
-                            self.bitset_neg[new_selector] += [1]
+                            self._bitset_neg[new_selector] += [1]
 
             if (target_match):
-                self.bitset_pos = self._update_bitset(list_of_selectors,self.bitset_pos)
+                self._bitset_pos = self._update_bitset(list_of_selectors,self._bitset_pos)
                 positive_counts = positive_counts +1
             else:
-                self.bitset_neg = self._update_bitset(list_of_selectors, self.bitset_neg)
+                self._bitset_neg = self._update_bitset(list_of_selectors, self._bitset_neg)
                 negative_counts = negative_counts +1
         self._update_empty_bitsets(positive_counts,negative_counts)
 
@@ -144,19 +157,27 @@ class BitsetBSD(object):
             raise TypeError("Parameter 'positive_counts' must be a int.")
         if type(negative_counts) is not int:
             raise TypeError("Parameter 'negative_counts' must be a int.")
-        for selector in self.bitset_neg.keys():
-            if selector not in self.bitset_pos:
-                self.bitset_pos[selector] = bitarray([0]) * positive_counts
+        for pat in self._bitset_neg:
+            if (len(pat) > 1):
+                #If the pattern is not equivalent to a single selector
+                continue
+            selector = pat.get_selector(0)
+            if selector not in self._bitset_pos:
+                self._bitset_pos[selector] = bitarray([0]) * positive_counts
 
-        for selector in self.bitset_pos.keys():
-            if selector not in self.bitset_neg:
-                self.bitset_neg[selector] = bitarray([0]) * negative_counts
+        for pat in self._bitset_pos:
+            if (len(pat) > 1):
+                #If the pattern is not equivalent to a single selector
+                continue
+            selector = pat.get_selector(0)
+            if selector not in self._bitset_neg:
+                self._bitset_neg[selector] = bitarray([0]) * negative_counts
 
 
 
 
     def _update_bitset(self,selectorsUsed : list,bitset):
-        """Method to update the not added selectors in the bitset
+        """Internal method to update the not added selectors in the bitset
        :type selectorsUsed: List
        :param selectorsUsed: List of selectors
        :type bitset: dict
@@ -164,10 +185,14 @@ class BitsetBSD(object):
        """
         if type(selectorsUsed) is not list:
             raise TypeError("Parameter 'selectorsUsed' must be a list.")
-        if type(bitset) is not dict:
+        if type(bitset) is not BitsetDictionary:
             raise TypeError("Parameter 'bitset' must be a dict.")
 
-        for selector in bitset:
+        for pat in bitset:
+            if (len(pat) > 1):
+                #If the pattern is not equivalent to a selector
+                continue
+            selector = pat.get_selector(0)
             if (selector not in selectorsUsed):
                 bitset[selector] = bitset[selector] + [False]
         return bitset
@@ -216,7 +241,7 @@ class BitsetBSD(object):
                 #   - Because iterrows returns a Series for each row, it does NOT preserve dtypes across the rows (dtypes are preserved across columns for DataFrames).
                 #   - This is important because types in Selector are primitive types of python (and not pandas or numpy types).
                 for index, row in pandas_dataframe.iterrows():
-                    new_selector = Selector(column, Selector.OPERATOR_EQUAL, row[column])
+                    new_selector = Selector(column, Operator.EQUAL, row[column])
                     new_selector = str(new_selector)
                     # IF the selector does not exist in the dict AND the target match.
                     if (new_selector not in final_set_of_frequent_selectors) and (row[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1]):
@@ -235,4 +260,4 @@ class BitsetBSD(object):
         # Sort descending/reverse by value of 'tp'.
         final_list_of_frequent_selectors.sort(key=lambda x: x[1], reverse=True)
         # LIST OF FREQUENT SELECTORS L.
-        return [x[0] for x in final_list_of_frequent_selectors]  # RETURN ONLY THE SELECTORS IN A LIST.
+        return [Selector.generate_from_str(x[0]) for x in final_list_of_frequent_selectors]  # RETURN ONLY THE SELECTORS IN A LIST.

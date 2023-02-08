@@ -11,7 +11,7 @@ from pandas.api.types import is_string_dtype
 from subgroups.algorithms.algorithm import Algorithm
 from subgroups.quality_measures.quality_measure import QualityMeasure
 from subgroups.exceptions import InconsistentMethodParametersError, DatasetAttributeTypeError
-from subgroups.data_structures.bitset_bsd import BitSetBSD, BitsetDictionary
+from subgroups.data_structures.bitset_bsd import BitsetBSD, BitsetDictionary
 from subgroups.core.pattern import Pattern
 from subgroups.core.operator import Operator
 from subgroups.core.selector import Selector
@@ -185,7 +185,7 @@ class BSD(Algorithm):
         return CcondPos,CcondNeg,newSelRel
 
     
-    def _BSD(self,selCond : str, selRel:list, CcondPos:dict, CcondNeg:dict, depth:int) -> list:
+    def _BSD(self,selCond : Pattern, selRel:list, CcondPos:dict, CcondNeg:dict, depth:int) -> list:
         """Private method to run the BSD algorithm and generate frequent patterns.
 
         :param selCond: string of conditioned selectors
@@ -195,8 +195,8 @@ class BSD(Algorithm):
         :param depth: current search depth
         :return: a list of tuples where every element has a frequent patterns (list of selectors) and its support
         """
-        if type(selCond) is not str:
-            raise TypeError("Parameter 'selCond' must be a list.")
+        if type(selCond) is not Pattern:
+            raise TypeError("Parameter 'selCond' must be a Pattern.")
         if type(selRel) is not list:
             raise TypeError("Parameter 'selRel' must be a list.")
         if type(CcondPos) is not BitsetDictionary:
@@ -219,7 +219,7 @@ class BSD(Algorithm):
             tp = self._cardinality(cCurrPos)
             fp = self._cardinality(cCurrNeg)
             if (tp + fp) == 0:
-                self.prunneds += 1
+                self._unselected_subgroups += 1
                 continue
 
             
@@ -235,7 +235,7 @@ class BSD(Algorithm):
             
         # sort the selector by their optimistic estimate
         newSelRel = sorted(newSelRel, reverse=True)
-        if depth < self.maxDepth and newSelRel:
+        if depth < self._maxDepth and newSelRel:
             oe, newSelRelAux = zip(*newSelRel)
             newSelRelAux = list(newSelRelAux)
             for s in newSelRel:
@@ -444,13 +444,13 @@ class BSD(Algorithm):
         self._TP = TP
         self._FP = FP
         # Create an empty BitsetBSD.
-        bitset = BitSetBSD()
+        bitset = BitsetBSD()
         #generate frequent selector
         set_of_frequent_selectors = bitset.generate_set_of_frequent_selectors(pandas_dataframe, tuple_target_attribute_value, self._min_support)
         #build bitsets
         bitset.build_bitset(pandas_dataframe,set_of_frequent_selectors, tuple_target_attribute_value)
         #call BSD algorithm
-        self._BSD(Pattern([]), set_of_frequent_selectors, bitset.biteset_pos, bitset.biteset_neg, 0)
+        self._BSD(Pattern([]), set_of_frequent_selectors, bitset.bitset_pos, bitset.bitset_neg, 0)
         if (self._file_path is not None):
             self._file = open(self._file_path, "w")
             self._to_file(tuple_target_attribute_value)
@@ -461,6 +461,9 @@ class BSD(Algorithm):
         """Internal method to write the result of the algorithm BSD to a text file.
         """
         for element in self._k_subgroups:
+            #Skip the initial subgroup if it is in the list.
+            if element[0]==-99999:
+                continue
             #Create the subgroup.
             pat = element[1]
             subgroup = Subgroup(pat, Selector(tuple_target_attribute_value[0],Operator.EQUAL,tuple_target_attribute_value[1]))
