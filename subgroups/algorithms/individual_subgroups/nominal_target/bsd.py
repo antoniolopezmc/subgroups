@@ -160,16 +160,17 @@ class BSD(Algorithm):
             #if quality > min or k-subgroups is not full
             if quality > self._k_subgroups[0][0] or len(self._k_subgroups) < self.num_subgroups:
                 if selCond:
-                    sg = selCond.copy().add_selector(sCurr)
+                    sg = selCond.copy()
+                    sg.add_selector(sCurr)
                 else:
-                    sg = Pattern(sCurr)
+                    sg = Pattern([sCurr])
                 r= self._checkRel(self._k_subgroups, cCurrPos, cCurrNeg,quality,sg)
                 #r = True
                 if r:
 
                                         # (quality, subgroup, bits)
                     self._k_subgroups.append((quality, sg, cCurrPos + cCurrNeg,oe,(tp,fp)))
-                    self._k_subgroups = sorted(self._k_subgroups, reverse=False)
+                    self._k_subgroups = sorted(self._k_subgroups, reverse=False, key=lambda x: x[0])
                     self._checkRelevancies(cCurrPos, cCurrNeg, sg)
                     if len(self._k_subgroups) > self.num_subgroups:
                         #remove lowest quality subgroup
@@ -223,11 +224,11 @@ class BSD(Algorithm):
                 continue
 
             
-            dict_of_parameter_for_optimistic_estimate = {QualityMeasure.BasicMetric_tp : tp, QualityMeasure.BasicMetric_fp : fp, QualityMeasure.BasicMetric_TP : self._TP, QualityMeasure.BasicMetric_FP : self._FP}
+            dict_of_parameter_for_optimistic_estimate = {QualityMeasure.TRUE_POSITIVES : tp, QualityMeasure.FALSE_POSITIVES : fp, QualityMeasure.TRUE_POPULATION : self._TP, QualityMeasure.FALSE_POPULATION : self._FP}
             dict_of_parameter_for_optimistic_estimate.update(self._additional_parameters_for_the_optimistic_estimate)
             oe = self._optimistic_estimate.compute(dict_of_parameter_for_optimistic_estimate)
 
-            dict_of_parameters_for_quality_measure = {QualityMeasure.BasicMetric_tp: tp, QualityMeasure.BasicMetric_fp: fp,QualityMeasure.BasicMetric_TP: self._TP, QualityMeasure.BasicMetric_FP: self._FP}
+            dict_of_parameters_for_quality_measure = {QualityMeasure.TRUE_POSITIVES: tp, QualityMeasure.FALSE_POSITIVES: fp,QualityMeasure.TRUE_POPULATION: self._TP, QualityMeasure.FALSE_POPULATION: self._FP}
             dict_of_parameters_for_quality_measure.update(self._additional_parameters_for_the_quality_measure)
             quality = self._quality_measure.compute(dict_of_parameters_for_quality_measure)
 
@@ -242,14 +243,15 @@ class BSD(Algorithm):
                 #if optimistic estimate > min
                 if (s[0]> self._k_subgroups[0][0]):
                     if selCond:
-                        selCondAux = selCond.copy().add_selector(s[1])
+                        selCondAux = selCond.copy()
+                        selCondAux.add_selector(s[1])
                     else:
-                        selCondAux = Pattern(s[1])
+                        selCondAux = Pattern([s[1]])
 
                     newSelRelAux.remove(s[1])
                     self._BSD(selCondAux, newSelRelAux, CcondPos, CcondNeg, depth+1)
 
-    def _attach(self,ccurrPos:list,ccurrNeg:list,CcondPos:dict,CcondNeg:dict, sCurr:str, selCond:str) -> tuple[dict,dict]:
+    def _attach(self,ccurrPos:list,ccurrNeg:list,CcondPos:dict,CcondNeg:dict, sCurr:Selector, selCond:Pattern) -> tuple[dict,dict]:
         """Internal method to update the bitsets with de conditioned selector.
 
         :param ccurrPos: bitarray of positive instances
@@ -274,7 +276,8 @@ class BSD(Algorithm):
             raise TypeError("Parameter 'selCond' must be a Pattern.")
 
         if selCond:
-            newSel = selCond.copy().add_selector(sCurr)
+            newSel = selCond.copy()
+            newSel.add_selector(sCurr)
             #update bitsets
             CcondPos[newSel] = ccurrPos
             CcondNeg[newSel] = ccurrNeg
@@ -403,7 +406,7 @@ class BSD(Algorithm):
             raise TypeError("Parameter 'bitarr2' must be a bitarray.")
         if len(bitarr1) != len(bitarr2):
             raise TypeError("Lists must be the same length")
-        rv = []
+        rv = bitarray()
         i = 0
         while i < len(bitarr1):
             rv.append(bitarr1[i] and bitarr2[i])

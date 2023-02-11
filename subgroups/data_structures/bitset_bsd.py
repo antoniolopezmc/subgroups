@@ -39,6 +39,14 @@ class BitsetDictionary(dict):
             return super().__getitem__(str(key))
         else:
             raise TypeError("The key must be a Selector or a Pattern.")
+    
+    def __contains__(self, __o: object) -> bool:
+        if (type(__o)==Selector):
+            return super().__contains__(str(Pattern([__o])))
+        elif (type(__o)==Pattern):
+            return super().__contains__(str(__o))
+        else:
+            raise TypeError("The key must be a Selector or a Pattern.")
 
 
 class BitsetBSD(object):
@@ -116,7 +124,7 @@ class BitsetBSD(object):
         positive_counts = 0
         negative_counts = 0
         for index, row in pandas_dataframe.iterrows():
-            target_match = False;
+            target_match = False
             #if target match
             if(row[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1]):
                 target_match = True
