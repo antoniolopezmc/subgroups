@@ -43,7 +43,6 @@ def _delete_subgroup_parameters_from_a_dictionary(dict_of_parameters: dict[str, 
 def _get_index_dictionary(dataset:pandas.DataFrame):
     """Auxiliary method to calculate the index dictionary, a data structure that maps each column name of a pandas dataframe into its integer value.
 
-    :type dataset: pandas.DataFrame
     :param dataset: Input dataset. It is VERY IMPORTANT to respect the following conditions:
       (1) the dataset must be a pandas dataframe,
       (2) the dataset must not contain missing values,
@@ -70,20 +69,22 @@ class SD(Algorithm):
 
     IMPORTANT NOTE: You must not access directly to the attributes of the objects. You must use the corresponding methods.
 
-    :type g_parameter: int or float
-    :param g_parameter: Generalization parameter.
-    :type min_support: int or float
-    :param min_support: Minimum support that need to have a SUBGROUP to be considered. Value in form of PROPORTION (between 0 and 1).
-    :type beam_width: int
+    This class represents the SDMap algorithm. Two threshold types could be used: (1) the true positives tp and the false positives fp separately or (2) the subgroup description size n (n = tp + fp). This means that: (1) if 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and (2) if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.
+    :param minimum_quality_measure_value: the minimum quality measure value threshold.
+    :param min_support: Minimum support that need to have a subgroup to be considered. Value in form of PROPORTION (between 0 and 1).
     :param beam_width: Width of the beam.
+    :param quality_measure: the quality measure which is used.
+    :param additional_parameters_for_the_quality_measure: if the quality measure passed by parameter needs more parameters apart from tp, fp, TP and FP to be computed, they need to be specified here.
+    :param write_results_in_file: whether the results obtained will be written in a file. By default, False.
+    :param file_path: if 'write_results_in_file' is True, path of the file in which the results will be written.
     """
 
-
-    def __init__(self, g_parameter: Union[int,float], min_support: Union [int,float], beam_width : int,quality_measure : QualityMeasure, minimum_quality_measure_value : Union[int, float], minimum_tp : Union[int, None] = None, minimum_fp : Union[int, None] = None, minimum_n : Union[int, None] = None, additional_parameters_for_the_quality_measure : dict[str, Union[int, float]] = dict(), write_results_in_file : bool = False, file_path : Union[str, None] = None) -> None:
+    __slots__ =( "_minimum_quality_measure_value", "min_support","beam_width","_quality_measure", "_additional_parameters_for_the_quality_measure", "_unselected_subgroups", "_selected_subgroups", "_file_path", "_file")
+    def __init__(self, minimum_quality_measure_value: Union[int,float], min_support: Union [int,float], beam_width : int,quality_measure : QualityMeasure, additional_parameters_for_the_quality_measure : dict[str, Union[int, float]] = dict(), write_results_in_file : bool = False, file_path : Union[str, None] = None) -> None:
         """Method to initialize an object of type 'AlgorithmSD'.
         """
-        if (type(g_parameter) is not int) and (type(g_parameter) is not float):
-            raise TypeError("Parameter 'g_parameter' must be an integer (type 'int') or a float.")
+        if (type(minimum_quality_measure_value) is not int) and (type(minimum_quality_measure_value) is not float):
+            raise TypeError("Parameter 'minimum_quality_measure_value' must be an integer (type 'int') or a float.")
         if (type(min_support) is not int) and (type(min_support) is not float):
             raise TypeError("Parameter 'min_support' must be an integer (type 'int') or a float.")
         if min_support < 0 or min_support > 1 :
@@ -95,14 +96,10 @@ class SD(Algorithm):
         if (write_results_in_file) and (file_path is None):
             raise ValueError(
                 "If the parameter 'write_results_in_file' is True, the parameter 'file_path' must not be None.")
-        self._gParameter = g_parameter
+        self._minimum_quality_measure_value = minimum_quality_measure_value
         self._minSupport = min_support
         self._beamWidth = beam_width
         self._quality_measure = quality_measure
-        self._minimum_quality_measure_value = minimum_quality_measure_value
-        self._minimum_tp = minimum_tp
-        self._minimum_fp = minimum_fp
-        self._minimum_n = minimum_n
         self._unselected_subgroups = 0
         self._selected_subgroups = 0
         self._additional_parameters_for_the_quality_measure = additional_parameters_for_the_quality_measure.copy()
@@ -113,8 +110,8 @@ class SD(Algorithm):
             self._file_path = None
         self._file = None
 
-    def _get_g_parameter(self) -> Union[int,float]:
-        return self._gParameter
+    def _get_minimum_quality_measure_value(self) -> Union[int,float]:
+        return self._minimum_quality_measure_value
 
     def _get_min_support(self) -> Union[int, float]:
         return self._minSupport
@@ -122,13 +119,23 @@ class SD(Algorithm):
     def _get_beam_width(self) -> int:
         return self._beamWidth
 
+    def _get_quality_measure(self) -> QualityMeasure :
+        return self._quality_measure
+    
+    def _unselected_subgroups(self) -> int : 
+        return self._unselected_subgroups
+
+    def _selected_subgroups(self) -> int : 
+        return self._selected_subgroups
+    
+    def _additional_parameters_for_the_quality_measure(self) -> dict :
+        return self._additional_parameters_for_the_quality_measure
+
+
     def _sort_set_l(self,set_l, reverse = False, criterion ='completeSelector'):
         """ Method to sort the set of all feasible attribute values (set of features L) generated by the method 'generateSetL'.
-            :type set_l: list
             :param set_l: Set of all feasible attribute values (set of features L) to be sorted. This method MODIFIES the input parameter. The elements of the set L MUST BE of type 'Selector' (or subclasses).
-            :type reverse: bool
             :param reverse: If 'True', set l will be sorted descending/reverse. If 'False', set l will be sorted ascending. By default, False.
-            :type criterion: str
             :param criterion: Method used for sorting. Possible values: 'completeSelector', 'byAttribute', 'byOperator', 'byValue'. By default, 'completeSelector'.
             :rtype: list
             :return: the parameter set_L after sorting.
@@ -155,22 +162,17 @@ class SD(Algorithm):
         return set_l
 
 
-    def _generate_set_l(self, pandas_dataframe: pandas.DataFrame, tuple_target_attribute_value:tuple[str,str],
-                        binary_attributes=None):
+    def _generate_set_l(self, pandas_dataframe: pandas.DataFrame, tuple_target_attribute_value:tuple[str,str], binary_attributes=None):
         """Method to generate the set of all feasible attribute values (set of features L) used in SD algorithm.
-
-        :type pandas_dataframe: pandas.DataFrame
         :param pandas_dataframe: Input dataset. It is VERY IMPORTANT to respect the following conditions:
           (1) the dataset must be a pandas dataframe,
           (2) the dataset must not contain missing values,
           (3) for each attribute, all its values must be of the same type.
-        :type tuple_target_attribute_value: tuple
         :param tuple_target_attribute_value: Tuple with the name of the target attribute (first element) and with the value of this attribute (second element). EXAMPLE1: ("age", 25). EXAMPLE2: ("class", "Setosa"). It is VERY IMPORTANT to respect the following conditions:
           (1) the name of the target attribute MUST be a string,
           (2) the name of the target attribute MUST exist in the dataset,
           (3) it is VERY IMPORTANT to respect the types of the attributes: the value in the tuple (second element) MUST BE comparable with the values of the corresponding attribute in the dataset,
           (4) the value of the target attribute MUST exist in the dataset.
-        :type binary_attributes: list
         :param binary_attributes: (OPTIONAL) List of categorical values to be considered as binary. It is VERY IMPORTANT to respect the following conditions:
           (1) binary_attributes must be a list,
           (2) binary_attributes must contain only attributes of pandas_dataframe,
@@ -257,12 +259,10 @@ class SD(Algorithm):
 
             It is VERY IMPORTANT to respect the types of the attributes: the value of a selector of the subgroup MUST BE comparable with the value of the corresponding attribute in the dataset.
 
-            :type pandas_dataframe: pandas.DataFrame
             :param pandas_dataframe: Input dataset. It is VERY IMPORTANT to respect the following conditions:
               (1) the dataset must be a pandas dataframe,
               (2) the dataset must not contain missing values,
               (3) for each attribute, all its values must be of the same type.
-            :type subgroup: Subgroup
             :param subgroup: Input subgroup.
             :rtype: tuple
             :return: a tuple with the basic metrics in this order: (tp, fp, TP, FP).
@@ -329,11 +329,11 @@ class SD(Algorithm):
         # Compute the quality measure of the frequent pattern along with the target (i.e., the quality measure of the subgroup).
         dict_of_parameters = {QualityMeasure.TRUE_POSITIVES: tp, QualityMeasure.FALSE_POSITIVES: fp,
                               QualityMeasure.TRUE_POPULATION: TP, QualityMeasure.FALSE_POPULATION: FP ,
-                              "g" : self._get_g_parameter()}
-        dict_of_parameters.update(self._additional_parameters_for_the_quality_measure)
-        quality_measure_value = self._quality_measure.compute(dict_of_parameters)
+                              "g" : self._get_minimum_quality_measure_value()}
+        dict_of_parameters.update(self._get_additional_parameters_for_the_quality_measure())
+        quality_measure_value = self._get_quality_measure().compute(dict_of_parameters)
         # Add the subgroup only if the quality measure value is greater or equal than the threshold.
-        if quality_measure_value >= self._minimum_quality_measure_value:
+        if quality_measure_value >= self._get_minimum_quality_measure_value():
             # If applicable, write in the file defined in the __init__ method.
             if self._file_path is not None:
                 # Get the description and the target.
@@ -346,7 +346,7 @@ class SD(Algorithm):
                 # Write.
                 self._file.write(str(subgroup) + " ; ")
                 self._file.write(
-                    "Quality Measure " + self._quality_measure.get_name() + " = " + str(quality_measure_value) + " ; ")
+                    "Quality Measure " + self._get_quality_measure().get_name() + " = " + str(quality_measure_value) + " ; ")
                 self._file.write("tp = " + str(tp) + " ; ")
                 self._file.write("fp = " + str(fp) + " ; ")
                 self._file.write("TP = " + str(TP) + " ; ")
@@ -360,12 +360,10 @@ class SD(Algorithm):
     def fit(self, pandas_dataframe: DataFrame, tuple_target_attribute_value: tuple[str,str]):
         """Method to run the algorithm SD and generate subgroups.
 
-        :type pandas_dataframe: pandas.DataFrame
         :param pandas_dataframe: Input dataset. It is VERY IMPORTANT to respect the following conditions:
           (1) the dataset must be a pandas dataframe,
           (2) the dataset must not contain missing values,
           (3) for each attribute, all its values must be of the same type.
-        :type tuple_target_attribute_value: tuple
         :param tuple_target_attribute_value: Tuple with the name of the target attribute (first element) and with the value of this attribute (second element). EXAMPLE1: ("age", 25). EXAMPLE2: ("class", "Setosa"). It is VERY IMPORTANT to respect the following conditions:
           (1) the name of the target attribute MUST be a string,
           (2) the name of the target attribute MUST exist in the dataset,
@@ -419,7 +417,7 @@ class SD(Algorithm):
                     current_subgroup_in_beam._get_description().add_selector(l) # Add the selector in L to the pattern of subgroup. It is not necessary to make a copy because a Selector is immutable.
                     # We obtain Qg and support of the new subgroup.
                     current_subgroup_in_beam_BasicMetrics = self._obtain_basic_metrics(pandas_dataframe, current_subgroup_in_beam)
-                    current_subgroup_in_beam_qg = Qg().compute({QualityMeasure.TRUE_POSITIVES : current_subgroup_in_beam_BasicMetrics[0], QualityMeasure.FALSE_POSITIVES : current_subgroup_in_beam_BasicMetrics[1],"g":self._get_g_parameter()})
+                    current_subgroup_in_beam_qg = Qg().compute({QualityMeasure.TRUE_POSITIVES : current_subgroup_in_beam_BasicMetrics[0], QualityMeasure.FALSE_POSITIVES : current_subgroup_in_beam_BasicMetrics[1],"g":self._get_minimum_quality_measure_value()})
                     beam[index][1] = current_subgroup_in_beam_qg # Update the Qg quality measure (second element in the tuple).
                     current_subgroup_in_beam_support = Support().compute({QualityMeasure.TRUE_POSITIVES : current_subgroup_in_beam_BasicMetrics[0], QualityMeasure.TRUE_POPULATION : current_subgroup_in_beam_BasicMetrics[2], QualityMeasure.FALSE_POPULATION : current_subgroup_in_beam_BasicMetrics[3]})
                     # Obtain the worst sublist [subgroup, Qg] of newBeam.
