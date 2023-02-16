@@ -10,7 +10,7 @@ from subgroups.core.selector import Selector
 from subgroups.core.subgroup import Subgroup
 from subgroups.quality_measures.qg import Qg
 from subgroups.quality_measures.quality_measure import QualityMeasure
-from subgroups.algorithms.individual_subgroups.nominal_target.sd_nominal import SD
+from subgroups.algorithms.individual_subgroups.nominal_target.sd import SD
 from subgroups.exceptions import AbstractClassError
 from subgroups.quality_measures.support import Support
 class TestSD(unittest.TestCase):
