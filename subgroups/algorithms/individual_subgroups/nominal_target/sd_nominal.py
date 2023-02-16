@@ -80,7 +80,7 @@ class SD(Algorithm):
     """
 
    # __slots__ =( "g_parameter,_minimum_quality_measure_value","_quality_measure","_additional_parameters_for_the_quality_measure", "beam_width","_unselected_subgroups", "_selected_subgroups", "_file_path", "_file")
-    def __init__(self, g_parameter: Union[int,float], minimum_quality_measure_value: Union[int,float],  beam_width : int = 20 ,write_results_in_file : bool = False, file_path : Union[str, None] = None) -> None:
+    def __init__(self,  minimum_quality_measure_value: Union[int,float], g_parameter: Union[int,float] = 1,  beam_width : int = 20 ,write_results_in_file : bool = False, file_path : Union[str, None] = None) -> None:
         """Method to initialize an object of type 'AlgorithmSD'.
         """
         if (type (g_parameter) is not int) and (type(g_parameter) is not float):
