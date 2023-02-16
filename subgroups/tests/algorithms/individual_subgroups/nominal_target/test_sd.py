@@ -100,7 +100,6 @@ class TestSD(unittest.TestCase):
             input_dataframe = DataFrame({'attr1': ["v3", "v3", "v1", "v4", "v2", "v4"], 'attr2': ["3", "4", "45", "-12", "63", "2"], 'attr3' : ["2.23", "5.98", "-4.268", "12.576", "152.23", "-25.2"], "class" : ["A", "A", "B", "B", "B", "A"]})
             target = ("class", "B")
             sd = SD(2, 0.35, 5, True,"./results.txt")
-            set_l = sd._generate_set_l(input_dataframe, target)
             result = sd.fit(input_dataframe, target)
             self.assertEqual(sd._get_selected_subgroups(), 7)
             self.assertEqual(sd._get_unselected_subgroups(), 10)
@@ -123,7 +122,6 @@ class TestSD(unittest.TestCase):
             input_dataframe = DataFrame({'attr1': ["v3", "v3", "v1", "v4", "v2", "v4"], 'attr2': ["3", "4", "45", "-12", "63", "2"], 'attr3' : ["2.23", "5.98", "-4.268", "12.576", "152.23", "-25.2"], "class" : ["A", "C", "B", "C", "B", "A"]})
             target = ("class", "C")
             sd = SD(5, 0, 7, True,"./results.txt")
-            set_l = sd._generate_set_l(input_dataframe, target)
             result = sd.fit(input_dataframe, target)
             self.assertEqual(sd._get_selected_subgroups(), 18)
             self.assertEqual(sd._get_unselected_subgroups(), 0)
@@ -133,7 +131,6 @@ class TestSD(unittest.TestCase):
                 list_of_written_results.append(str(a) + ", " + str(b))
             print(list_of_written_results)
             list_of_subgroups = [Subgroup.generate_from_str(elem) for elem in list_of_written_results]
-            print(list_of_subgroups)
             self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v1', attr1 != 'v2', attr2 != '2', attr2 != '3'], Target: class = 'C', 0.4"), list_of_subgroups)
             self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v1', attr1 != 'v2', attr2 != '3', attr3 != '-25.2'], Target: class = 'C', 0.4"), list_of_subgroups)
             self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v1', attr1 != 'v2', attr2 != '2', attr3 != '2.23'], Target: class = 'C', 0.4"), list_of_subgroups)
@@ -143,90 +140,70 @@ class TestSD(unittest.TestCase):
             self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v1', attr2 != '2', attr2 != '3', attr3 != '152.23'], Target: class = 'C', 0.4"), list_of_subgroups)
             file_to_read.close()
             remove("./results.txt")
-        '''
-        def test_SD_fit(self) -> None:
-            # TESTS OF ALGORITHM SD.
-            input_dataframe = DataFrame({'attr1': ["v3", "v3", "v1", "v4", "v2", "v4"], 'attr2': ["3", "4", "45", "-12", "63", "2"], 'attr3' : ["2.23", "5.98", "-4.268", "12.576", "152.23", "-25.2"], "class" : ["A", "A", "B", "B", "B", "A"]})
-            input_dataframe_2 = DataFrame({'attr1': ["v3", "v3", "v1", "v4", "v2", "v4"], 'attr2': ["3", "4", "45", "-12", "63", "2"], 'attr3' : ["2.23", "5.98", "-4.268", "12.576", "152.23", "-25.2"], "class" : ["A", "C", "B", "C", "B", "A"]})
-            input_dataframe_3 = DataFrame({'attr1': ["v3", "v3", "v1", "v4", "v2", "v4"], 'attr2': [3, 4, 45, -12, 63, 2], 'attr3' : [2.23, 5.98, -4.268, 12.576, 152.23, -25.2], "class" : ["A", "A", "B", "C", "B", "A"]})
-            
-            algSD_2 = SD(5, 0, 7)
-            set_l_2 = algSD_2._generate_set_l(input_dataframe_2, ("class", "C"))
-            result_2 = algSD_2.fit(input_dataframe_2, ("class", "C"))
-            print("Selected : ",algSD_2._get_selected_subgroups())
-            print("Unselected : ",algSD_2._get_unselected_subgroups())
-            print("** SET L 2 **")
-            for i in set_l_2:
-                print(i)
-            print("** BEAM RESULT 2 **")
-            for [a,b] in result_2:
-                print(str(a) + ", " + str(b))
-            assert(1==0)
-            algSD_3 = SD(2.5, 0.4, 6,Support())
-            set_l_3 = algSD_3._generate_set_l(input_dataframe_3, ("class", "A"))
-            result_3 = algSD_3.fit(input_dataframe_3, ("class", "A"))
-            print("** SET L 3 **")
-            for i in set_l_3:
-                print(i)
-            print("** BEAM RESULT 3 **")
-            for [a,b] in result_3:
-                print(str(a) + ", " + str(b))
-            print("#######################")
-            titanic = read_csv("C:/Users/PC/Desktop/CloudStation/Cosas personales/Beca/TFS/TFG-2020-EnriqueValero-AlgoritmosSubgroup/subgpylib/datasets/titanic_sg.csv")
-            titanic = titanic[["Survived","Pclass","Sex"]]
-            algSD_4 = SD(2, 0.35, 5,Support())
-            set_l_4 = algSD_4._generate_set_l(titanic,("Survived", "No"))
-            result_4 = algSD_4.fit(titanic, ("Survived", "No"))
-            print("** SET L 4 **")
-            for i in set_l_4:
-                print(i)
-            print("** BEAM RESULT 4 **")
-            for [a,b] in result_4:
-                print(str(a) + ", " + str(b))
-            print("#######################")
-            titanic = read_csv("C:/Users/PC/Desktop/CloudStation/Cosas personales/Beca/TFS/TFG-2020-EnriqueValero-AlgoritmosSubgroup/subgpylib/datasets/titanic_sg.csv")
-            titanic = titanic[["Survived","Sex"]]
-            algSD_5 = SD(2, 0.35, 5,Support())
-            set_l_5 = algSD_5._generate_set_l(titanic, ("Survived", "No"))
-            result_5 = algSD_5.fit(titanic, ("Survived", "No"))
-            print("** SET L 5 **")
-            for i in set_l_5:
-                print(i)
-            print("** BEAM RESULT 5 **")
-            for [a,b] in result_5:
-                print(str(a) + ", " + str(b))
-            print("#######################")
-            print("* Set L of titanic. Sort by value.")
-            algSD_4._sort_set_l(set_l_4, criterion = 'byValue')
-            for i in set_l_4:
-                print(i)
-            print("* Set L of titanic. Sort by attribute.")
-            algSD_4._sort_set_l(set_l_4, criterion = 'byAttribute')
-            for i in set_l_4:
-                print(i)
-            print("* Set L of titanic. Sort by operator.")
-            algSD_4._sort_set_l(set_l_4, criterion = 'byOperator')
-            for i in set_l_4:
-                print(i)
-            print("* Set L of titanic. Sort by complete selector.")
-            algSD_4._sort_set_l(set_l_4)
-            for i in set_l_4:
-                print(i)
-            print("#######################")
-            titanic = read_csv("C:/Users/PC/Desktop/CloudStation/Cosas personales/Beca/TFS/TFG-2020-EnriqueValero-AlgoritmosSubgroup/subgpylib/datasets/titanic_sg.csv")
-            titanic = titanic[["Survived","Pclass","Sex"]]
-            algSD_4 = SD(2, 0.35, 5,Support())
-            set_l_4 = algSD_4._generate_set_l(titanic, ("Survived", "No"))
-            #set_l_4 = algSD_4._sort_set_l(set_l_4, criterion = 'byOperator')
-            print(set_l_4)
-            result_4 = algSD_4.fit(titanic, ("Survived", "No"))
-            print("** SET L 4 **")
-            for i in set_l_4:
-                print(i)
-            print("** BEAM RESULT 4 **")
-            for [a,b] in result_4:
-                print(str(a) + ", " + str(b))'''
-            
+        
+        def test_SD_fit_method_3(self) -> None:
+                   # TESTS OF ALGORITHM SD.
+            input_dataframe = DataFrame({'attr1': ["v3", "v3", "v1", "v4", "v2", "v4"], 'attr2': [3, 4, 45, -12, 63, 2], 'attr3' : [2.23, 5.98, -4.268, 12.576, 152.23, -25.2], "class" : ["A", "A", "B", "C", "B", "A"]})
+            sd = SD(2.5, 0.4, 6,True,"./results.txt")
+            target = ("class", "A")
+            result = sd.fit(input_dataframe, target)
+            self.assertEqual(sd._get_selected_subgroups(),19)
+            self.assertEqual(sd._get_unselected_subgroups(),28)
+            list_of_written_results = []
+            file_to_read = open("./results.txt", "r")
+            for [a,b] in result:
+                list_of_written_results.append(str(a) + ", " + str(b))
+            list_of_subgroups = [Subgroup.generate_from_str(elem) for elem in list_of_written_results]
+            self.assertIn(Subgroup.generate_from_str("Description: [attr2 > -4.5, attr2 <= 24.0], Target: class = 'A', 1.2"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [attr2 != -12, attr2 <= 24.0], Target: class = 'A', 1.2"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [attr2 > -4.0, attr2 <= 24.0], Target: class = 'A', 1.2"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [attr2 > -5.0, attr2 <= 24.0], Target: class = 'A', 1.2"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [attr2 <= 24.0, attr3 <= 7.4030000000000005], Target: class = 'A', 1.2"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [attr2 <= 24.0, attr3 <= 9.278], Target: class = 'A', 1.2"), list_of_subgroups)
+            file_to_read.close()
+            remove("./results.txt")
+                
+        def test_SD_fit_method_4(self) -> None:
+            dataset = read_csv("../../../../datasets/csv/titanic.csv")
+            dataset = dataset[["Survived","Pclass","Sex"]]
+            sd = SD(2, 0.35, 5,True,"./results.txt")
+            result = sd.fit(dataset, ("Survived", "No"))
+            self.assertEqual(sd._get_selected_subgroups(),10)
+            self.assertEqual(sd._get_unselected_subgroups(),10)
+            list_of_written_results = []
+            file_to_read = open("./results.txt", "r")
+            for [a,b] in result:
+                list_of_written_results.append(str(a) + ", " + str(b))
+            list_of_subgroups = [Subgroup.generate_from_str(elem) for elem in list_of_written_results]
+            self.assertIn(Subgroup.generate_from_str("Description: [Pclass != 1, Sex = 'male'], Target: Survived = 'No', 5.863636363636363"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [Pclass > 1.0, Sex = 'male'], Target: Survived = 'No', 5.863636363636363"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [Pclass > 1.5, Sex = 'male'], Target: Survived = 'No', 5.863636363636363"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [Pclass != 1, Sex != 'female'], Target: Survived = 'No', 5.863636363636363"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [Pclass > 1.0, Sex != 'female'], Target: Survived = 'No', 5.863636363636363"), list_of_subgroups)
+            file_to_read.close()
+            remove("./results.txt")
+           
+        def test_SD_fit_method_5(self) -> None:
+            dataset = read_csv("../../../../datasets/csv/titanic.csv")
+            dataset = dataset[["Survived","Sex"]]
+            target = ("Survived", "No")
+            sd = SD(2, 0.35, 5,True,"./results.txt")
+            result = sd.fit(dataset, target)
+            self.assertEqual(sd._get_selected_subgroups(),2)
+            self.assertEqual(sd._get_unselected_subgroups(),2)
+            list_of_written_results = []
+            file_to_read = open("./results.txt", "r")
+            for [a,b] in result:
+                list_of_written_results.append(str(a) + ", " + str(b))
+            list_of_subgroups = [Subgroup.generate_from_str(elem) for elem in list_of_written_results]
+            self.assertIn(Subgroup.generate_from_str("Description: [Sex = 'male'], Target: Survived = 'No', 4.18018018018018"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [Sex != 'female'], Target: Survived = 'No', 4.18018018018018"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [Sex = 'male', Sex != 'female'], Target: Survived = 'No', 4.18018018018018"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [], Target: Survived = 'No', 0"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [], Target: Survived = 'No', 0"), list_of_subgroups)
+            file_to_read.close()
+            remove("./results.txt")    
+
 
 if __name__ == '__main__':
     unittest.main(argv=['first-arg-is-ignored'], exit=False)
