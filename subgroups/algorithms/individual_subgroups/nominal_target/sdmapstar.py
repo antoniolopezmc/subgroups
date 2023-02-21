@@ -300,7 +300,7 @@ class SDMapStar(Algorithm):
                     beta_as_Pattern = Pattern(beta_as_list)
 
                 if (self.num_subgroups > 0):
-                    aux = fptree.header_table[selector][0]
+                    aux = fptree.header_table[ai][0]
                     #update k subgroups (tp,fp)
                     self._updateKSubgroups(aux[0],aux[1],TP,FP)
                     # if k subgroups treshold is higher than the optimistic estimate, we omit the conditional tree
