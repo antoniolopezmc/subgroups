@@ -95,6 +95,7 @@ class BSD(Algorithm):
         self._result = []
         self._irrelevants = []
         self._visited_subgroups = 0
+        self._selected_subgroups = 0
         self._unselected_subgroups = 0
         self._additional_parameters_for_the_quality_measure = additional_parameters_for_the_quality_measure.copy()
         _delete_subgroup_parameters_from_a_dictionary(self._additional_parameters_for_the_quality_measure)
@@ -118,6 +119,8 @@ class BSD(Algorithm):
     def _get_max_depth(self) -> int:
         return self._maxDepth
     
+    def _get_selected_subgroups(self) -> int:
+        return self._selected_subgroups
     
     def _get_unselected_subgroups(self) -> int:
         return self._unselected_subgroups
@@ -131,6 +134,7 @@ class BSD(Algorithm):
     num_subgroups = property(_get_num_subgroups, None , None , "The maximum number of subgroups to calculate the prune threshold.")
     max_depth = property(_get_max_depth, None , None , "The maximum depth of the search.")
     unselected_subgroups = property(_get_unselected_subgroups, None , None , "The number of pruned subgroups.")
+    selected_subgroups = property(_get_selected_subgroups, None , None , "The number of selected subgroups.")
     visited_subgroups = property(_get_visited_subgroups, None , None , "The number of visited subgroups.")
 
     def _handle_individual_result(self, individual_result: tuple) -> tuple[BitsetDictionary,BitsetDictionary,list]:
@@ -285,7 +289,7 @@ class BSD(Algorithm):
         return CcondPos, CcondNeg
 
 
-    def _checkRelevancies(self,cCurrPos : bitarray, cCurrNeg : bitarray ,sg : str) -> None:
+    def _checkRelevancies(self,cCurrPos : bitarray, cCurrNeg : bitarray ,sg : Pattern) -> None:
         """Internal method to check relevacies in _k_subgroups.
         :param cCurrPos: bitarray of positive instances
         :param cCurrNeg: bitarray of negative instances
@@ -454,6 +458,10 @@ class BSD(Algorithm):
         bitset.build_bitset(pandas_dataframe,set_of_frequent_selectors, tuple_target_attribute_value)
         #call BSD algorithm
         self._BSD(Pattern([]), set_of_frequent_selectors, bitset.bitset_pos, bitset.bitset_neg, 0)
+        if self._k_subgroups[0][0] == -99999:
+            self._selected_subgroups = len(self._k_subgroups) - 1
+        else:
+            self._selected_subgroups = len(self._k_subgroups)
         if (self._file_path is not None):
             self._file = open(self._file_path, "w")
             self._to_file(tuple_target_attribute_value)

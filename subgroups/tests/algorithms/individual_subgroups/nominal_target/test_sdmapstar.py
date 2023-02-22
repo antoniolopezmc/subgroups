@@ -19,7 +19,7 @@ import unittest
 
 class TestSDMap(unittest.TestCase):
 
-    def test_SDMap_init_method_1(self) -> None:
+    def test_SDMapStar_init_method_1(self) -> None:
         self.assertRaises(TypeError, SDMapStar, "hello", 0.85)
         self.assertRaises(TypeError, SDMapStar, WRAcc(), WRAccOptimisticEstimate1(),"hello")
         self.assertRaises(InconsistentMethodParametersError, SDMapStar, WRAcc(), WRAccOptimisticEstimate1(),0.85)
@@ -42,14 +42,14 @@ class TestSDMap(unittest.TestCase):
         self.assertIsNot(sdmap.additional_parameters_for_the_quality_measure, dictionary)
         self.assertEqual(sdmap.additional_parameters_for_the_quality_measure["g"], 0.5)
 
-    def test_SDMap_init_method_2(self) -> None:
+    def test_SDMapStar_init_method_2(self) -> None:
         SDMapStar(WRAcc(), WRAccOptimisticEstimate1(),-1, minimum_n=0, write_results_in_file=False)
         SDMapStar(WRAcc(), WRAccOptimisticEstimate1(),-1, minimum_n=0, write_results_in_file=False, file_path="./sdfsdfs/adrwfxc") # Path does not exist, but it does not matter because the flag is False.
         self.assertRaises(TypeError, SDMapStar, WRAcc(), WRAccOptimisticEstimate1(),-1, minimum_n=0, write_results_in_file=True, file_path=24) # If 'file_path' is present, it must be of type str, no matter the flag.
         self.assertRaises(TypeError, SDMapStar, WRAcc(), WRAccOptimisticEstimate1(),-1, minimum_n=0, write_results_in_file=False, file_path=24) # If 'file_path' is present, it must be of type str, no matter the flag.
         self.assertRaises(ValueError, SDMapStar, WRAcc(), WRAccOptimisticEstimate1(),-1, minimum_n=0, write_results_in_file=True, file_path=None) # If 'write_results_in_file' is True, 'file_path' must not be None.
 
-    def test_SDMap_fpgrowth_method_1(self) -> None:
+    def test_SDMapStar_fpgrowth_method_1(self) -> None:
         df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
         target = ("class", "y")
         TP = 2
@@ -65,7 +65,7 @@ class TestSDMap(unittest.TestCase):
         self.assertEqual(sdmap.unselected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 25)
 
-    def test_SDMap_fpgrowth_method_2(self) -> None:
+    def test_SDMapStar_fpgrowth_method_2(self) -> None:
         df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
         target = ("class", "y")
         TP = 2
@@ -81,7 +81,7 @@ class TestSDMap(unittest.TestCase):
         self.assertEqual(sdmap.unselected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 2)
 
-    def test_SDMap_fpgrowth_method_3(self) -> None:
+    def test_SDMapStar_fpgrowth_method_3(self) -> None:
         df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
         target = ("class", "y")
         TP = 2
@@ -98,7 +98,7 @@ class TestSDMap(unittest.TestCase):
         self.assertEqual(sdmap.unselected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 2)
 
-    def test_SDMap_fpgrowth_method_4(self) -> None:
+    def test_SDMapStar_fpgrowth_method_4(self) -> None:
         df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
         target = ("class", "y")
         TP = 2
@@ -115,7 +115,7 @@ class TestSDMap(unittest.TestCase):
         self.assertEqual(sdmap.unselected_subgroups, 0)
         self.assertEqual(sdmap.visited_nodes, 13)
 
-    def test_SDMap_fit_method_1(self) -> None:
+    def test_SDMapStar_fit_method_1(self) -> None:
         df = DataFrame({"class" : [0,1,2,2]}) # The class must be nominal (type 'str').
         sdmap = SDMapStar(WRAcc(), WRAccOptimisticEstimate1(),0.85, minimum_tp=0, minimum_fp=0)
         self.assertRaises(DatasetAttributeTypeError, sdmap.fit, df, ("class", 0))
@@ -126,7 +126,7 @@ class TestSDMap(unittest.TestCase):
         sdmap = SDMapStar(WRAcc(), WRAccOptimisticEstimate1(),0.85, minimum_tp=0, minimum_fp=0)
         self.assertRaises(DatasetAttributeTypeError, sdmap.fit, df, ("class", "0"))
 
-    def test_SDMap_fit_method_2(self) -> None:
+    def test_SDMapStar_fit_method_2(self) -> None:
         df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
         target = ("class", "y")
         # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
@@ -168,7 +168,7 @@ class TestSDMap(unittest.TestCase):
         file_to_read.close()
         remove("./results.txt")
 
-    def test_SDMap_fit_method_3(self) -> None:
+    def test_SDMapStar_fit_method_3(self) -> None:
         df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
         target = ("class", "y")
         # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
@@ -187,7 +187,7 @@ class TestSDMap(unittest.TestCase):
         file_to_read.close()
         remove("./results.txt")
 
-    def test_SDMap_fit_method_4(self) -> None:
+    def test_SDMapStar_fit_method_4(self) -> None:
         df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
         target = ("class", "y")
         # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
@@ -206,7 +206,7 @@ class TestSDMap(unittest.TestCase):
         file_to_read.close()
         remove("./results.txt")
 
-    def test_SDMap_fit_method_5(self) -> None:
+    def test_SDMapStar_fit_method_5(self) -> None:
         df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
         target = ("class", "y")
         # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
@@ -236,7 +236,7 @@ class TestSDMap(unittest.TestCase):
         file_to_read.close()
         remove("./results.txt")
 
-    def test_SDMap_fit_method_6(self) -> None:
+    def test_SDMapStar_fit_method_6(self) -> None:
         df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
         target = ("class", "y")
         # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
@@ -266,7 +266,7 @@ class TestSDMap(unittest.TestCase):
         file_to_read.close()
         remove("./results.txt")
 
-    def test_SDMap_fit_method_7(self) -> None:
+    def test_SDMapStar_fit_method_7(self) -> None:
         df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
         target = ("class", "y")
         # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
@@ -295,7 +295,7 @@ class TestSDMap(unittest.TestCase):
         file_to_read.close()
         remove("./results.txt")
 
-    def test_SDMap_fit_method_8(self) -> None:
+    def test_SDMapStar_fit_method_8(self) -> None:
         df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
         target = ("class", "y")
         # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
@@ -324,7 +324,7 @@ class TestSDMap(unittest.TestCase):
         file_to_read.close()
         remove("./results.txt")
 
-    def test_SDMap_fit_method_9(self) -> None:
+    def test_SDMapStar_fit_method_9(self) -> None:
         df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
         target = ("class", "y")
         # IMPORTANT: the subgroup parameter TP will be deleted in the __init__ method.
@@ -345,7 +345,7 @@ class TestSDMap(unittest.TestCase):
         remove("./results.txt")
 
 
-    def test_SDMap_additional_parameters_in_fit_method(self) -> None:
+    def test_SDMapStar_additional_parameters_in_fit_method(self) -> None:
         sdmap_1 = SDMapStar(WRAcc(), WRAccOptimisticEstimate1(),-1, minimum_tp=1, minimum_fp=1, additional_parameters_for_the_quality_measure={"tp" : 10, "fp" : 20, "TP" : 100, "FP" : 200})
         self.assertEqual(len(sdmap_1._additional_parameters_for_the_quality_measure), 0)
         sdmap_2 = SDMapStar(WRAcc(), WRAccOptimisticEstimate1(),-1, minimum_tp=1, minimum_fp=1, additional_parameters_for_the_quality_measure={"tp" : 10, "fp" : 20, "TP" : 1000})
@@ -353,7 +353,7 @@ class TestSDMap(unittest.TestCase):
         sdmap_3 = SDMapStar(WRAcc(), WRAccOptimisticEstimate1(),-1, minimum_tp=1, minimum_fp=1, additional_parameters_for_the_quality_measure={"tp" : 10, "fp" : 20, "TP" : 100, "FP" : 200, "g" : 0.1})
         self.assertEqual(len(sdmap_3._additional_parameters_for_the_quality_measure), 1)
 
-    def test_SDMap_unselected_and_selected_subgroups(self) -> None:
+    def test_SDMapStar_unselected_and_selected_subgroups_1(self) -> None:
         df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
         target = ("class", "y")
         # ---------------------------------------
@@ -438,5 +438,24 @@ class TestSDMap(unittest.TestCase):
         self.assertEqual(sdmap.selected_subgroups, 0)
         self.assertEqual(sdmap.unselected_subgroups, 25)
         self.assertEqual(sdmap.visited_nodes, 25)
+
+    def test_SDMapStar_unselected_and_selected_subgroups_2(self) -> None:
+        df = DataFrame({"a1" : ["a","b","c","c"], "a2" : ["q","q","s","q"], "a3" : ["f","g","h","k"], "class" : ["n","y","n","y"]})
+        target = ("class", "y")
+        # ---------------------------------------
+        sdmap = SDMapStar(WRAcc(), WRAccOptimisticEstimate1(),-1, minimum_n=0,num_subgroups=15)  # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
+        sdmap.fit(df, target)
+        self.assertEqual(sdmap.selected_subgroups, 25)
+        self.assertEqual(sdmap.unselected_subgroups, 0)
+        self.assertEqual(sdmap.visited_nodes, 25)
+        self.assertEqual(sdmap.conditional_pruned_branches, 0)
+        # ---------------------------------------
+        sdmap = SDMapStar(WRAcc(), WRAccOptimisticEstimate1(),-1, minimum_n=0,num_subgroups=10)  # IMPORTANT: WRAcc quality measure is defined between -1 and 1.
+        sdmap.fit(df, target)
+        self.assertEqual(sdmap.selected_subgroups, 13)
+        self.assertEqual(sdmap.unselected_subgroups, 0)
+        self.assertEqual(sdmap.visited_nodes, 13)
+        self.assertEqual(sdmap.conditional_pruned_branches, 1)
+       
 
 unittest.main()
