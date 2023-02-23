@@ -14,11 +14,6 @@ from subgroups.core.pattern import Pattern
 from subgroups.core.selector import Selector
 from subgroups.quality_measures.wracc import WRAcc
 from subgroups.quality_measures.wracc_optimistic_estimate_1 import WRAccOptimisticEstimate1
-from subgroups.quality_measures.qg import Qg
-from subgroups.exceptions import InconsistentMethodParametersError, DatasetAttributeTypeError, ParameterNotFoundError
-from subgroups.data_structures.bitset_bsd import BitsetDictionary, BitsetBSD
-from subgroups.core.subgroup import Subgroup
-from os import remove
 import unittest
 
 
