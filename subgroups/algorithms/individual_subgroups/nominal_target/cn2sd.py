@@ -18,7 +18,7 @@ from subgroups.core.subgroup import Subgroup
 from math import inf, isinf
 from typing import Union
 
-def _get_index_dictionary(self, dataset):
+def _get_index_dictionary( dataset):
         """Auxiliary method to calculate the index dictionary, a data structure that maps each column name of a pandas dataframe into its integer value.
 
         :type pandas_dataframe: pandas.DataFrame
@@ -460,31 +460,31 @@ class CN2SD(Algorithm):
         if not isinstance(subgroup, Subgroup):
             raise TypeError("Parameter 'subgroup' must be of type 'Subgroup' (or subclasses).")
         # We need to use the condition of the subgroup (Pattern) and the target variable (Selector) separatly.
-        subgroup_condition = subgroup.getCondition()
-        subgroup_target = subgroup.getTarget()
+        subgroup_condition = subgroup._get_description()
+        subgroup_target = subgroup._get_target()
         # We initialize the basic metrics that we want to obtain.
         tp = 0
         fp = 0
         TP = 0
         FP = 0
 
-        index_dict = self._get_index_dictionary(dataset)
+        index_dict = _get_index_dictionary(dataset)
         row_index = 0
         for row in dataset.itertuples(False):
             # FIRST: we check the condition of the subgroup.
             subgroup_condition_and_row_match = True # Variable to control if the condition of the subgroup and the row match. Initially, yes.
             index_in_subgroup_condition = 0 # Index over the selectors of the condition of the subgroup.
             while (index_in_subgroup_condition < len(subgroup_condition)) and (subgroup_condition_and_row_match): # Iterate over the selectors of the condition of the subgroup.
-                current_selector = subgroup_condition.getListOfSelectors()[index_in_subgroup_condition]
+                current_selector = subgroup_condition.get_list_of_selectors()[index_in_subgroup_condition]
                 try: # IMPORTANT: If the attribute of the selector is not in the dataset, an exception of pandas (KeyError) will be raised.
                     # If one of the selectors of the condition of the subgroup does not match, the condition of the subgroup does not match (and we can go to the next row).
-                    subgroup_condition_and_row_match = current_selector.match(current_selector.getAttribute(), row[index_dict[current_selector.getAttribute()]])
+                    subgroup_condition_and_row_match = current_selector.match(current_selector._get_attribute_name(), row[index_dict[current_selector._get_attribute_name()]])
                 except KeyError as e:
                     subgroup_condition_and_row_match = False
                 index_in_subgroup_condition = index_in_subgroup_condition + 1
             # SECOND: we check the target variable of the subgroup.
             try:
-                subgroup_target_and_row_match = subgroup_target.match(subgroup_target.getAttribute(), row[index_dict[subgroup_target.getAttribute()]])
+                subgroup_target_and_row_match = subgroup_target.match(subgroup_target._get_attribute_name(), row[index_dict[subgroup_target._get_attribute_name()]])
             except KeyError as e:
                 subgroup_target_and_row_match = False
             # FINALLY, we check the results.
