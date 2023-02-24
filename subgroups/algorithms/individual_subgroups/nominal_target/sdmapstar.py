@@ -116,13 +116,16 @@ class SDMapStar(Algorithm):
             _delete_subgroup_parameters_from_a_dictionary(self._additional_parameters_for_the_quality_measure)
             self._additional_parameters_for_the_optimistic_estimate = additional_parameters_for_the_optimistic_estimate.copy()
             _delete_subgroup_parameters_from_a_dictionary(self._additional_parameters_for_the_optimistic_estimate)
+            #We only save the results in a file if 'write_results_in_file' is True.
             if (write_results_in_file):
                 self._file_path = file_path
             else:
                 self._file_path = None
             self._file = None
+            #quality measure of the best k subgroups. This list is sorted in ascending order.
             self._k_subgroups = []
             self._pruned_subgroups = 0
+            #pruned branches when building conditional fptrees
             self._conditional_pruned_branches = 0
         else:
             raise InconsistentMethodParametersError("If 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.")
@@ -254,6 +257,7 @@ class SDMapStar(Algorithm):
                     index = index + 1
                 tp = fptree.header_table[most_unfrequent_selector][0][0]
                 fp = fptree.header_table[most_unfrequent_selector][0][1]
+                #If num_subgroups = 0, we do not use the SDMapStar optimizations.
                 if (self.num_subgroups > 0):
                     #update the K subgroups
                     self._updateKSubgroups(tp,fp,TP,FP)
@@ -261,30 +265,29 @@ class SDMapStar(Algorithm):
                     dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : tp, QualityMeasure.FALSE_POSITIVES : fp, QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
                     dict_of_parameters.update(self._additional_parameters_for_the_optimistic_estimate)
                     oe = self._optimistic_estimate.compute(dict_of_parameters)
+                    #k_subgroups is sorted, so the first element is the worst subgroup
                     if (self.k_subgroups[0] > oe):
                         self._pruned_subgroups += 1
                         continue
                 # Handle this result.
                 self._handle_individual_result( (pattern, target, tp, fp, TP, FP) )
         else:
-
-            optimistics_estimates = []
             sorted_selectors = []
             if (self.num_subgroups > 0):
-                # sort the selectors to select the most promising first
+                # SDMapStar optimization: sort the selectors to select the most promising first using the optimistic estimate
                 for selector in fptree.header_table:
-
                     #calculate the optimistic estimate
                     tp = fptree.header_table[selector][0][0]
                     fp = fptree.header_table[selector][0][1]
                     dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : tp, QualityMeasure.FALSE_POSITIVES : fp, QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
                     dict_of_parameters.update(self._additional_parameters_for_the_optimistic_estimate)
                     oe = self._optimistic_estimate.compute(dict_of_parameters)
-                    #optimistics_estimates.append(oe)
+                    #We store the optimistic estimate and the selector together to sort them
                     sorted_selectors.append((oe,selector))
                 # sort the selector by their optimistic estimate
                 optimistics_estimates, sorted_selectors = zip(*sorted(sorted_selectors,reverse=True))
             else:
+                #If num_subgroups = 0, we do not use the SDMapStar optimizations.
                 sorted_selectors = fptree.header_table
 
             # Iterate throughout the selectors in the sorted header table of the fptree.
@@ -303,10 +306,11 @@ class SDMapStar(Algorithm):
                     aux = fptree.header_table[ai][0]
                     #update k subgroups (tp,fp)
                     self._updateKSubgroups(aux[0],aux[1],TP,FP)
-                    # if k subgroups treshold is higher than the optimistic estimate, we omit the conditional tree
+                    # if k subgroups threshold is higher than the optimistic estimate, we omit the conditional tree
                     dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : aux[0], QualityMeasure.FALSE_POSITIVES : aux[1], QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
                     dict_of_parameters.update(self._additional_parameters_for_the_optimistic_estimate)
                     oe = self._optimistic_estimate.compute(dict_of_parameters)
+                    #k_subgroups is sorted, so the first element is the worst subgroup
                     if (self.k_subgroups[0] > oe):
                         self._pruned_subgroups += 1
                         continue
@@ -330,7 +334,7 @@ class SDMapStar(Algorithm):
 
                     
     def _updateKSubgroups(self,tp:int,fp:int,TP:int,FP:int) -> None:
-        """Internal method to update k subgroups.
+        """Internal method to update and sort k subgroups.
         :param tp: true positives
         :param fp: false positives
 
@@ -339,10 +343,16 @@ class SDMapStar(Algorithm):
             raise TypeError("Parameter 'tp' must be a int.")
         if (type(fp) is not int):
             raise TypeError("Parameter 'fp' must be a int.")
-        # if (type(TP) is not int):
-        #     raise TypeError("Parameter 'TP' must be a int.")
-        # if (type(FP) is not int):
-        #     raise TypeError("Parameter 'FP' must be a int.")
+        if (type(TP) is not int):
+            try:
+                TP = int(TP)
+            except:
+                raise TypeError("Parameter 'TP' must be a int.",type(TP))
+        if (type(FP) is not int):
+            try:
+                FP = int(FP)
+            except:
+                raise TypeError("Parameter 'FP' must be a int.")
 
         dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : tp, QualityMeasure.FALSE_POSITIVES : fp, QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
         dict_of_parameters.update(self._additional_parameters_for_the_optimistic_estimate)
