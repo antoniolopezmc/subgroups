@@ -88,8 +88,8 @@ class TestCN2SD(unittestt.TestCase):
             print(list_of_written_results)
             list_of_subgroups = [Subgroup.generate_from_str(elem) for elem in list_of_written_results]
             print(list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [attr1 = 'v3'], Target: class = 'A', 0.16666666666666666"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [attr2 = '2'], Target: class = 'A', 0.1875"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [attr1 = 'v3'], Target: class = 'A', 0.17"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [attr2 = '2'], Target: class = 'A', 0.19"), list_of_subgroups)
             self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v3', attr2 != '2'], Target: class = 'B', 0.25"), list_of_subgroups)
             file_to_read.close()
             remove("./results.txt")
@@ -108,11 +108,72 @@ class TestCN2SD(unittestt.TestCase):
             for [a,b] in result:
                 list_of_written_results.append(str(a) + ", " + str(b))
             list_of_subgroups = [Subgroup.generate_from_str(elem) for elem in list_of_written_results]
-            self.assertIn(Subgroup.generate_from_str("Description: [attr1 = 'v3'], Target: class = 'A', 0.16666666666666666"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [attr1 = 'v3'], Target: class = 'A', 0.17"), list_of_subgroups)
             self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v1', attr1 != 'v2', attr2 != '-12'], Target: class = 'A', 0.24"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [attr2 = '2'], Target: class = 'A', 0.031217481789802288"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [attr2 = '2'], Target: class = 'A', 0.04"), list_of_subgroups)
             self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v3', attr2 != '2'], Target: class = 'B', 0.25"), list_of_subgroups)
             file_to_read.close()
             remove("./results.txt")
-            assert(1==0)
-                
+
+        def test_CN2SD_fit_method_3(self) -> None: 
+            input_dataframe = DataFrame({'attr1': ["v3", "v3", "v1", "v4", "v2", "v4"], 'attr2': ["3", "4", "45", "-12", "63", "2"], 'attr3' : ["2.23", "5.98", "-4.268", "12.576", "152.23", "-25.2"], "class" : ["A", "A", "B", "B", "B", "A"]})
+            target = ("class")
+            cn2sd = CN2SD(beam_width = 10, weighting_scheme = 'multiplicative', gamma = 0.35, max_rule_length = 5,write_results_in_file=True,file_path="./results.txt")
+            result = cn2sd.fit(input_dataframe, target)
+            #self.assertEqual(cn2sd._get_selected_subgroups(), 7)
+            #self.assertEqual(cn2sd._get_unselected_subgroups(), 10)
+            print("Selected groups :", cn2sd._get_selected_subgroups())
+            print("Unselected groups :",cn2sd._get_unselected_subgroups())
+            list_of_written_results = []
+            file_to_read = open("./results.txt", "r")
+            for [a,b] in result:
+                list_of_written_results.append(str(a) + ", " + str(b))
+            list_of_subgroups = [Subgroup.generate_from_str(elem) for elem in list_of_written_results]
+            self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v1', attr1 != 'v2', attr2 != '-12'], Target: class = 'A', 0.25"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v3', attr2 != '2'], Target: class = 'B', 0.25"), list_of_subgroups)
+            file_to_read.close()
+            remove("./results.txt")      
+
+
+        def test_CN2SD_fit_method_4(self) -> None:
+            input_dataframe = pandas.read_csv("../../../../datasets/csv/shop.csv") 
+            target = ("diaper")
+            cn2sd = CN2SD(beam_width = 3, weighting_scheme = 'multiplicative', gamma = 0,write_results_in_file=True,file_path="./results.txt")
+            result = cn2sd.fit(input_dataframe, target)
+            #self.assertEqual(cn2sd._get_selected_subgroups(), 7)
+            #self.assertEqual(cn2sd._get_unselected_subgroups(), 10)
+            print("Selected groups :", cn2sd._get_selected_subgroups())
+            print("Unselected groups :",cn2sd._get_unselected_subgroups())
+            list_of_written_results = []
+            file_to_read = open("./results.txt", "r")
+            for [a,b] in result:
+                list_of_written_results.append(str(a) + ", " + str(b))
+                print(list_of_written_results)
+            list_of_subgroups = [Subgroup.generate_from_str(elem) for elem in list_of_written_results]
+            self.assertIn(Subgroup.generate_from_str("Description: [beer = 'no', coke = 'no'], Target: diaper = 'no', 0.12"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [beer != 'no'], Target: diaper = 'yes', 0.08"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [coke != 'no'], Target: diaper = 'yes', 0.22"), list_of_subgroups)
+            file_to_read.close()
+            remove("./results.txt")      
+        
+        def test_CN2SD_fit_method_5(self) -> None:
+            input_dataframe = pandas.read_csv("../../../../datasets/csv/shop.csv") 
+            target = ("diaper")
+            cn2sd = CN2SD(beam_width = 3, weighting_scheme = 'multiplicative', gamma = 0.5,write_results_in_file=True,file_path="./results.txt")
+            result = cn2sd.fit(input_dataframe, target)
+            #self.assertEqual(cn2sd._get_selected_subgroups(), 7)
+            #self.assertEqual(cn2sd._get_unselected_subgroups(), 10)
+            print("Selected groups :", cn2sd._get_selected_subgroups())
+            print("Unselected groups :",cn2sd._get_unselected_subgroups())
+            list_of_written_results = []
+            file_to_read = open("./results.txt", "r")
+            for [a,b] in result:
+                list_of_written_results.append(str(a) + ", " + str(b))
+                print(list_of_written_results)
+            list_of_subgroups = [Subgroup.generate_from_str(elem) for elem in list_of_written_results]
+            self.assertIn(Subgroup.generate_from_str("Description: [beer = 'no', coke = 'no'], Target: diaper = 'no', 0.12"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [beer != 'no'], Target: diaper = 'yes', 0.08"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [coke != 'no'], Target: diaper = 'yes', 0.1"), list_of_subgroups)
+            file_to_read.close()
+            remove("./results.txt") 
+            

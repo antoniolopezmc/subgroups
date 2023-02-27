@@ -203,7 +203,3 @@ class TestSD(unittest.TestCase):
             self.assertIn(Subgroup.generate_from_str("Description: [], Target: Survived = 'No', 0"), list_of_subgroups)
             file_to_read.close()
             remove("./results.txt")    
-
-
-if __name__ == '__main__':
-    unittest.main(argv=['first-arg-is-ignored'], exit=False)

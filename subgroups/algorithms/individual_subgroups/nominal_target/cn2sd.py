@@ -557,4 +557,4 @@ class CN2SD(Algorithm):
                 self._selected_subgroups = self._selected_subgroups + 1
         else: # If the quality measure is not greater or equal, increment the number of unselected subgroups.
             self._unselected_subgroups = self._unselected_subgroups + 1
-        return quality_measure_value
+        return round(quality_measure_value,2)
