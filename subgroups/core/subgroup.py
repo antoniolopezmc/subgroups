@@ -94,6 +94,45 @@ It is formed by the following elements: \
         description = Pattern.generate_from_str(input_str_split[0][13:]) # [13:] -> Delete the initial string "Description: ".
         return Subgroup(description, target)
     
+    
+    def match_element(self, transaction, index_dict) :
+        """Method to check if an example (also called element, row or object of a database) is covered by a subgroup. Unlike with the coversTransaction method, the input is named tuple, not a pandas.DataFrame
+    
+        :type transaction: tuple
+        :param transaction: Element of the database (row) that will be checked.
+        :type index_dict: dict
+        :param index_dict: python dictionary that matches the pandas indexing (names of the columns) with the integer indexing
+        :rtype: bool
+        :return: True if the subgroup covers the transaction. False otherwise
+        """
+        
+        '''
+        # No need to check the parameters, it will be done by the Selectors
+        if not isinstance(transaction, tuple) :
+            raise TypeError("Parameter 'transaction' must be a tuple.")
+        for i in transaction :
+            if type(i) is not int and type(i) is not float and type(i) is not str :
+                raise TypeError("Parameter 'transaction': the elements of the tuple must be integer, float or string.")
+        
+        if type(index_dict) is not dict :
+            raise TypeError("Parameter 'index_dict' must be a python dictionary.")
+        # Check if each key match just one integer index
+        if len(transaction) != len(index_dict) :
+            raise TypeError("Parameter 'index_dict': each key does not a map a unique integer value (transaction and index_dict have differente lenght).")
+        index_int_list = [*range(0,len(transaction),1)]
+        for i in index_dict :
+            try: 
+                index_int_list.remove(index_dict[i])
+            except ValueError as e:
+                raise TypeError("Parameter 'index_dict': each key does not a map a unique integer value (couldn't match the key "+ i +" with an integer value).")
+        '''
+                
+        if not self._get_description().match_element(transaction, index_dict) :
+            return False
+        if not self._get_target().match(self._get_target()._get_attribute_name(), transaction[index_dict[self._get_target()._get_attribute_name()]]) :
+            return False
+        return True   
+    
     def __eq__(self, other : 'Subgroup') -> bool:
         if not isinstance(other, Subgroup):
             raise TypeError("You are making a comparison with an object which is not an instance of the 'Subgroup' class or of a subclass thereof.")

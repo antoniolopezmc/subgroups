@@ -80,6 +80,38 @@ class Selector(object):
         # Evaluate the complete expression and return the result.
         return (attribute_name == self.attribute_name) and (self.operator.evaluate(value, self.value))
     
+    def match_element(self, transaction, index_dict):
+        """Method to check if a transaction (also called element, row or object of a database) satisfies a the selector.
+    
+        :type transaction: tuple
+        :param transaction: Element of the database (row) that will be checked.
+        :type index_dict: dict
+        :param index_dict: python dictionary that matches the pandas indexing (names of the columns) with the integer indexing
+        :rtype: bool
+        :return: True if the subgroup covers the transaction. False otherwise
+        """
+        
+        if not isinstance(transaction, tuple) :
+            raise TypeError("Parameter 'transaction' must be a tuple.")
+        for i in transaction :
+            if type(i) is not int and type(i) is not float and type(i) is not str :
+                raise TypeError("Parameter 'transaction': the elements of the tuple must be integer, float or string.")
+        
+        if type(index_dict) is not dict :
+            raise TypeError("Parameter 'index_dict' must be a python dictionary.")
+        # Check if each key match just one integer index
+        if len(transaction) != len(index_dict) :
+            raise TypeError("Parameter 'index_dict': each key does not a map a unique integer value (transaction and index_dict have differente lenght).")
+        index_int_list = [*range(0,len(transaction),1)]
+        for i in index_dict :
+            try: 
+                index_int_list.remove(index_dict[i])
+            except ValueError as e:
+                raise TypeError("Parameter 'index_dict': each key does not a map a unique integer value (couldn't match the key "+ i +" with an integer value).")
+        
+        return self.match(self._get_attribute_name(), transaction[index_dict[self._get_attribute_name()]])
+
+    
     @staticmethod
     def generate_from_str(input_str : str) -> 'Selector':
         """Static method to generate a Selector from a str.

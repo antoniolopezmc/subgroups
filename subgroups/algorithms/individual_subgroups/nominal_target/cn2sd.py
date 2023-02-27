@@ -3,12 +3,12 @@
 # Contributors:
 #    Álvaro Riquelme Tornel <alvaroriquelmetornel@gmail.com>
 
-"""This file contains the implementation of the SD algorithm.
+"""This file contains the implementation of the CN2SD algorithm.
 """
 import pandas
 from pandas import DataFrame
 from subgroups.algorithms.algorithm import Algorithm
-from subgroups.quality_measures import Qg, Support
+from subgroups.quality_measures import WRAcc
 from subgroups.quality_measures.quality_measure import QualityMeasure
 from subgroups.exceptions import EmptyDatasetError
 from subgroups.core.pattern import Pattern
@@ -39,6 +39,8 @@ def _get_index_dictionary( dataset):
             index_dict.update({column : i})
             i = i + 1     
         return index_dict 
+
+
 
 class CN2SD(Algorithm):
     """This class represents the algorithm SD (Subgroup Discovery).
@@ -90,12 +92,14 @@ class CN2SD(Algorithm):
         self._max_rule_length = max_rule_length
         self._unselected_subgroups = 0
         self._selected_subgroups = 0
-
+        
         if write_results_in_file:
             self._file_path = file_path
         else:
             self._file_path = None
         self._file = None
+
+
 
     def _get_gamma(self) -> Union[int,float]:
         return self._gamma
@@ -118,7 +122,7 @@ class CN2SD(Algorithm):
     def _get_file(self) -> Union[int,float]:
         return self._file
 
-    def fit(self, dataset, target_attribute, binary_attributes = []) :
+    def fit(self, dataset : DataFrame, target_attribute : str , binary_attributes = []) :
         """Method to run the algorithm CN2 and generate subgroups considering all the values of the target attribute.
 
         :type dataset: pandas.DataFrame
@@ -245,30 +249,30 @@ class CN2SD(Algorithm):
             best_condition, quality = self._find_best_condition_(dataset, weights, target_value, selector_list)
             if best_condition != Pattern([]) : 
                 # We build a subgroup  with the best condition and add it to the list
-                subgroup = Subgroup(best_condition, Selector(target_value[0], Selector.OPERATOR_EQUAL, target_value[1]))
+                subgroup = Subgroup(best_condition, Selector(target_value[0], Operator.EQUAL, target_value[1]))
                 if subgroup not in [[ i for i, j in subgroup_list ], [ j for i, j in subgroup_list ]][0]  :
                     subgroup_list.append((subgroup, quality))
                 
                 # Apply the covering algorithm
                 # First, we need to get the association between pandas indexing and array indexing
-                index = self._get_index_dictionary(dataset)  
-                if self._get_weighting_scheme == 'aditive' :
+                index = _get_index_dictionary(dataset)  
+                if self._get_weighting_scheme() == 'aditive' :
                     # Aditive covering algorithm
                     i = 0
                     for row in dataset.itertuples(False) :
-                        if subgroup.matchElement(row, index) :
+                        if subgroup.match_element(row, index) :
                             if weights[i] > 0:
                                 weights[i] = 1/(1/weights[i] + 1)
                                 if weights[i] < 0.1 :
                                     weights[i] = 0
                         i = i + 1
                 
-                elif self._get_weighting_scheme == 'multiplicative' :
+                elif self._get_weighting_scheme() == 'multiplicative' :
                     # Multiplicative covering algorithm (using gamma)
                     i = 0
                     for row in dataset.itertuples(False) :
-                        if subgroup.matchElement(row, index) :
-                            weights[i] = weights[i] * self._get_gamma
+                        if subgroup.match_element(row, index) :
+                            weights[i] = weights[i] * self._get_gamma()
                             if weights[i] < 0.1 :
                                 weights[i] = 0
                         i = i + 1
@@ -277,7 +281,7 @@ class CN2SD(Algorithm):
         return subgroup_list
     
     def _find_best_condition_(self, dataset, weights, target_value, selector_list):
-        target_selector = Selector(target_value[0], Selector.OPERATOR_EQUAL, target_value[1])
+        target_selector = Selector(target_value[0], Operator.EQUAL, target_value[1])
         # List of potential conditions for the induced subgroup (type = list of Pattern).
         # It should be initialized as empty, but if we do so, we won't be able to iterate over it the first time
         # Being so, we decided to put and empty condition (empty Pattern)
@@ -293,22 +297,28 @@ class CN2SD(Algorithm):
             for b in beam :
                 for selector in selector_list :
                     new_b = b.copy()
-                    new_b.addSelector(selector)
+                    new_b.add_selector(selector)
                     new_b_metrics = self._obtain_basic_metrics(dataset, weights, Subgroup(new_b, target_selector))
-                    new_b_WRAcc = self._handle_individual_result(new_b_metrics)
+                    print("New b metrics : ",new_b_metrics)
+                    print("new b : ", new_b)
+                    new_b_WRAcc = self._handle_individual_result((new_b,target_value,new_b_metrics),best_WRAcc)
+                   #dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : new_b_metrics[0], QualityMeasure.FALSE_POSITIVES : new_b_metrics[1], QualityMeasure.TRUE_POPULATION : new_b_metrics[2], QualityMeasure.FALSE_POPULATION : new_b_metrics[3]}
+                   #new_b_WRAcc = WRAcc().compute(dict_of_parameters)
                     if new_b not in beam and new_b not in new_beam and new_b_WRAcc != 0:
                         # Do an ordered insertion with some characteristics. Not specified in the pseudocode, but it will improve the efficiency:
                         #    Just add the subgroup new_b to new_beam if it will improve new_beam or the length of new_beam is lower than the user specified maximum beam width
                         i = 0
                         while i < len(new_beam) :
                             i_metrics = self._obtain_basic_metrics(dataset, weights, Subgroup(new_beam[i], target_selector))
-                            i_WRAcc = self._handle_individual_result(i_metrics)
+                            #dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : i_metrics[0], QualityMeasure.FALSE_POSITIVES : i_metrics[1], QualityMeasure.TRUE_POPULATION : i_metrics[2], QualityMeasure.FALSE_POPULATION : i_metrics[3]}
+                            #i_WRAcc = WRAcc().compute(dict_of_parameters)
+                            i_WRAcc = self._handle_individual_result((new_beam[i],target_value,i_metrics),best_WRAcc)
                             if new_b_WRAcc > i_WRAcc :
                                 break
                             i = i + 1
                         new_beam.insert(i,new_b)
-                        if len(new_beam) > self._get_beam_width :
-                            new_beam.pop(self._get_beam_width)
+                        if len(new_beam) > self._get_beam_width() :
+                            new_beam.pop(self._get_beam_width())
 
             # Remove from new_beam the elements in beam
             # Done while iterating
@@ -321,20 +331,20 @@ class CN2SD(Algorithm):
             # according to its WRAcc    
             if new_beam != [] :
                 new_beam_best_metrics = self._obtain_basic_metrics(dataset, weights, Subgroup(new_beam[0], target_selector))
-                new_beam_best_WRAcc = self._handle_individual_result(new_beam_best_metrics)
-                if new_beam_best_WRAcc > best_WRAcc : # and SubgroupForCN2SD(new_beam[0], target_selector) not in founded :
+                new_beam_best_WRAcc = self._handle_individual_result((new_beam[0],target_value,new_beam_best_metrics),best_WRAcc)
+                if new_beam_best_WRAcc > best_WRAcc :
                     best_condition = new_beam[0]
                     best_WRAcc = new_beam_best_WRAcc
             
             # Remove the worst elements in new_beam until its size == beam_width (user-defined size of the beam)
-            new_beam = new_beam[:self._get_beam_width]      
+            new_beam = new_beam[:self._get_beam_width()]      
               
             # Let beam be the new_beam  
             beam = new_beam
             size = size + 1
             
             # Repeat until no elements in beam
-            if beam == [] or size >= self._get_max_rule_length :
+            if beam == [] or size >= self._get_max_rule_length() :
                 break
         
         return (best_condition, best_WRAcc)
@@ -382,14 +392,14 @@ class CN2SD(Algorithm):
                 if column in binary_attributes :
                     bin_values = pandas_dataframe[column]
                     for value in bin_values :
-                        final_set_l[Selector(column, Selector.OPERATOR_EQUAL, value) ] = None
+                        final_set_l[Selector(column, Operator.EQUAL, value) ] = None
                 else :
-                    index_dict = self._get_index_dictionary(pandas_dataframe)
+                    index_dict = _get_index_dictionary(pandas_dataframe)
                     for row in pandas_dataframe.itertuples(False):
                         if (row[index_dict[tuple_target_attribute_value[0]]] == tuple_target_attribute_value[1]): # If the example/row is positive.
-                            final_set_l[Selector(column, Selector.OPERATOR_EQUAL, row[index_dict[column]]) ] = None
+                            final_set_l[Selector(column, Operator.EQUAL, row[index_dict[column]]) ] = None
                         elif (row[index_dict[tuple_target_attribute_value[0]]] != tuple_target_attribute_value[1]): # If the example/row is negative.
-                            final_set_l[Selector(column, Selector.OPERATOR_NOT_EQUAL, row[index_dict[column]]) ] = None
+                            final_set_l[Selector(column, Operator.NOT_EQUAL, row[index_dict[column]]) ] = None
             elif (type(pandas_dataframe[column].iloc[0].item()) is float):
                 # If the attribute is continuous, we have to get the positive examples and the negative examples.
                 pandas_dataframe_positive_examples = pandas_dataframe[ pandas_dataframe[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1] ]
@@ -399,8 +409,8 @@ class CN2SD(Algorithm):
                 index_dict_negative_examples = self._get_index_dictionary(pandas_dataframe_negative_examples)
                 for positive_example_row in pandas_dataframe_positive_examples.itertuples(False):
                     for negative_example_row in pandas_dataframe_negative_examples.itertuples(False):
-                        final_set_l[ Selector(column, Selector.OPERATOR_LESS_OR_EQUAL, (positive_example_row[index_dict_positive_examples[column]]+negative_example_row[index_dict_negative_examples[column]])/2) ] = None
-                        final_set_l[ Selector(column, Selector.OPERATOR_GREATER, (positive_example_row[index_dict_positive_examples[column]]+negative_example_row[index_dict_negative_examples[column]])/2) ] = None
+                        final_set_l[ Selector(column, Operator.LESS_OR_EQUAL, (positive_example_row[index_dict_positive_examples[column]]+negative_example_row[index_dict_negative_examples[column]])/2) ] = None
+                        final_set_l[ Selector(column, Operator.GREATER, (positive_example_row[index_dict_positive_examples[column]]+negative_example_row[index_dict_negative_examples[column]])/2) ] = None
             elif (type(pandas_dataframe[column].iloc[0].item()) is int):
                 # If the attribute is an integer, we have to get the positive examples and the negative examples.
                 pandas_dataframe_positive_examples = pandas_dataframe[ pandas_dataframe[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1] ]
@@ -410,10 +420,10 @@ class CN2SD(Algorithm):
                 index_dict_negative_examples = self._get_index_dictionary(pandas_dataframe_negative_examples)
                 for positive_example_row in pandas_dataframe_positive_examples.itertuples(False):
                     for negative_example_row in pandas_dataframe_negative_examples.itertuples(False):
-                        final_set_l[ Selector(column, Selector.OPERATOR_LESS_OR_EQUAL, (positive_example_row[index_dict_positive_examples[column]]+negative_example_row[index_dict_negative_examples[column]])/2) ] = None
-                        final_set_l[ Selector(column, Selector.OPERATOR_GREATER, (positive_example_row[index_dict_positive_examples[column]]+negative_example_row[index_dict_negative_examples[column]])/2) ] = None
-                        final_set_l[ Selector(column, Selector.OPERATOR_EQUAL, positive_example_row[index_dict_positive_examples[column]]) ] = None
-                        final_set_l[ Selector(column, Selector.OPERATOR_NOT_EQUAL, negative_example_row[index_dict_negative_examples[column]]) ] = None
+                        final_set_l[ Selector(column, Operator.LESS_OR_EQUAL, (positive_example_row[index_dict_positive_examples[column]]+negative_example_row[index_dict_negative_examples[column]])/2) ] = None
+                        final_set_l[ Selector(column, Operator.GREATER, (positive_example_row[index_dict_positive_examples[column]]+negative_example_row[index_dict_negative_examples[column]])/2) ] = None
+                        final_set_l[ Selector(column, Operator.EQUAL, positive_example_row[index_dict_positive_examples[column]]) ] = None
+                        final_set_l[ Selector(column, Operator.NOT_EQUAL, negative_example_row[index_dict_negative_examples[column]]) ] = None
         # In variable 'final_set_l', we do not have duplicates. Now, we have to return it as list.
         return list(final_set_l)        
        
@@ -453,7 +463,6 @@ class CN2SD(Algorithm):
                 raise TypeError("Parameter 'weights' must have the same number of elements that rows in the dataset")
             for i in weights :
                 if not ((type(i) is int or type(i) is float) and (i >= 0 and i <= 1)) :
-                    print(weights)
                     raise TypeError("Parameter 'weights': The elements of the list must be int or float in range [0,1]")
 
         # Check if the 'parameter' subgroup is correct
@@ -467,27 +476,42 @@ class CN2SD(Algorithm):
         fp = 0
         TP = 0
         FP = 0
-
+       # print("---------------Dataset------------")
+       # print(dataset)
         index_dict = _get_index_dictionary(dataset)
+      #  print("*******Index_Dict**********")
+      #  print(index_dict)
         row_index = 0
         for row in dataset.itertuples(False):
+            #print("---------row----------")
+            #print(row)
             # FIRST: we check the condition of the subgroup.
             subgroup_condition_and_row_match = True # Variable to control if the condition of the subgroup and the row match. Initially, yes.
             index_in_subgroup_condition = 0 # Index over the selectors of the condition of the subgroup.
             while (index_in_subgroup_condition < len(subgroup_condition)) and (subgroup_condition_and_row_match): # Iterate over the selectors of the condition of the subgroup.
                 current_selector = subgroup_condition.get_list_of_selectors()[index_in_subgroup_condition]
+                #print("Current selector : ",current_selector)
                 try: # IMPORTANT: If the attribute of the selector is not in the dataset, an exception of pandas (KeyError) will be raised.
                     # If one of the selectors of the condition of the subgroup does not match, the condition of the subgroup does not match (and we can go to the next row).
                     subgroup_condition_and_row_match = current_selector.match(current_selector._get_attribute_name(), row[index_dict[current_selector._get_attribute_name()]])
+                 #   print("Subgroup condition and row match : " ,subgroup_condition_and_row_match)
                 except KeyError as e:
                     subgroup_condition_and_row_match = False
                 index_in_subgroup_condition = index_in_subgroup_condition + 1
+
             # SECOND: we check the target variable of the subgroup.
+           
+            #print("Subgroup target : ", subgroup_target._get_attribute_name(), row[index_dict[subgroup_target._get_attribute_name()]])
             try:
                 subgroup_target_and_row_match = subgroup_target.match(subgroup_target._get_attribute_name(), row[index_dict[subgroup_target._get_attribute_name()]])
+                #print("Subgroup target and row match : " ,subgroup_target_and_row_match)
             except KeyError as e:
                 subgroup_target_and_row_match = False
-            # FINALLY, we check the results.
+                # FINALLY, we check the results.
+                #print(row_index , current_selector , (current_selector._get_attribute_name(), row[index_dict[current_selector._get_attribute_name()]]))
+                #print(row_index , subgroup_condition_and_row_match) 
+                #print (row_index , subgroup_target, subgroup_target._get_attribute_name(), row[index_dict[subgroup_target._get_attribute_name()]] )
+                #print(row_index , subgroup_target_and_row_match)
             if (subgroup_condition_and_row_match) and (subgroup_target_and_row_match):
                 tp = tp + weights[row_index]         
             if (subgroup_condition_and_row_match) and (not subgroup_target_and_row_match):
@@ -500,36 +524,39 @@ class CN2SD(Algorithm):
             row_index = row_index + 1
         return tp,fp,TP,FP      
  
-    def _handle_individual_result(self, individual_result : tuple[Pattern, tuple[str, str], int, int, int, int]) -> None:
+    def _handle_individual_result(self, individual_result: tuple[Pattern, tuple[str, str], int, int, int, int], best_Wracc) -> float:
         """Private method to handle each individual result generated by the SDMap algorithm.
         
         :param individual_result: the individual result which is handled. In this case, it is a subgroup description, a target as a tuple and the subgroup parameters tp, fp, TP and FP.
         """
+        print("Individual result : ", individual_result)
         # Get the subgroup parameters.
-        tp = individual_result[2]
-        fp = individual_result[3]
-        TP = individual_result[4]
-        FP = individual_result[5]
+        tp = individual_result[2][0]
+        fp = individual_result[2][1]
+        TP = individual_result[2][2]
+        FP = individual_result[2][3]
         # Compute the quality measure of the frequent pattern along with the target (i.e., the quality measure of the subgroup).
         dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : tp, QualityMeasure.FALSE_POSITIVES : fp, QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
-        dict_of_parameters.update(self._additional_parameters_for_the_quality_measure)
-        quality_measure_value = self._quality_measure.compute(dict_of_parameters)
+        quality_measure_value = WRAcc().compute(dict_of_parameters)
         # If applicable, write in the file defined in the __init__ method.
-        if self._file_path is not None:
-            # Get the description and the target.
-            subgroup_description = individual_result[0]
-            target_as_tuple = individual_result[1] # Attribute name -> target_as_tuple[0], Attribute value -> target_as_tuple[1]
-            # Create the subgroup.
-            subgroup = Subgroup(subgroup_description, Selector(target_as_tuple[0], Operator.EQUAL, target_as_tuple[1]))
-            # Write.
-            self._file.write(str(subgroup) + " ; ")
-            self._file.write("Quality Measure " + "WRACC" + " = " + str(quality_measure_value) + " ; ")
-            self._file.write("tp = " + str(tp) + " ; ")
-            self._file.write("fp = " + str(fp) + " ; ")
-            self._file.write("TP = " + str(TP) + " ; ")
-            self._file.write("FP = " + str(FP) + "\n")
-        # Increment the number of selected subgroups.
-            self._selected_subgroups = self._selected_subgroups + 1
+        if quality_measure_value >= best_Wracc:
+            if self._file_path is not None:
+                # Get the description and the target.
+                subgroup_description = individual_result[0]
+                target_as_tuple = individual_result[1] # Attribute name -> target_as_tuple[0], Attribute value -> target_as_tuple[1]
+                # Create the subgroup.
+                subgroup = Subgroup(subgroup_description, Selector(target_as_tuple[0], Operator.EQUAL, target_as_tuple[1]))
+                
+                # Write.
+                self._file = open(self._file_path, "w")
+                self._file.write(str(subgroup) + " ; ")
+                self._file.write("Quality Measure " + "WRACC" + " = " + str(quality_measure_value) + " ; ")
+                self._file.write("tp = " + str(tp) + " ; ")
+                self._file.write("fp = " + str(fp) + " ; ")
+                self._file.write("TP = " + str(TP) + " ; ")
+                self._file.write("FP = " + str(FP) + "\n")
+            # Increment the number of selected subgroups.
+                self._selected_subgroups = self._selected_subgroups + 1
         else: # If the quality measure is not greater or equal, increment the number of unselected subgroups.
             self._unselected_subgroups = self._unselected_subgroups + 1
         return quality_measure_value

@@ -129,6 +129,22 @@ class Pattern(object):
             return refinement_of_itself
         else:
             return self_as_set.issubset(refinement_candidate_as_set)
+    def match_element(self, transaction, index_dict) :
+        
+        """Method to check if a transaction (also called element, row or object of a database) is covered by a pattern (list of selectors).
+    
+        :type transaction: tuple
+        :param transaction: Element of the database (row) that will be checked.
+        :type index_dict: dict
+        :param index_dict: python dictionary that matches the pandas indexing (names of the columns) with the integer indexing
+        :rtype: bool
+        :return: True if the subgroup covers the transaction. False otherwise
+        """
+        
+        for i in self.get_list_of_selectors() :
+            if not i.match_element(transaction, index_dict) :
+                return False
+        return True
     
     @staticmethod
     def generate_from_str(input_str : str) -> 'Pattern':

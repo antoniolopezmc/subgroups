@@ -44,6 +44,7 @@ class WRAcc(QualityMeasure):
         fp = dict_of_parameters[QualityMeasure.FALSE_POSITIVES]
         TP = dict_of_parameters[QualityMeasure.TRUE_POPULATION]
         FP = dict_of_parameters[QualityMeasure.FALSE_POPULATION]
+        if tp+fp == 0 : return 0
         return ( (tp+fp) / (TP+FP) ) * ( ( tp / (tp+fp) ) - ( TP / (TP+FP) ) ) 
         
     def get_name(self) -> str:
