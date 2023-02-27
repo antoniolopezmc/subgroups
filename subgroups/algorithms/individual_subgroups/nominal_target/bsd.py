@@ -88,12 +88,12 @@ class BSD(Algorithm):
         self._quality_measure = quality_measure
         self._optimistic_estimate = optimistic_estimate
         self._num_subgroups = num_subgroups
-                        #(quality, subgroup, bits)
-        self._k_subgroups = [(-99999,Pattern([]),[])]
+        # We initialize the list of subgroups with a dummy subgroup.
+                        #(quality, subgroup, bits, optimistic_estimate,(tp,fp))
+        self._k_subgroups = [(-99999,Pattern([]),bitarray(),-99999,(0,0))]
         self._TP = 0
         self._FP = 0
-        self._result = []
-        self._irrelevants = []
+        self._irrelevants = []  #List of unselected subgroups.
         self._visited_subgroups = 0
         self._selected_subgroups = 0
         self._unselected_subgroups = 0
@@ -101,6 +101,7 @@ class BSD(Algorithm):
         _delete_subgroup_parameters_from_a_dictionary(self._additional_parameters_for_the_quality_measure)
         self._additional_parameters_for_the_optimistic_estimate = additional_parameters_for_the_optimistic_estimate.copy()
         _delete_subgroup_parameters_from_a_dictionary(self._additional_parameters_for_the_optimistic_estimate)
+        # We only write the results in a file if the parameter 'write_results_in_file' is True.
         if (write_results_in_file):
                 self._file_path = file_path
         else:
@@ -157,27 +158,32 @@ class BSD(Algorithm):
         fp = individual_result[10]
         
 
-        # if optimistic estimate > min or k-subgroups is not full
+        # if optimistic estimate > quality of worst subgroup or k-subgroups is not full
         if(oe > self._k_subgroups[0][0] or len(self._k_subgroups) < self.num_subgroups):
+            # Add the current selector to the list of new selectors added to the conditional pattern
             newSelRel.append((oe, sCurr))
+            # Add the current selector with the pattern to the dictionaries of positive and negative entries
             CcondPos,CcondNeg = self._attach(cCurrPos, cCurrNeg, CcondPos, CcondNeg, sCurr, selCond)
             #if quality > min or k-subgroups is not full
             if quality > self._k_subgroups[0][0] or len(self._k_subgroups) < self.num_subgroups:
+                # sg = conditional pattern + current selector
                 if selCond:
                     sg = selCond.copy()
                     sg.add_selector(sCurr)
                 else:
                     sg = Pattern([sCurr])
                 r= self._checkRel(self._k_subgroups, cCurrPos, cCurrNeg,quality,sg)
-                #r = True
+                # If the subgroup is relevant, we add it to the list of k-subgroups
                 if r:
 
-                                        # (quality, subgroup, bits)
+                                        # (quality, subgroup, bits, optimistic_estimate,(tp,fp))
                     self._k_subgroups.append((quality, sg, cCurrPos + cCurrNeg,oe,(tp,fp)))
                     self._k_subgroups = sorted(self._k_subgroups, reverse=False, key=lambda x: x[0])
+                    # Check if the subgroups in k_subgroups are still relevant
                     self._checkRelevancies(cCurrPos, cCurrNeg, sg)
+                    # If k_subgroups is full, remove the subgroup with the lowest quality
                     if len(self._k_subgroups) > self.num_subgroups:
-                        #remove lowest quality subgroup
+                        # Remove lowest quality subgroup
                         self._k_subgroups.pop(0)
                         self._unselected_subgroups += 1
                 else:
@@ -211,6 +217,7 @@ class BSD(Algorithm):
         if type(depth) is not int:
             raise TypeError("Parameter 'depth' must be a int.")
 
+        #List of relevant selectors to be evaluated with the current conditioned selectors (only used for next recursive calls)
         newSelRel = []
         for sCurr in selRel:
             #if selCond is empty
@@ -218,15 +225,18 @@ class BSD(Algorithm):
                 cCurrPos = CcondPos[sCurr]
                 cCurrNeg = CcondNeg[sCurr]
             else:
+                # Calculate cCurrPos and cCurrNeg as the intersection of the bitsets of the current conditioned selectors and the current selector
                 cCurrPos = self._logicalAnd(CcondPos[sCurr], CcondPos[selCond])
                 cCurrNeg = self._logicalAnd(CcondNeg[sCurr], CcondNeg[selCond])
-            #calculate tp and fp
+            # Calculate tp and fp
             tp = self._cardinality(cCurrPos)
             fp = self._cardinality(cCurrNeg)
+            # If the pattern does not appear in the dataset, it is not evaluated
             if (tp + fp) == 0:
                 self._unselected_subgroups += 1
                 continue
 
+            # Calculate optimistic estimate and quality measure to handle the current pattern
             
             dict_of_parameter_for_optimistic_estimate = {QualityMeasure.TRUE_POSITIVES : tp, QualityMeasure.FALSE_POSITIVES : fp, QualityMeasure.TRUE_POPULATION : self._TP, QualityMeasure.FALSE_POPULATION : self._FP}
             dict_of_parameter_for_optimistic_estimate.update(self._additional_parameters_for_the_optimistic_estimate)
@@ -238,8 +248,9 @@ class BSD(Algorithm):
 
             CcondPos,CcondNeg,newSelRel = self._handle_individual_result((selCond, sCurr, oe, quality,CcondPos,CcondNeg, cCurrPos, cCurrNeg,newSelRel,tp,fp))
             
-        # sort the selector by their optimistic estimate
+        # Sort the selectors by their optimistic estimate
         newSelRel = sorted(newSelRel, reverse=True)
+        # If the current depth is less than the maximum depth and we have more selectors, we continue the search
         if depth < self._maxDepth and newSelRel:
             oe, newSelRelAux = zip(*newSelRel)
             newSelRelAux = list(newSelRelAux)
@@ -252,11 +263,12 @@ class BSD(Algorithm):
                     else:
                         selCondAux = Pattern([s[1]])
 
+                    # We remove the selector from the list of relevant selectors to avoid evaluating it again
                     newSelRelAux.remove(s[1])
                     self._BSD(selCondAux, newSelRelAux, CcondPos, CcondNeg, depth+1)
 
     def _attach(self,ccurrPos:list,ccurrNeg:list,CcondPos:dict,CcondNeg:dict, sCurr:Selector, selCond:Pattern) -> tuple[dict,dict]:
-        """Internal method to update the bitsets with de conditioned selector.
+        """Internal method to update the bitsets with de conditioned pattern and the current selector.
 
         :param ccurrPos: bitarray of positive instances
         :param ccurrNeg: bitarray of negative instances
@@ -280,6 +292,7 @@ class BSD(Algorithm):
             raise TypeError("Parameter 'selCond' must be a Pattern.")
 
         if selCond:
+            #newsel = selCond + sCurr
             newSel = selCond.copy()
             newSel.add_selector(sCurr)
             #update bitsets
@@ -290,7 +303,7 @@ class BSD(Algorithm):
 
 
     def _checkRelevancies(self,cCurrPos : bitarray, cCurrNeg : bitarray ,sg : Pattern) -> None:
-        """Internal method to check relevacies in _k_subgroups.
+        """Internal method to check relevacies in _k_subgroups after the addition of a new subgroups sg.
         :param cCurrPos: bitarray of positive instances
         :param cCurrNeg: bitarray of negative instances
         :param sg: Pattern in _k_subgroups used to check relevancies
@@ -303,13 +316,16 @@ class BSD(Algorithm):
         if type(sg) is not Pattern:
             raise TypeError("Parameter 'sg' must be a Pattern.")
 
-        if len(self._k_subgroups[0][2]) == 0:
+        # Eliminate the dummy subgroup
+        if len(self._k_subgroups[0][1]) == 0:
             self._k_subgroups.pop(0)
 
+        # New list of k_subgroups
         aux =[]
         FPSg = self._cardinality(cCurrNeg)
         for tuple in self._k_subgroups:
 
+            # Current subgroup is the same as the new subgroup
             if tuple[1] == sg:
                 # tuple is relevant
                 aux.append(tuple)
@@ -319,6 +335,7 @@ class BSD(Algorithm):
             #Calculate tp tuple and sg
             TPAnd = self._cardinality(self._logicalAnd(cCurrPos, tuple[2][:len(cCurrPos)]))
 
+            # If positive instances of the tuple are not included in the new subgroup, the tuple is relevant
             if TPTuple > TPAnd:
                 #tuple is relevant
                 aux.append(tuple)
@@ -326,6 +343,8 @@ class BSD(Algorithm):
 
             FPAnd = self._cardinality(self._logicalAnd(cCurrNeg,tuple[2][-len(cCurrNeg):]))
 
+            # If negative instances of the new subgroup are included in the tuple (and positives of the tuple are included in the new subgroup),
+            # the tuple is irrelevant
             if FPAnd == FPSg:
                 #tuple is irrelevant
                 self._unselected_subgroups += 1
@@ -370,6 +389,7 @@ class BSD(Algorithm):
             #tp of Scurr AND tuple
             TPAnd = self._cardinality(self._logicalAnd(ccurrPos,tuple[2][:len(ccurrPos)]))
 
+            # If positives instances of sCurr are not included in the tuple, sCurr is relevant
             if TPAnd < TPSCurr:
                 #Scurr is relevant for tuple
                 continue
@@ -377,6 +397,8 @@ class BSD(Algorithm):
             FPTuple = self._cardinality(tuple[2][-len(ccurrNeg):])
             #fp of Scurr AND tuple
             FPAnd = self._cardinality(self._logicalAnd(ccurrNeg,tuple[2][-len(ccurrNeg):]))
+            # If positives instances of sCurr are included in the tuple and negatives instances of the tuple are included in sCurr,
+            # sCurr is irrelevant
             if FPAnd == FPTuple:
                 self._irrelevants.append((sCurr, quality, bits))
                 return False
@@ -458,6 +480,7 @@ class BSD(Algorithm):
         bitset.build_bitset(pandas_dataframe,set_of_frequent_selectors, tuple_target_attribute_value)
         #call BSD algorithm
         self._BSD(Pattern([]), set_of_frequent_selectors, bitset.bitset_pos, bitset.bitset_neg, 0)
+        # We do not count the initial subgroup.
         if self._k_subgroups[0][0] == -99999:
             self._selected_subgroups = len(self._k_subgroups) - 1
         else:

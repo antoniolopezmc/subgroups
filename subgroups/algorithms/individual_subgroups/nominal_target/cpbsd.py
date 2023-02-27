@@ -39,24 +39,29 @@ class CPBSD(BSD):
 
         # if optimistic estimate > min or k-subgroups is not full
         if(oe > self._k_subgroups[0][0] or len(self._k_subgroups) < self.num_subgroups):
+            # Add the current selector to the list of new selectors added to the conditional pattern
             newSelRel.append((oe, sCurr))
+            # Add the current selector with the pattern to the dictionaries of positive and negative entries
             CcondPos,CcondNeg = self._attach(cCurrPos, cCurrNeg, CcondPos, CcondNeg, sCurr, selCond)
             #if quality > min or k-subgroups is not full
             if quality > self._k_subgroups[0][0] or len(self._k_subgroups) < self.num_subgroups:
+                # sg = conditional pattern + current selector
                 if selCond:
                     sg = selCond.copy().add_selector(sCurr)
                 else:
                     sg = Pattern(sCurr)
                 r= self._checkRel(self._k_subgroups, cCurrPos,quality,sg)
-                #r = True
+                # If the subgroup is relevant, we add it to the list of k-subgroups
                 if r:
 
-                                        # (quality, subgroup, bits)
+                                        # (quality, subgroup, bits, optimistic_estimate,(tp,fp))
                     self._k_subgroups.append((quality, sg, cCurrPos + cCurrNeg,oe,(tp,fp)))
                     self._k_subgroups = sorted(self._k_subgroups, reverse=False)
+                    # Check if the subgroups in k_subgroups are still relevant
                     self._checkRelevancies(cCurrPos, sg,quality)
+                    # If k_subgroups is full, remove the subgroup with the lowest quality
                     if len(self._k_subgroups) > self.num_subgroups:
-                        #remove lowest quality subgroup
+                        # Remove lowest quality subgroup
                         self._k_subgroups.pop(0)
                         self._unselected_subgroups += 1
                 else:
@@ -81,23 +86,26 @@ class CPBSD(BSD):
         if type(sg) is not Pattern:
             raise TypeError("Parameter 'sg' must be a Pattern.")
 
-        if len(self._k_subgroups[0][2]) == 0:
+        # Eliminate the dummy subgroup
+        if len(self._k_subgroups[0][1]) == 0:
             self._k_subgroups.pop(0)
 
-        
+        # New list of k_subgroups
         aux =[]
         for tuple in self._k_subgroups:
             i = 0
             rel = False
+            # If the subgroup in the list is the one we are checking in this call or they have different quality --> is relevant
             if tuple[1] == sg or tuple[0] != quality:
                 rel = True
             while i < len(ccurrPos) and not rel:
-                # if bits is False and tuple is True --> is relevant
+                # If the new subgroup does not contain the positve instances of the old subgroup --> is relevant
                 if tuple[2][i] and not ccurrPos[i]:
                     rel = True
 
                 i = i + 1
 
+            # We add the old subgroup to the new list of k_subgroups if it is relevant
             if rel:
                 aux.append(tuple)
             else:
@@ -130,17 +138,18 @@ class CPBSD(BSD):
         if not res[0][1]:
             return True
         for tuple in res:
+            # If the quality is not the same --> is relevant
             if(tuple[0] == quality):
                 i = 0
                 rel = False
                 while i < len(ccurrPos):
-                    #if ccurrPos is True and tuple is False --> is relevant
+                    # If the old subgroup does not contain the positive instances of the new subgroup --> is relevant
                     if not tuple[2][i] and ccurrPos[i]:
                         rel = True
                         break
                     i = i +1
                 if not rel:
-                    #if sCurr is shorter than tuple[1] --> tuple[1] is prunned
+                    # If the subgroups are the same in positive instances or the new subgroup contains the old subgroup in positive instances, we prune the shorter subgroup
                     if len(tuple[1]) > len(sCurr):
                         self._irrelevants.append((sCurr, quality, ccurrPos))
                         return False

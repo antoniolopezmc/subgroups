@@ -17,7 +17,8 @@ from subgroups.core.pattern import Pattern
 from bitarray import bitarray
 
 class BitsetDictionary(dict):
-    """ Internal class to implement the dicttionaries used in the bitset. This dictionary only allows to insert a Pattern or a Selector as key. If a Selector is inserted, it is converted to a Pattern.
+    """ Internal class to implement the dicttionaries used in the bitset. This dictionary only allows to insert a Pattern or a Selector as key.
+    If a Selector is inserted, it is converted to a Pattern. Each entry must store a bitarray.
     """
 
     def __iter__(self):
@@ -25,6 +26,8 @@ class BitsetDictionary(dict):
             yield Pattern.generate_from_str(key)
 
     def __setitem__(self, key, value) -> None:
+        if (type(value) != bitarray):
+            raise TypeError("The value must be a bitarray.")
         if (type(key)==Selector):
             super().__setitem__(str(Pattern([key])),value)
         elif (type(key)==Pattern):
@@ -58,6 +61,7 @@ class BitsetBSD(object):
         """Method to initialize an object of type 'BitsetBSD'.
         """
         # For each dictionary, the key is a string representation of a pattern and the value is a bitarray that stores for each row whether it follows the pattern.
+        # As we are using the BitsetDictionary class, we can use Patterns or Selectors as keys.
         self._bitset_pos = BitsetDictionary()
         self._bitset_neg = BitsetDictionary()
 
@@ -128,11 +132,13 @@ class BitsetBSD(object):
             #if target match
             if(row[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1]):
                 target_match = True
+            #list of selectors used to build the bitset in the current row
             list_of_selectors = []
             # Iterate over dataframe column names, except the target. ONLY DISCRETE/NOMINAL ATTRIBUTES.
             for column in columns_without_target:
                 if (type(pandas_dataframe[column].loc[0]) is str):  # Only check the first element, because all elements of the column are of the same type.
                     new_selector = Selector(column, Operator.EQUAL, row[column])
+                    # We only build the bitset for the frequent selectors.
                     if new_selector not in set_of_frequent_selectors:
                         continue
                     list_of_selectors.append(new_selector)
@@ -147,13 +153,14 @@ class BitsetBSD(object):
                             self._bitset_neg[new_selector] = (bitarray([0]) * negative_counts)+ bitarray([1])
                         else:
                             self._bitset_neg[new_selector] += [1]
-
+            # We complete other entries of the bitset with 0 if necessary.
             if (target_match):
                 self._bitset_pos = self._update_bitset(list_of_selectors,self._bitset_pos)
                 positive_counts = positive_counts +1
             else:
                 self._bitset_neg = self._update_bitset(list_of_selectors, self._bitset_neg)
                 negative_counts = negative_counts +1
+        #Add the entries of the frequent selectors that are not yet in the bitset
         self._update_empty_bitsets(positive_counts,negative_counts)
 
     def _update_empty_bitsets(self,positive_counts : int, negative_counts : int):
@@ -201,6 +208,8 @@ class BitsetBSD(object):
                 #If the pattern is not equivalent to a selector
                 continue
             selector = pat.get_selector(0)
+            # If the selector is not in the list of selectors used in the current row, we have to add
+            # the information of the current row of the dataset.
             if (selector not in selectorsUsed):
                 bitset[selector] = bitset[selector] + [False]
         return bitset
