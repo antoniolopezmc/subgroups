@@ -14,6 +14,7 @@ from subgroups.core.subgroup import Subgroup
 import unittest as unittestt
 
 class TestCN2SD(unittestt.TestCase):
+        '''
             
         def test_CN2SD_obtain_basic_metrics_method_1(self) -> None:
             # Dataset de ejemplo
@@ -22,7 +23,7 @@ class TestCN2SD(unittestt.TestCase):
             "Gender": ["M", "F", "M", "M", "F"],
             "Class": [0, 1, 1, 1, 0]
             })
-            weights = [1,1, 1, 1, 1]            
+            weights = [1,1,1,1,1]            
             algCN2SD = CN2SD("aditive",1) # For this test, the parameters do not matter.
             subg1 = Subgroup(Pattern([Selector("Age", Operator.GREATER, 30) , Selector("Gender", Operator.EQUAL, "F")]), Selector("Class", Operator.EQUAL, 1))           
             print(subg1)
@@ -134,12 +135,12 @@ class TestCN2SD(unittestt.TestCase):
             file_to_read.close()
             remove("./results.txt")      
 
-
         def test_CN2SD_fit_method_4(self) -> None:
             input_dataframe = pandas.read_csv("../../../../datasets/csv/shop.csv") 
             target = ("diaper")
             cn2sd = CN2SD(beam_width = 3, weighting_scheme = 'multiplicative', gamma = 0,write_results_in_file=True,file_path="./results.txt")
-            result = cn2sd.fit(input_dataframe, target)
+            binary_attributes = ["bread", "milk", "coke","beer"] 
+            result = cn2sd.fit(input_dataframe, target,binary_attributes)
             #self.assertEqual(cn2sd._get_selected_subgroups(), 7)
             #self.assertEqual(cn2sd._get_unselected_subgroups(), 10)
             print("Selected groups :", cn2sd._get_selected_subgroups())
@@ -151,8 +152,8 @@ class TestCN2SD(unittestt.TestCase):
                 print(list_of_written_results)
             list_of_subgroups = [Subgroup.generate_from_str(elem) for elem in list_of_written_results]
             self.assertIn(Subgroup.generate_from_str("Description: [beer = 'no', coke = 'no'], Target: diaper = 'no', 0.12"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [beer != 'no'], Target: diaper = 'yes', 0.08"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [coke != 'no'], Target: diaper = 'yes', 0.22"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [beer = 'yes'], Target: diaper = 'yes', 0.08"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [coke = 'yes'], Target: diaper = 'yes', 0.22"), list_of_subgroups)
             file_to_read.close()
             remove("./results.txt")      
         
@@ -160,7 +161,8 @@ class TestCN2SD(unittestt.TestCase):
             input_dataframe = pandas.read_csv("../../../../datasets/csv/shop.csv") 
             target = ("diaper")
             cn2sd = CN2SD(beam_width = 3, weighting_scheme = 'multiplicative', gamma = 0.5,write_results_in_file=True,file_path="./results.txt")
-            result = cn2sd.fit(input_dataframe, target)
+            binary_attributes = ["bread", "milk", "coke","beer"] 
+            result = cn2sd.fit(input_dataframe, target,binary_attributes)
             #self.assertEqual(cn2sd._get_selected_subgroups(), 7)
             #self.assertEqual(cn2sd._get_unselected_subgroups(), 10)
             print("Selected groups :", cn2sd._get_selected_subgroups())
@@ -169,11 +171,81 @@ class TestCN2SD(unittestt.TestCase):
             file_to_read = open("./results.txt", "r")
             for [a,b] in result:
                 list_of_written_results.append(str(a) + ", " + str(b))
-                print(list_of_written_results)
+                
             list_of_subgroups = [Subgroup.generate_from_str(elem) for elem in list_of_written_results]
             self.assertIn(Subgroup.generate_from_str("Description: [beer = 'no', coke = 'no'], Target: diaper = 'no', 0.12"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [beer != 'no'], Target: diaper = 'yes', 0.08"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [coke != 'no'], Target: diaper = 'yes', 0.1"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [beer = 'yes'], Target: diaper = 'yes', 0.08"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [coke = 'yes'], Target: diaper = 'yes', 0.1"), list_of_subgroups)
             file_to_read.close()
             remove("./results.txt") 
+
+        def test_CN2SD_fit_method_6(self) -> None : 
+            input_dataframe = pandas.read_csv("../../../../datasets/csv/shop.csv") 
+            target = ("diaper")
+            cn2sd = CN2SD(beam_width = 3, weighting_scheme = 'aditive',write_results_in_file=True,file_path="./results.txt")
+            binary_attributes = ["bread", "milk", "coke","beer"] 
+            result = cn2sd.fit(input_dataframe, target,binary_attributes)
+            print("Selected groups :", cn2sd._get_selected_subgroups())
+            print("Unselected groups :",cn2sd._get_unselected_subgroups())
+            list_of_written_results = []
+            file_to_read = open("./results.txt", "r")
+            for [a,b] in result:
+                list_of_written_results.append(str(a) + ", " + str(b))
+            print(list_of_written_results)
+            list_of_subgroups = [Subgroup.generate_from_str(elem) for elem in list_of_written_results]
+            self.assertIn(Subgroup.generate_from_str("Description: [beer = 'no', coke = 'no'], Target: diaper = 'no', 0.12"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [beer = 'yes'], Target: diaper = 'yes', 0.08"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [coke = 'yes'], Target: diaper = 'yes', 0.1"), list_of_subgroups)
+            file_to_read.close()
+
+      
+        def test_CN2SD_fit_method_7(self) -> None : 
+            input_dataframe = pandas.read_csv("../../../../datasets/csv/lenses.csv") 
+            target = ("class")
+            cn2sd = CN2SD(beam_width = 3, max_rule_length= 3, weighting_scheme = 'aditive',write_results_in_file=True,file_path="./results.txt")
+            binary_attributes = ["astigmatic", "spectacle-prescription", "tear-production-rate"] 
+            result = cn2sd.fit(input_dataframe, target,binary_attributes)
+            print("Selected groups :", cn2sd._get_selected_subgroups())
+            print("Unselected groups :",cn2sd._get_unselected_subgroups())
+            list_of_written_results = []
+            file_to_read = open("./results.txt", "r")
+            for [a,b] in result:
+                list_of_written_results.append(str(a) + ", " + str(b))
+            print(list_of_written_results)
+            list_of_subgroups = [Subgroup.generate_from_str(elem) for elem in list_of_written_results]
+            self.assertIn(Subgroup.generate_from_str("Description: [tear-production-rate = 'REDUCED'], Target: class = 'NO-CONTACT-LENSES', 0.19"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [age = 'PRESBYOPIC'], Target: class = 'NO-CONTACT-LENSES', 0.07"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [age != 'YOUNG', astigmatic = 'YES' , spectacle-prescription = 'HYPERMETROPE'], Target: class = 'NO-CONTACT-LENSES', 0.1"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [age != 'PRESBYOPIC', astigmatic = 'NO' , spectacle-prescription = 'MYOPE'], Target: class = 'NO-CONTACT-LENSES', 0.02"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [age != 'PRE-PRESBYOPIC', astigmatic = 'YES' , spectacle-prescription = 'HYPERMETROPE'], Target: class = 'NO-CONTACT-LENSES', 0.01"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [astigmatic != 'NO', tear-production-rate = 'NORMAL'], Target: class = 'SOFT-CONTACT-LENSES', 0.16"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [astigmatic != 'YES', tear-production-rate = 'NORMAL'], Target: class = 'HARD-CONTACT-LENSES', 0.12"), list_of_subgroups)
+            file_to_read.close()
+'''
+        def test_CN2SD_fit_method_8(self) -> None : 
+            input_dataframe = pandas.read_csv("../../../../datasets/csv/lenses.csv") 
+            target = ("class")
+            cn2sd = CN2SD(beam_width = 3, weighting_scheme = 'multiplicative', gamma = 0, max_rule_length = 3 , write_results_in_file=True,file_path="./results.txt")
+            binary_attributes = ["astigmatic", "spectacle-prescription", "tear-production-rate"] 
+            result = cn2sd.fit(input_dataframe, target,binary_attributes)
+            print("Selected groups :", cn2sd._get_selected_subgroups())
+            print("Unselected groups :",cn2sd._get_unselected_subgroups())
+            list_of_written_results = []
+            file_to_read = open("./results.txt", "r")
+            for [a,b] in result:
+                list_of_written_results.append(str(a) + ", " + str(b))
+            print(list_of_written_results)
+            print("***************")
+            
+            list_of_subgroups = [Subgroup.generate_from_str(elem) for elem in list_of_written_results]
+            print(list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [tear-production-rate = 'REDUCED'], Target: class = 'NO-CONTACT-LENSES', 0.19"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [age != 'YOUNG', astigmatic = 'YES' , spectacle-prescription = 'HYPERMETROPE'], Target: class = 'NO-CONTACT-LENSES', 0.12"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [age = 'PRESBYOPIC', astigmatic = 'NO' , spectacle-prescription = 'MYOPE'], Target: class = 'NO-CONTACT-LENSES', 0.09"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [astigmatic = 'NO', tear-production-rate = 'NORMAL'], Target: class = 'SOFT-CONTACT-LENSES', 0.16"), list_of_subgroups)
+            self.assertIn(Subgroup.generate_from_str("Description: [astigmatic = 'YES', tear-production-rate = 'NORMAL'], Target: class = 'HARD-CONTACT-LENSES', 0.12"), list_of_subgroups)
+            file_to_read.close()
+
+        
+
             

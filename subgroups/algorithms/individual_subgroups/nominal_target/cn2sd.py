@@ -59,7 +59,7 @@ class CN2SD(Algorithm):
         """Method to initialize an object of type 'AlgorithmSD'.
         """
         if (type (gamma) is not int) and (type(gamma) is not float):
-            raise TypeError("Parameter 'g_parameter' must be an integer (type 'int') or a float.")
+            raise TypeError("Parameter 'gamma' must be an integer (type 'int') or a float.")
 
         if type(weighting_scheme) is not str :
             raise TypeError("Parameter 'weighting_scheme' must be a string")
@@ -119,6 +119,7 @@ class CN2SD(Algorithm):
     def _get_selected_subgroups(self) -> int : 
         return self._selected_subgroups
     
+
     def _get_file(self) -> Union[int,float]:
         return self._file
 

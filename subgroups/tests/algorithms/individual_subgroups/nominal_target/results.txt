@@ -1,0 +1,1 @@
+Description: [tear-production-rate = 'NORMAL'], Target: class = 'HARD-CONTACT-LENSES' ; Quality Measure WRACC = 0.0 ; tp = 0 ; fp = 8 ; TP = 0 ; FP = 20
