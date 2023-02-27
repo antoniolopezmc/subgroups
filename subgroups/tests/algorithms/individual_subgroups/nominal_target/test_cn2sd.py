@@ -197,6 +197,7 @@ class TestCN2SD(unittestt.TestCase):
             self.assertIn(Subgroup.generate_from_str("Description: [beer = 'yes'], Target: diaper = 'yes', 0.08"), list_of_subgroups)
             self.assertIn(Subgroup.generate_from_str("Description: [coke = 'yes'], Target: diaper = 'yes', 0.1"), list_of_subgroups)
             file_to_read.close()
+            remove("./results.txt")
 
       
         def test_CN2SD_fit_method_7(self) -> None : 
@@ -221,6 +222,7 @@ class TestCN2SD(unittestt.TestCase):
             self.assertIn(Subgroup.generate_from_str("Description: [astigmatic != 'NO', tear-production-rate = 'NORMAL'], Target: class = 'SOFT-CONTACT-LENSES', 0.16"), list_of_subgroups)
             self.assertIn(Subgroup.generate_from_str("Description: [astigmatic != 'YES', tear-production-rate = 'NORMAL'], Target: class = 'HARD-CONTACT-LENSES', 0.12"), list_of_subgroups)
             file_to_read.close()
+            remove("./results.txt")
 '''
         def test_CN2SD_fit_method_8(self) -> None : 
             input_dataframe = pandas.read_csv("../../../../datasets/csv/lenses.csv") 
