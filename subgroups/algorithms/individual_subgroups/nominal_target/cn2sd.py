@@ -299,8 +299,6 @@ class CN2SD(Algorithm):
                     new_b = b.copy()
                     new_b.add_selector(selector)
                     new_b_metrics = self._obtain_basic_metrics(dataset, weights, Subgroup(new_b, target_selector))
-                    print("New b metrics : ",new_b_metrics)
-                    print("new b : ", new_b)
                     new_b_WRAcc = self._handle_individual_result((new_b,target_value,new_b_metrics),best_WRAcc)
                    #dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : new_b_metrics[0], QualityMeasure.FALSE_POSITIVES : new_b_metrics[1], QualityMeasure.TRUE_POPULATION : new_b_metrics[2], QualityMeasure.FALSE_POPULATION : new_b_metrics[3]}
                    #new_b_WRAcc = WRAcc().compute(dict_of_parameters)
@@ -529,7 +527,6 @@ class CN2SD(Algorithm):
         
         :param individual_result: the individual result which is handled. In this case, it is a subgroup description, a target as a tuple and the subgroup parameters tp, fp, TP and FP.
         """
-        print("Individual result : ", individual_result)
         # Get the subgroup parameters.
         tp = individual_result[2][0]
         fp = individual_result[2][1]
@@ -555,6 +552,7 @@ class CN2SD(Algorithm):
                 self._file.write("fp = " + str(fp) + " ; ")
                 self._file.write("TP = " + str(TP) + " ; ")
                 self._file.write("FP = " + str(FP) + "\n")
+                self._file.close()
             # Increment the number of selected subgroups.
                 self._selected_subgroups = self._selected_subgroups + 1
         else: # If the quality measure is not greater or equal, increment the number of unselected subgroups.
