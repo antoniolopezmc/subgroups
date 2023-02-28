@@ -1,9 +1,11 @@
 from os import remove
 import unittest
 from pandas import DataFrame, read_csv
+import pandas
 #import sys
 #sys.path.insert(1,"C:\\Users\\PC\\Documents\\GitHub\\subgroups")
 from subgroups.algorithms.algorithm import Algorithm
+from subgroups.algorithms.individual_subgroups.nominal_target.cn2sd import CN2SD
 from subgroups.core.operator import Operator
 from subgroups.core.pattern import Pattern
 from subgroups.core.selector import Selector
@@ -96,110 +98,138 @@ class TestSD(unittest.TestCase):
             assert(round(result9,2) == round(1/(0+g_parameter),2))
 
 
+
         def test_SD_fit_method_1(self) -> None:
-            input_dataframe = DataFrame({'attr1': ["v3", "v3", "v1", "v4", "v2", "v4"], 'attr2': ["3", "4", "45", "-12", "63", "2"], 'attr3' : ["2.23", "5.98", "-4.268", "12.576", "152.23", "-25.2"], "class" : ["A", "A", "B", "B", "B", "A"]})
-            target = ("class", "B")
-            sd = SD(2, 0.35, 5, True,"./results.txt")
-            result = sd.fit(input_dataframe, target)
-            self.assertEqual(sd._get_selected_subgroups(), 7)
-            self.assertEqual(sd._get_unselected_subgroups(), 10)
+            input_dataframe = pandas.read_csv("../../../../datasets/csv/lenses.csv") 
+            target = ("class", "SOFT-CONTACT-LENSES")
+            sd = SD(minimum_quality_measure_value= 0, g_parameter= 1,beam_width = 3, write_results_in_file=True, file_path="./results.txt")
+            binary_attributes = ["astigmatic", "spectacle-prescription", "tear-production-rate"] 
+            result = sd.fit(input_dataframe, target, binary_attributes)
+            #print("Selected groups :", cn2sd._get_selected_subgroups())
+            #print("Unselected groups :",cn2sd._get_unselected_subgroups())
             list_of_written_results = []
             file_to_read = open("./results.txt", "r")
             for [a,b] in result:
                 list_of_written_results.append(str(a) + ", " + str(b))
             print(list_of_written_results)
-            list_of_subgroups = [Subgroup.generate_from_str(elem) for elem in list_of_written_results]
-            print(list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v3', attr2 != '2'], Target: class = 'B', 1.5"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v3', attr3 != '-25.2'], Target: class = 'B', 1.5"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v3', attr2 != '2', attr2 != '3'], Target: class = 'B', 1.5"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v3', attr2 != '2', attr2 != '4'], Target: class = 'B', 1.5"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v3', attr2 != '2', attr3 != '2.23'], Target: class = 'B', 1.5"), list_of_subgroups)
+            self.assertIn("Description: [age != 'PRESBYOPIC', astigmatic = 'NO', tear-production-rate = 'NORMAL'], Target: class = 'SOFT-CONTACT-LENSES', 4.0", list_of_written_results)
+            self.assertIn("Description: [astigmatic = 'NO', spectacle-prescription = 'HYPERMETROPE', tear-production-rate = 'NORMAL'], Target: class = 'SOFT-CONTACT-LENSES', 3.0", list_of_written_results)
+            self.assertIn("Description: [astigmatic = 'NO', tear-production-rate = 'NORMAL'], Target: class = 'SOFT-CONTACT-LENSES', 2.5", list_of_written_results)
             file_to_read.close()
             remove("./results.txt")
-
+        
         def test_SD_fit_method_2(self) -> None:
-            input_dataframe = DataFrame({'attr1': ["v3", "v3", "v1", "v4", "v2", "v4"], 'attr2': ["3", "4", "45", "-12", "63", "2"], 'attr3' : ["2.23", "5.98", "-4.268", "12.576", "152.23", "-25.2"], "class" : ["A", "C", "B", "C", "B", "A"]})
-            target = ("class", "C")
-            sd = SD(5, 0, 7, True,"./results.txt")
-            result = sd.fit(input_dataframe, target)
-            self.assertEqual(sd._get_selected_subgroups(), 18)
-            self.assertEqual(sd._get_unselected_subgroups(), 0)
+            input_dataframe = pandas.read_csv("../../../../datasets/csv/lenses.csv") 
+            target = ("class", "SOFT-CONTACT-LENSES")
+            sd = SD(minimum_quality_measure_value= 0.1, g_parameter= 1,beam_width = 3, write_results_in_file=True, file_path="./results.txt")
+            binary_attributes = ["astigmatic", "spectacle-prescription", "tear-production-rate"] 
+            result = sd.fit(input_dataframe, target, binary_attributes)
+            #print("Selected groups :", cn2sd._get_selected_subgroups())
+            #print("Unselected groups :",cn2sd._get_unselected_subgroups())
             list_of_written_results = []
             file_to_read = open("./results.txt", "r")
             for [a,b] in result:
                 list_of_written_results.append(str(a) + ", " + str(b))
             print(list_of_written_results)
-            list_of_subgroups = [Subgroup.generate_from_str(elem) for elem in list_of_written_results]
-            self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v1', attr1 != 'v2', attr2 != '2', attr2 != '3'], Target: class = 'C', 0.4"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v1', attr1 != 'v2', attr2 != '3', attr3 != '-25.2'], Target: class = 'C', 0.4"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v1', attr1 != 'v2', attr2 != '2', attr3 != '2.23'], Target: class = 'C', 0.4"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v1', attr1 != 'v2', attr3 != '-25.2', attr3 != '2.23'], Target: class = 'C', 0.4"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v1', attr2 != '2', attr2 != '3', attr2 != '63'], Target: class = 'C', 0.4"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v1', attr2 != '3', attr2 != '63', attr3 != '-25.2'], Target: class = 'C', 0.4"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [attr1 != 'v1', attr2 != '2', attr2 != '3', attr3 != '152.23'], Target: class = 'C', 0.4"), list_of_subgroups)
+            self.assertIn("Description: [age != 'PRESBYOPIC', astigmatic = 'NO', tear-production-rate = 'NORMAL'], Target: class = 'SOFT-CONTACT-LENSES', 4.0", list_of_written_results)
+            self.assertIn("Description: [astigmatic = 'NO', spectacle-prescription = 'HYPERMETROPE', tear-production-rate = 'NORMAL'], Target: class = 'SOFT-CONTACT-LENSES', 3.0", list_of_written_results)
+            self.assertIn("Description: [astigmatic = 'NO', tear-production-rate = 'NORMAL'], Target: class = 'SOFT-CONTACT-LENSES', 2.5", list_of_written_results)
             file_to_read.close()
             remove("./results.txt")
         
         def test_SD_fit_method_3(self) -> None:
-                   # TESTS OF ALGORITHM SD.
-            input_dataframe = DataFrame({'attr1': ["v3", "v3", "v1", "v4", "v2", "v4"], 'attr2': [3, 4, 45, -12, 63, 2], 'attr3' : [2.23, 5.98, -4.268, 12.576, 152.23, -25.2], "class" : ["A", "A", "B", "C", "B", "A"]})
-            sd = SD(2.5, 0.4, 6,True,"./results.txt")
-            target = ("class", "A")
-            result = sd.fit(input_dataframe, target)
-            self.assertEqual(sd._get_selected_subgroups(),19)
-            self.assertEqual(sd._get_unselected_subgroups(),28)
+            input_dataframe = pandas.read_csv("../../../../datasets/csv/lenses.csv") 
+            target = ("class", "SOFT-CONTACT-LENSES")
+            sd = SD(minimum_quality_measure_value= 0.2, g_parameter= 1,beam_width = 3, write_results_in_file=True, file_path="./results.txt")
+            binary_attributes = ["astigmatic", "spectacle-prescription", "tear-production-rate"] 
+            result = sd.fit(input_dataframe, target, binary_attributes)
+            #print("Selected groups :", cn2sd._get_selected_subgroups())
+            #print("Unselected groups :",cn2sd._get_unselected_subgroups())
             list_of_written_results = []
             file_to_read = open("./results.txt", "r")
             for [a,b] in result:
                 list_of_written_results.append(str(a) + ", " + str(b))
-            list_of_subgroups = [Subgroup.generate_from_str(elem) for elem in list_of_written_results]
-            self.assertIn(Subgroup.generate_from_str("Description: [attr2 > -4.5, attr2 <= 24.0], Target: class = 'A', 1.2"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [attr2 != -12, attr2 <= 24.0], Target: class = 'A', 1.2"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [attr2 > -4.0, attr2 <= 24.0], Target: class = 'A', 1.2"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [attr2 > -5.0, attr2 <= 24.0], Target: class = 'A', 1.2"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [attr2 <= 24.0, attr3 <= 7.4030000000000005], Target: class = 'A', 1.2"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [attr2 <= 24.0, attr3 <= 9.278], Target: class = 'A', 1.2"), list_of_subgroups)
+            print(list_of_written_results)
+            self.assertIn("Description: [astigmatic = 'NO', tear-production-rate = 'NORMAL'], Target: class = 'SOFT-CONTACT-LENSES', 2.5", list_of_written_results)
+            self.assertIn("Description: [astigmatic = 'NO'], Target: class = 'SOFT-CONTACT-LENSES', 0.62", list_of_written_results)
+            self.assertIn("Description: [tear-production-rate = 'NORMAL'], Target: class = 'SOFT-CONTACT-LENSES', 0.62", list_of_written_results)
             file_to_read.close()
             remove("./results.txt")
-                
+        
         def test_SD_fit_method_4(self) -> None:
-            dataset = read_csv("../../../../datasets/csv/titanic.csv")
-            dataset = dataset[["Survived","Pclass","Sex"]]
-            sd = SD(2, 0.35, 5,True,"./results.txt")
-            result = sd.fit(dataset, ("Survived", "No"))
-            self.assertEqual(sd._get_selected_subgroups(),10)
-            self.assertEqual(sd._get_unselected_subgroups(),10)
+            input_dataframe = pandas.read_csv("../../../../datasets/csv/lenses.csv") 
+            target = ("class", "SOFT-CONTACT-LENSES")
+            sd = SD(minimum_quality_measure_value= 0, g_parameter= 5,beam_width = 3, write_results_in_file=True, file_path="./results.txt")
+            binary_attributes = ["astigmatic", "spectacle-prescription", "tear-production-rate"] 
+            result = sd.fit(input_dataframe, target, binary_attributes)
+            #print("Selected groups :", cn2sd._get_selected_subgroups())
+            #print("Unselected groups :",cn2sd._get_unselected_subgroups())
             list_of_written_results = []
             file_to_read = open("./results.txt", "r")
             for [a,b] in result:
                 list_of_written_results.append(str(a) + ", " + str(b))
-            list_of_subgroups = [Subgroup.generate_from_str(elem) for elem in list_of_written_results]
-            self.assertIn(Subgroup.generate_from_str("Description: [Pclass != 1, Sex = 'male'], Target: Survived = 'No', 5.863636363636363"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [Pclass > 1.0, Sex = 'male'], Target: Survived = 'No', 5.863636363636363"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [Pclass > 1.5, Sex = 'male'], Target: Survived = 'No', 5.863636363636363"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [Pclass != 1, Sex != 'female'], Target: Survived = 'No', 5.863636363636363"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [Pclass > 1.0, Sex != 'female'], Target: Survived = 'No', 5.863636363636363"), list_of_subgroups)
+            print(list_of_written_results)
+            self.assertIn("Description: [astigmatic = 'NO', tear-production-rate = 'NORMAL'], Target: class = 'SOFT-CONTACT-LENSES', 0.83", list_of_written_results)
+            self.assertIn("Description: [age != 'PRESBYOPIC', astigmatic = 'NO', tear-production-rate = 'NORMAL'], Target: class = 'SOFT-CONTACT-LENSES', 0.8", list_of_written_results)
+            self.assertIn("Description: [astigmatic = 'NO', spectacle-prescription = 'HYPERMETROPE', tear-production-rate = 'NORMAL'], Target: class = 'SOFT-CONTACT-LENSES', 0.6", list_of_written_results)
             file_to_read.close()
             remove("./results.txt")
-           
+        
         def test_SD_fit_method_5(self) -> None:
-            dataset = read_csv("../../../../datasets/csv/titanic.csv")
-            dataset = dataset[["Survived","Sex"]]
-            target = ("Survived", "No")
-            sd = SD(2, 0.35, 5,True,"./results.txt")
-            result = sd.fit(dataset, target)
-            self.assertEqual(sd._get_selected_subgroups(),2)
-            self.assertEqual(sd._get_unselected_subgroups(),2)
+            input_dataframe = pandas.read_csv("../../../../datasets/csv/lenses.csv") 
+            target = ("class", "SOFT-CONTACT-LENSES")
+            sd = SD(minimum_quality_measure_value= 0.1, g_parameter= 5,beam_width = 3, write_results_in_file=True, file_path="./results.txt")
+            binary_attributes = ["astigmatic", "spectacle-prescription", "tear-production-rate"] 
+            result = sd.fit(input_dataframe, target, binary_attributes)
+            #print("Selected groups :", cn2sd._get_selected_subgroups())
+            #print("Unselected groups :",cn2sd._get_unselected_subgroups())
             list_of_written_results = []
             file_to_read = open("./results.txt", "r")
             for [a,b] in result:
                 list_of_written_results.append(str(a) + ", " + str(b))
-            list_of_subgroups = [Subgroup.generate_from_str(elem) for elem in list_of_written_results]
-            self.assertIn(Subgroup.generate_from_str("Description: [Sex = 'male'], Target: Survived = 'No', 4.18018018018018"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [Sex != 'female'], Target: Survived = 'No', 4.18018018018018"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [Sex = 'male', Sex != 'female'], Target: Survived = 'No', 4.18018018018018"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [], Target: Survived = 'No', 0"), list_of_subgroups)
-            self.assertIn(Subgroup.generate_from_str("Description: [], Target: Survived = 'No', 0"), list_of_subgroups)
+            print(list_of_written_results)
+            self.assertIn("Description: [astigmatic = 'NO', tear-production-rate = 'NORMAL'], Target: class = 'SOFT-CONTACT-LENSES', 0.83", list_of_written_results)
+            self.assertIn("Description: [age != 'PRESBYOPIC', astigmatic = 'NO', tear-production-rate = 'NORMAL'], Target: class = 'SOFT-CONTACT-LENSES', 0.8", list_of_written_results)
+            self.assertIn("Description: [astigmatic = 'NO', spectacle-prescription = 'HYPERMETROPE', tear-production-rate = 'NORMAL'], Target: class = 'SOFT-CONTACT-LENSES', 0.6", list_of_written_results)
             file_to_read.close()
-            remove("./results.txt")    
+            remove("./results.txt")
+
+        def test_SD_fit_method_6(self) -> None:
+            input_dataframe = pandas.read_csv("../../../../datasets/csv/lenses.csv") 
+            target = ("class", "SOFT-CONTACT-LENSES")
+            sd = SD(minimum_quality_measure_value= 0.2, g_parameter= 5,beam_width = 3, write_results_in_file=True, file_path="./results.txt")
+            binary_attributes = ["astigmatic", "spectacle-prescription", "tear-production-rate"] 
+            result = sd.fit(input_dataframe, target, binary_attributes)
+            #print("Selected groups :", cn2sd._get_selected_subgroups())
+            #print("Unselected groups :",cn2sd._get_unselected_subgroups())
+            list_of_written_results = []
+            file_to_read = open("./results.txt", "r")
+            for [a,b] in result:
+                list_of_written_results.append(str(a) + ", " + str(b))
+            print(list_of_written_results)
+            self.assertIn("Description: [astigmatic = 'NO', tear-production-rate = 'NORMAL'], Target: class = 'SOFT-CONTACT-LENSES', 0.83", list_of_written_results)
+            self.assertIn("Description: [astigmatic = 'NO'], Target: class = 'SOFT-CONTACT-LENSES', 0.42", list_of_written_results)
+            self.assertIn("Description: [tear-production-rate = 'NORMAL'], Target: class = 'SOFT-CONTACT-LENSES', 0.42", list_of_written_results)
+            file_to_read.close()
+            remove("./results.txt")
+        
+'''     def test_SD_fit_method_7(self) -> None: 
+            input_dataframe = pandas.read_csv("../../../../datasets/csv/covid-sp.csv") 
+            target = ("deceased", "[248 - 1045]")
+            sd = SD(minimum_quality_measure_value= 0, g_parameter= 1,beam_width = 3, write_results_in_file=True, file_path="./results.txt")
+            binary_attributes = ["sex"] 
+            result = sd.fit(input_dataframe, target, binary_attributes)
+            #print("Selected groups :", cn2sd._get_selected_subgroups())
+            #print("Unselected groups :",cn2sd._get_unselected_subgroups())
+            list_of_written_results = []
+            file_to_read = open("./results.txt", "r")
+            for [a,b] in result:
+                list_of_written_results.append(str(a) + ", " + str(b))
+            print(list_of_written_results)
+            self.assertIn("Description: [age-range = '80-89', week != 'eight'], Target: class = 'deceased', [248 - 1045], 14.0", list_of_written_results)
+            self.assertIn("Description: [age-range = '0-9', age-range = '80-89', week != 'eight'], Target: class = 'deceased', [248 - 1045], 14.0", list_of_written_results)
+            self.assertIn("Description: [age-range = '10-19', age-range = '80-89', week != 'eight'], Target: class = 'deceased', [248 - 1045], 14.0", list_of_written_results)
+            file_to_read.close()
+            remove("./results.txt")
+
+      '''  
