@@ -17,7 +17,7 @@ from subgroups.quality_measures.wracc_optimistic_estimate_1 import WRAccOptimist
 import unittest
 
 
-class TestCBSD(unittest.TestCase):
+class TestCPBSD(unittest.TestCase):
 
     def test_CBSD_init_method(self) -> None:
         self.assertRaises(TypeError, CPBSD, 0, "hello")
@@ -49,5 +49,3 @@ class TestCBSD(unittest.TestCase):
         self.assertNotEqual(bsd._k_subgroups,res)
 
     
-        
-unittest.main()

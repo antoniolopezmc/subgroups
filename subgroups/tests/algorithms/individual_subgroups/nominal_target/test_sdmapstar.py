@@ -17,7 +17,7 @@ from subgroups.core.subgroup import Subgroup
 from os import remove
 import unittest
 
-class TestSDMap(unittest.TestCase):
+class TestSDMapStar(unittest.TestCase):
 
     def test_SDMapStar_init_method_1(self) -> None:
         self.assertRaises(TypeError, SDMapStar, "hello", 0.85)
@@ -457,5 +457,3 @@ class TestSDMap(unittest.TestCase):
         self.assertEqual(sdmap.visited_nodes, 13)
         self.assertEqual(sdmap.conditional_pruned_branches, 1)
        
-
-unittest.main()

@@ -96,4 +96,3 @@ class TestBSD(unittest.TestCase):
         self.assertEqual(bsd.unselected_subgroups, 0)
         self.assertEqual(bsd.visited_subgroups, 0)
         
-unittest.main()
