@@ -47,16 +47,17 @@ class CPBSD(BSD):
             if quality > self._k_subgroups[0][0] or len(self._k_subgroups) < self.num_subgroups:
                 # sg = conditional pattern + current selector
                 if selCond:
-                    sg = selCond.copy().add_selector(sCurr)
+                    sg = selCond.copy()
+                    sg.add_selector(sCurr)
                 else:
-                    sg = Pattern(sCurr)
+                    sg = Pattern([sCurr])
                 r= self._checkRel(self._k_subgroups, cCurrPos,quality,sg)
                 # If the subgroup is relevant, we add it to the list of k-subgroups
                 if r:
 
                                         # (quality, subgroup, bits, optimistic_estimate,(tp,fp))
                     self._k_subgroups.append((quality, sg, cCurrPos + cCurrNeg,oe,(tp,fp)))
-                    self._k_subgroups = sorted(self._k_subgroups, reverse=False)
+                    self._k_subgroups = sorted(self._k_subgroups, reverse=False, key=lambda x: x[0])
                     # Check if the subgroups in k_subgroups are still relevant
                     self._checkRelevancies(cCurrPos, sg,quality)
                     # If k_subgroups is full, remove the subgroup with the lowest quality
