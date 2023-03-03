@@ -244,11 +244,6 @@ class TestCN2SD(unittestt.TestCase):
                 file_to_read = open("./results.txt", "r")
                 for [a,b] in result:
                     list_of_written_results.append(str(a) + ", " + str(b))
-                   
-                for result in list_of_written_results:
-                       print(result)
-                       
-                
                 self.assertIn("Description: [tear-production-rate = 'REDUCED'], Target: class = 'NO-CONTACT-LENSES', 0.19", list_of_written_results)
                 self.assertIn("Description: [age = 'PRESBYOPIC'], Target: class = 'NO-CONTACT-LENSES', 0.07", list_of_written_results)
                 self.assertIn("Description: [age = 'PRESBYOPIC', astigmatic = 'NO', spectacle-prescription = 'MYOPE'], Target: class = 'NO-CONTACT-LENSES', 0.02", list_of_written_results)

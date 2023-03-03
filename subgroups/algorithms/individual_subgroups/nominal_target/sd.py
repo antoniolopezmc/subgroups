@@ -401,8 +401,8 @@ class SD(Algorithm):
             subgroup = Subgroup(Pattern([i]), Selector(tuple_target_attribute_value[0], Operator.EQUAL, tuple_target_attribute_value[1]))
             subgroup_metrics = self._obtain_basic_metrics(pandas_dataframe, subgroup)
             subgroup_support = self._handle_individual_result((Pattern([i]),tuple_target_attribute_value,subgroup_metrics),Support())
-            if subgroup_support >= self._get_minimum_quality_measure_value() : 
-                new_set.append(i)
+            #if subgroup_support >= self._get_minimum_quality_measure_value() : #Improvement that appears in Enrique´s TFG  
+            new_set.append(i)
         set_l = new_set
 
         # Initialize variables Beam and newBeam. IMPORTANT: Different lists with different subgroups.
