@@ -30,15 +30,9 @@ class FPTreeForSDMapStar(FPTreeForSDMap):
         """
         super().__init__()
         if (type(TP) is not int ):
-            try:
-                TP = int(TP)
-            except:
-                raise TypeError("The TP parameter must be an integer.")
+            raise TypeError("The TP parameter must be an integer.")
         if (type(FP) is not int ):
-            try:
-                FP = int(FP)
-            except:
-                raise TypeError("The FP parameter must be an integer.")
+            raise TypeError("The FP parameter must be an integer.")
         self._TP = TP
         self._FP = FP
 

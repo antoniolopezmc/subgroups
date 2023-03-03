@@ -16,7 +16,6 @@ from subgroups.core.pattern import Pattern
 from subgroups.core.operator import Operator
 from subgroups.core.selector import Selector
 from subgroups.core.subgroup import Subgroup
-from numpy import sum
 
 # Python annotations.
 from typing import Union
@@ -344,15 +343,9 @@ class SDMapStar(Algorithm):
         if (type(fp) is not int):
             raise TypeError("Parameter 'fp' must be a int.")
         if (type(TP) is not int):
-            try:
-                TP = int(TP)
-            except:
-                raise TypeError("Parameter 'TP' must be a int.",type(TP))
+            raise TypeError("Parameter 'TP' must be a int.",type(TP))
         if (type(FP) is not int):
-            try:
-                FP = int(FP)
-            except:
-                raise TypeError("Parameter 'FP' must be a int.")
+            raise TypeError("Parameter 'FP' must be a int.")
 
         dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : tp, QualityMeasure.FALSE_POSITIVES : fp, QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
         dict_of_parameters.update(self._additional_parameters_for_the_optimistic_estimate)
