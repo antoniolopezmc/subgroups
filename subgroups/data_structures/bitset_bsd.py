@@ -129,7 +129,7 @@ class BitsetBSD(object):
         negative_counts = 0
         for index, row in pandas_dataframe.iterrows():
             target_match = False
-            #if target match
+            # If this row matches the target value
             if(row[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1]):
                 target_match = True
             #list of selectors used to build the bitset in the current row

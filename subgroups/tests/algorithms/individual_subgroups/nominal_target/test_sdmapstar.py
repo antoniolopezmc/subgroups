@@ -343,7 +343,36 @@ class TestSDMapStar(unittest.TestCase):
         self.assertIn(Subgroup.generate_from_str("Description: [a2 = q], Target: class = 'y'"), list_of_subgroups)
         file_to_read.close()
         remove("./results.txt")
-
+            
+    def test_SDMapStar_fit_method_10(self) -> None:
+        df = DataFrame({'att1': ['v3', 'v2', 'v1', 'v3', 'v4', 'v4'], 'att2': ['1', '2', '3', '3', '5', '6'], 'att3': ['B', 'A', 'A', 'B', 'A', 'B'], 'class': ['0', '1', '0', '0', '1', '1']})
+        algSDMap = SDMapStar(WRAcc(),WRAccOptimisticEstimate1(), -1000, num_subgroups=5, minimum_n = 0,  write_results_in_file=True, file_path="./results.txt")
+        algSDMap.fit(df, ("class", "1"))
+        list_of_written_results = []
+        file_to_read = open("./results.txt", "r")
+        for line in file_to_read:
+            list_of_written_results.append(line)
+        list_of_subgroups = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]        
+        self.assertIn(Subgroup.generate_from_str("Description: [att1 = 'v4'], Target: class = '1'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [att1 = 'v4', att3 = 'B'], Target: class = '1'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [att1 = 'v4', att3 = 'A'], Target: class = '1'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [att3 = 'A'], Target: class = '1'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [att2 = '6'], Target: class = '1'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [att1 = 'v4', att2 = '6'], Target: class = '1'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [att2 = '6', att3 = 'B'], Target: class = '1'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [att1 = 'v4', att2 = '6', att3 = 'B'], Target: class = '1'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [att2 = '5'], Target: class = '1'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [att1 = 'v4', att2 = '5'], Target: class = '1'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [att2 = '5', att3 = 'A'], Target: class = '1'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [att1 = 'v4', att2 = '5', att3 = 'A'], Target: class = '1'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [att2 = '2'], Target: class = '1'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [att1 = 'v2', att2 = '2'], Target: class = '1'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [att2 = '2', att3 = 'A'], Target: class = '1'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [att1 = 'v2', att2 = '2', att3 = 'A'], Target: class = '1'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [att1 = 'v2'], Target: class = '1'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [att1 = 'v2', att3 = 'A'], Target: class = '1'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [att3 = 'B'], Target: class = '1'"), list_of_subgroups)
+        remove("./results.txt")
 
     def test_SDMapStar_additional_parameters_in_fit_method(self) -> None:
         sdmap_1 = SDMapStar(WRAcc(), WRAccOptimisticEstimate1(),-1, minimum_tp=1, minimum_fp=1, additional_parameters_for_the_quality_measure={"tp" : 10, "fp" : 20, "TP" : 100, "FP" : 200})

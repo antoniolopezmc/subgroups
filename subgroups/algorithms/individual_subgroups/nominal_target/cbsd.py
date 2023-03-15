@@ -161,6 +161,7 @@ class CBSD(BSD):
                         self._k_subgroups.remove(tuple)
                         self._irrelevants.append((tuple[1], tuple[0], tuple[2]))
                         self._unselected_subgroups += 1
+                        # If we remove the old subgroup, we will return True in order to add the new subgroup
                         return True
 
         return True
