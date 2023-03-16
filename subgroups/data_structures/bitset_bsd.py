@@ -232,34 +232,22 @@ class BitsetBSD(object):
                 "The name of the target attribute (first element in parameter 'tuple_target_attribute_value') is not an attribute of the input dataset.")
         if (type(min_support) is not int) and (type(min_support) is not float):
             raise TypeError("Parameter 'min_support' must be a number.")
-        # key: Selector (ONLY OF THE FORM "ATTRIBUTE = VALUE"), value: int: true positives ('tp').
-        final_set_of_frequent_selectors = dict()
-        # We generate the set of frequent selectors.
+        # Initialize the set of frequent selectors
+        set_of_frequent_selectors = dict()
+        # Get the columns of the dataset without the target column
         columns_without_target = pandas_dataframe.columns[pandas_dataframe.columns != tuple_target_attribute_value[0]]
-        for column in columns_without_target:  # Iterate over dataframe column names, except target column name.
-            if (type(pandas_dataframe[column].loc[
-                         0]) is str):  # Only check the first element, because all elements of the column are of the same type.
-                # EXTREMELY IMPORTANT: DOCUMENTATION OF PANDAS: ITERROWS.
-                #   - Because iterrows returns a Series for each row, it does NOT preserve dtypes across the rows (dtypes are preserved across columns for DataFrames).
-                #   - This is important because types in Selector are primitive types of python (and not pandas or numpy types).
-                for index, row in pandas_dataframe.iterrows():
-                    new_selector = Selector(column, Operator.EQUAL, row[column])
-                    new_selector = str(new_selector)
-                    # IF the selector does not exist in the dict AND the target match.
-                    if (new_selector not in final_set_of_frequent_selectors) and (row[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1]):
-                        final_set_of_frequent_selectors[new_selector] = 1
-                    # IF the selector does not exist in the dict AND the target does not match.
-                    elif (new_selector not in final_set_of_frequent_selectors) and (row[tuple_target_attribute_value[0]] != tuple_target_attribute_value[1]):
-                        final_set_of_frequent_selectors[new_selector] = 0
-                    # IF the selector exists in the dict AND the target match.
-                    elif (new_selector in final_set_of_frequent_selectors) and (row[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1]):
-                        final_set_of_frequent_selectors[new_selector] = final_set_of_frequent_selectors[new_selector] + 1
-        # Make a list with the selectors that have a value of 'tp' greater or equal than the minimum support.
-        final_list_of_frequent_selectors = []
-        for key in final_set_of_frequent_selectors:
-            if final_set_of_frequent_selectors[key] >= min_support:
-                final_list_of_frequent_selectors.append((key, final_set_of_frequent_selectors[key]))  # Add the selector and its 'tp' as a tuple.
-        # Sort descending/reverse by value of 'tp'.
-        final_list_of_frequent_selectors.sort(key=lambda x: x[1], reverse=True)
-        # LIST OF FREQUENT SELECTORS L.
-        return [Selector.generate_from_str(x[0]) for x in final_list_of_frequent_selectors]  # RETURN ONLY THE SELECTORS IN A LIST.
+        selectors = []
+        for column in columns_without_target:
+            # If the column contains only string values
+            if pandas_dataframe[column].apply(lambda x: isinstance(x, str)).all():
+                # Add to the list of selectors that column along with its values
+                selectors += [(column, value) for value in pandas_dataframe[column].unique()]
+        # Get the rows that match the target value
+        df_pos = pandas_dataframe[pandas_dataframe[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1]]
+        for selector in selectors:
+            # Get the number of rows that match the selector and the target value
+            num_pos = len(df_pos[df_pos[selector[0]] == selector[1]])
+            # Save the selector and its support in the dictionary if it is above the minimum support
+            if num_pos >= min_support:
+                set_of_frequent_selectors[Selector(selector[0], Operator.EQUAL, selector[1])] = num_pos
+        return list(set_of_frequent_selectors.keys())

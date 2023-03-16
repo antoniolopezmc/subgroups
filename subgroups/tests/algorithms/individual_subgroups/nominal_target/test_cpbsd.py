@@ -19,7 +19,7 @@ import unittest
 
 class TestCPBSD(unittest.TestCase):
 
-    def test_CBSD_init_method(self) -> None:
+    def test_CPBSD_init_method(self) -> None:
         self.assertRaises(TypeError, CPBSD, 0, "hello")
         self.assertRaises(TypeError, CPBSD, 0, WRAcc(),"hello")
         self.assertRaises(TypeError, CPBSD, 0, WRAcc(),WRAccOptimisticEstimate1(),"hello")
@@ -30,14 +30,14 @@ class TestCPBSD(unittest.TestCase):
         self.assertRaises(TypeError, CPBSD, 0 , WRAcc(), WRAccOptimisticEstimate1(), 5,10, write_results_in_file=False, file_path=24) # If 'file_path' is present, it must be of type str, no matter the flag.
         self.assertRaises(ValueError, CPBSD, 0 , WRAcc(), WRAccOptimisticEstimate1(), 5,10, write_results_in_file=True, file_path=None) # If 'write_results_in_file' is True, 'file_path' must not be None.
 
-    def test_CBSD_checkRel(self) -> None:
+    def test_CPBSD_checkRel(self) -> None:
         bsd = CPBSD(0, WRAcc(),WRAccOptimisticEstimate1(),5,10,write_results_in_file=False)
         res = [(0,Pattern([Selector("att1",Operator.EQUAL,"A")]),bitarray("110000"))]
         self.assertFalse(bsd._checkRel(res,bitarray("110"),0.,Pattern([])))
         self.assertTrue(bsd._checkRel(res,bitarray("100"),0.1,Pattern([])))
         self.assertTrue(bsd._checkRel(res,bitarray("101"),0.,Pattern([])))
         
-    def test_CBSD_checkRelevancies(self) -> None:
+    def test_CPBSD_checkRelevancies(self) -> None:
         bsd = CPBSD(0, WRAcc(),WRAccOptimisticEstimate1(),5,10,write_results_in_file=False)
         res = [(0,Pattern([Selector("att1",Operator.EQUAL,"A")]),bitarray("110000")),(0,Pattern([Selector("att1",Operator.EQUAL,"B")]),bitarray("110000"))]
         bsd._k_subgroups = res
