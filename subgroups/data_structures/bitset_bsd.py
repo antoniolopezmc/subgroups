@@ -122,46 +122,31 @@ class BitsetBSD(object):
         if type(tuple_target_attribute_value[0]) is not str:
             raise ValueError("The name of the target attribute (first element in parameter 'tuple_target_attribute_value') must be a string.")
 
-        # All columns except the target.
+        # Initialize an empty list for selectors
+        selectors = []
+        # Get the columns of the dataset without the target column
         columns_without_target = pandas_dataframe.columns[pandas_dataframe.columns != tuple_target_attribute_value[0]]
-        # For each register/row of the dataset ...
-        positive_counts = 0
-        negative_counts = 0
-        for index, row in pandas_dataframe.iterrows():
-            target_match = False
-            # If this row matches the target value
-            if(row[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1]):
-                target_match = True
-            #list of selectors used to build the bitset in the current row
-            list_of_selectors = []
-            # Iterate over dataframe column names, except the target. ONLY DISCRETE/NOMINAL ATTRIBUTES.
-            for column in columns_without_target:
-                if (type(pandas_dataframe[column].loc[0]) is str):  # Only check the first element, because all elements of the column are of the same type.
-                    new_selector = Selector(column, Operator.EQUAL, row[column])
-                    # We only build the bitset for the frequent selectors.
-                    if new_selector not in set_of_frequent_selectors:
-                        continue
-                    list_of_selectors.append(new_selector)
-                    if(target_match):
-                        if new_selector not in self._bitset_pos:
-                            self._bitset_pos[new_selector] = (bitarray([0]) * positive_counts)+bitarray([1])
-                        else:
-                            self._bitset_pos[new_selector] += [1]
-
-                    else:
-                        if new_selector not in self._bitset_neg:
-                            self._bitset_neg[new_selector] = (bitarray([0]) * negative_counts)+ bitarray([1])
-                        else:
-                            self._bitset_neg[new_selector] += [1]
-            # We complete other entries of the bitset with 0 if necessary.
-            if (target_match):
-                self._bitset_pos = self._update_bitset(list_of_selectors,self._bitset_pos)
-                positive_counts = positive_counts +1
-            else:
-                self._bitset_neg = self._update_bitset(list_of_selectors, self._bitset_neg)
-                negative_counts = negative_counts +1
-        #Add the entries of the frequent selectors that are not yet in the bitset
-        self._update_empty_bitsets(positive_counts,negative_counts)
+        # Check that each column contains only string values
+        for column in columns_without_target:
+            # If the column contains only string values
+            if pandas_dataframe[column].apply(lambda x: isinstance(x, str)).all():
+                # Add to the list of selectors that column along with its values
+                selectors += [(column, value) for value in pandas_dataframe[column].unique()]
+        # Filter the list of selectors to keep only those that are in the set of frequent selectors
+        selectors = list(filter(lambda x: Selector(x[0], Operator.EQUAL, x[1]) in set_of_frequent_selectors, selectors))
+        # Get the subset of the dataset where the target column has the target value (positive examples)
+        df_pos = pandas_dataframe[pandas_dataframe[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1]]
+        # Get the subset of the dataset where the target column does not have the target value (negative examples)
+        df_neg = pandas_dataframe[pandas_dataframe[tuple_target_attribute_value[0]] != tuple_target_attribute_value[1]]
+        # For each selector in the list of selectors
+        for selector in selectors:
+            # Create a bitarray from the boolean array that indicates whether the positive examples match the selector
+            ba_pos = bitarray((df_pos[selector[0]] == selector[1]).tolist())
+            # Create a bitarray from the boolean array that indicates whether the negative examples match the selector
+            ba_neg = bitarray((df_neg[selector[0]] == selector[1]).tolist())
+            # Add the bitarrays to the corresponding bitset dictionaries with the selector as key
+            self._bitset_pos[Selector(selector[0],Operator.EQUAL, selector[1])] = ba_pos
+            self._bitset_neg[Selector(selector[0],Operator.EQUAL, selector[1])] = ba_neg
 
     def _update_empty_bitsets(self,positive_counts : int, negative_counts : int):
         """Internal method to set the length of the bit sets to be equal to bitsetCount
