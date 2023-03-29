@@ -148,56 +148,6 @@ class BitsetBSD(object):
             self._bitset_pos[Selector(selector[0],Operator.EQUAL, selector[1])] = ba_pos
             self._bitset_neg[Selector(selector[0],Operator.EQUAL, selector[1])] = ba_neg
 
-    def _update_empty_bitsets(self,positive_counts : int, negative_counts : int):
-        """Internal method to set the length of the bit sets to be equal to bitsetCount
-        :param positive_counts: Length of bitset_pos values
-        :param positive_counts: Length of bitset_neg values
-        """
-        if type(positive_counts) is not int:
-            raise TypeError("Parameter 'positive_counts' must be a int.")
-        if type(negative_counts) is not int:
-            raise TypeError("Parameter 'negative_counts' must be a int.")
-        for pat in self._bitset_neg:
-            if (len(pat) > 1):
-                #If the pattern is not equivalent to a single selector
-                continue
-            selector = pat.get_selector(0)
-            if selector not in self._bitset_pos:
-                self._bitset_pos[selector] = bitarray([0]) * positive_counts
-
-        for pat in self._bitset_pos:
-            if (len(pat) > 1):
-                #If the pattern is not equivalent to a single selector
-                continue
-            selector = pat.get_selector(0)
-            if selector not in self._bitset_neg:
-                self._bitset_neg[selector] = bitarray([0]) * negative_counts
-
-
-
-
-    def _update_bitset(self,selectorsUsed : list,bitset):
-        """Internal method to update the not added selectors in the bitset
-       :type selectorsUsed: List
-       :param selectorsUsed: List of selectors
-       :type bitset: dict
-       :param bitset: dict that represents a bitset
-       """
-        if type(selectorsUsed) is not list:
-            raise TypeError("Parameter 'selectorsUsed' must be a list.")
-        if type(bitset) is not BitsetDictionary:
-            raise TypeError("Parameter 'bitset' must be a dict.")
-
-        for pat in bitset:
-            if (len(pat) > 1):
-                #If the pattern is not equivalent to a selector
-                continue
-            selector = pat.get_selector(0)
-            # If the selector is not in the list of selectors used in the current row, we have to add
-            # the information of the current row of the dataset.
-            if (selector not in selectorsUsed):
-                bitset[selector] = bitset[selector] + [False]
-        return bitset
 
     def generate_set_of_frequent_selectors(self, pandas_dataframe, tuple_target_attribute_value, min_support):
         """Method to scan the dataset (ONLY DISCRETE/NOMINAL ATTRIBUTES) and collect the sorted set of frequent selectors (L).
@@ -250,4 +200,8 @@ class BitsetBSD(object):
             # Save the selector and its support in the dictionary if it is above the minimum support
             if num_pos >= min_support:
                 set_of_frequent_selectors[Selector(selector[0], Operator.EQUAL, selector[1])] = num_pos
-        return list(set_of_frequent_selectors.keys())
+        list_of_frequent_selectors = [(key, set_of_frequent_selectors[key]) for key in set_of_frequent_selectors.keys()]
+        # Sort the list of frequent selectors by tp
+        list_of_frequent_selectors.sort(key=lambda x: x[1], reverse=True)
+        # Return only the selectors
+        return [x[0] for x in list_of_frequent_selectors]
