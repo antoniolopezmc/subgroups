@@ -3,7 +3,7 @@
 # Contributors:
 #    Paco Mora Caselles <pacomoracaselles@gmail.com>
 
-"""This file contains the implementation of the FPTree data structure used in the BSD algorithm and its variants.
+"""This file contains the implementation of the Bitset data structure used in the BSD algorithm and its variants.
 """
 
 from pandas import DataFrame
