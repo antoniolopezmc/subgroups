@@ -6,7 +6,7 @@
 """This file contains the implementation of the Bitset data structure used in the QFinder to create the regression models.
 """
 
-from pandas import DataFrame
+from pandas import DataFrame, Series
 
 # Python annotations.
 from typing import Union
@@ -24,21 +24,12 @@ class Bitset_QFinder:
     """
 
 
-    __slots__ = ["_df","_TP", "_FP", "_coverage", "_odds_ratios", "_p_values", "_absolute_contributios", "_contribution_ratios", "_adjusted_odds_ratios" ,"_corrected_p_values", "_adjusted_corrected_p_values"]
+    __slots__ = ["_df","_TP", "_FP"]
 
 
 
     def __init__(self):
         self._df = DataFrame()
-        self._coverage = {}
-        self._odds_ratios = {}
-        self._p_values = {}
-        self._absolute_contributios = {}
-        self._contribution_ratios = {}
-        self._adjusted_odds_ratios = {}
-        self._corrected_p_values = {}
-        self._adjusted_corrected_p_values = {}
-        
 
 
 
@@ -59,28 +50,36 @@ class Bitset_QFinder:
         
 
 
-    
-    def compute_confidence_measures(self, target_column) -> None:
-        # We create the global model for corrected and adjusted confidence measures
 
+    
+    def compute_confidence_measures(self, target_column) -> tuple[dict, dict, dict, dict, dict, dict, dict, dict]:
+
+
+        # We create the global model for corrected and adjusted confidence measures
         results = sm.Logit(target_column, self._df).fit()
-        self._adjusted_odds_ratios = results.params.apply(np.exp).to_dict()
-        self._corrected_p_values = results.pvalues.to_dict()
+        adjusted_odds_ratios = results.params.apply(np.exp).to_dict()
+        corrected_p_values = results.pvalues.to_dict()
         # We use the Bonferroni correction for adjusted corrected p-values: each p_value is multiplied by the number of predictors
-        self._adjusted_corrected_p_values = results.pvalues.apply(lambda x: x * len(self._corrected_p_values)).to_dict()
+        adjusted_corrected_p_values = results.pvalues.apply(lambda x: x * len(corrected_p_values)).to_dict()
         
+        odds_ratios = {}
+        p_values = {}
+        coverages = {}
+        absolute_contributions = {}
+        contribution_ratios = {}
+
         # We create models to calculate the odds ratios and p-values for each pattern
         for pattern in self._df.columns:
             results = sm.Logit(target_column, self._df[pattern]).fit()
-            self._odds_ratios[pattern] = np.exp(results.params[0])
-            self._p_values[pattern] = results.pvalues[0]
-            self._coverage[pattern] = len(self._df[self._df[pattern]])/(self._TP + self._FP)
+            odds_ratios[pattern] = np.exp(results.params[0])
+            p_values[pattern] = results.pvalues[0]
+            coverages[pattern] = len(self._df[self._df[pattern]])/(self._TP + self._FP)
 
         # We calculate the absolute contribution and the contribution ratio for each pattern
         for pattern_as_str in self._df.columns:
             minimum_absolute_contribution = 0
             maximum_absolute_contribution = 1
-            odds_ratio = self._odds_ratios[pattern_as_str]
+            odds_ratio = odds_ratios[pattern_as_str]
             pattern = Pattern.generate_from_str(pattern_as_str)
             if len(pattern) == 1:
                 minimum_absolute_contribution = 1
@@ -88,8 +87,10 @@ class Bitset_QFinder:
                 for selector in pattern:
                     pattern_without_selector = pattern.copy()
                     pattern_without_selector.remove_selector(selector)
-                    pattern_without_selector_odds_ratio = self._odds_ratios[str(pattern_without_selector)]
+                    pattern_without_selector_odds_ratio = odds_ratios[str(pattern_without_selector)]
                     minimum_absolute_contribution = min(minimum_absolute_contribution, pattern_without_selector_odds_ratio/odds_ratio)
                     maximum_absolute_contribution = max(maximum_absolute_contribution, pattern_without_selector_odds_ratio/odds_ratio)
-            self._absolute_contributios[pattern_as_str] = minimum_absolute_contribution
-            self._contribution_ratios[pattern_as_str] = maximum_absolute_contribution/minimum_absolute_contribution
+            absolute_contributions[pattern_as_str] = minimum_absolute_contribution
+            contribution_ratios[pattern_as_str] = maximum_absolute_contribution/minimum_absolute_contribution
+
+        return coverages, odds_ratios, p_values,absolute_contributions, contribution_ratios, adjusted_odds_ratios, corrected_p_values, adjusted_corrected_p_values
