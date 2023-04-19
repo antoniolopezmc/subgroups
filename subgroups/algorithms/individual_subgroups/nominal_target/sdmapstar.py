@@ -171,7 +171,7 @@ class SDMapStar(Algorithm):
     additional_parameters_for_the_quality_measure = property(_get_additional_parameters_for_the_quality_measure, None, None, "The additional needed parameters with which to compute the quality measure.")
     k_subgroups = property(_get_k_subgroups, None, None, "The list of the k subgroups used to prune.")
     num_subgroups = property(_get_num_subgroups, None, None, "The maximum number of subgroups in 'k_subgroups'.")
-    pruned_subgroups = property(_get_pruned_subgroups, None, None, "The number of pruned subgroups.")
+    pruned_subgroups = property(_get_pruned_subgroups, None, None, "The number of pruned subgroups because of the top k threshold.")
     conditional_pruned_branches = property(_get_conditional_pruned_branches, None, None, "The number of conditional pruned branches.")
 
     def _get_unselected_subgroups(self) -> int:
@@ -183,9 +183,9 @@ class SDMapStar(Algorithm):
     def _get_visited_nodes(self) -> int:
         return self._unselected_subgroups + self._selected_subgroups
 
-    unselected_subgroups = property(_get_unselected_subgroups, None, None, "Number of unselected subgroups after executing the SDMap algorithm (before executing the 'fit' method, this attribute is 0).")
-    selected_subgroups = property(_get_selected_subgroups, None, None, "Number of selected subgroups after executing the SDMap algorithm (before executing the 'fit' method, this attribute is 0).")
-    visited_nodes = property(_get_visited_nodes, None, None, "Number of visited nodes after executing the SDMap algorithm (before executing the 'fit' method, this attribute is 0).")
+    unselected_subgroups = property(_get_unselected_subgroups, None, None, "Number of unselected subgroups after executing the SDMapStar algorithm (before executing the 'fit' method, this attribute is 0).")
+    selected_subgroups = property(_get_selected_subgroups, None, None, "Number of selected subgroups after executing the SDMapStar algorithm (before executing the 'fit' method, this attribute is 0).")
+    visited_nodes = property(_get_visited_nodes, None, None, "Number of visited nodes after executing the SDMapStar algorithm (before executing the 'fit' method, this attribute is 0).")
 
 
     def _handle_individual_result(self, individual_result : tuple[Pattern, tuple[str, str], int, int, int, int]) -> None:
