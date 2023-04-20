@@ -39,6 +39,8 @@ class Bitset_QFinder:
         self._FP = len(df) - self._TP
         
         df_without_target = df.drop(columns=[tuple_target_attribute_value[0]])
+        
+        pattern_matches = {}
         for pattern in list_of_candidate_patterns:
             entry = None
             for selector in pattern:
@@ -46,8 +48,8 @@ class Bitset_QFinder:
                     entry = df_without_target[selector.attribute_name] == selector.value
                 else:
                     entry = entry & (df_without_target[selector.attribute_name] == selector.value)
-            self._df[str(pattern)] = entry
-        
+            pattern_matches[str(pattern)] = entry
+        self._df = DataFrame(pattern_matches)
 
 
 
@@ -56,7 +58,7 @@ class Bitset_QFinder:
 
 
         # We create the global model for corrected and adjusted confidence measures
-        results = sm.Logit(target_column, self._df).fit()
+        results = sm.GLM(target_column, self._df,family=sm.families.Binomial()).fit()
         adjusted_odds_ratios = results.params.apply(np.exp).to_dict()
         corrected_p_values = results.pvalues.to_dict()
         # We use the Bonferroni correction for adjusted corrected p-values: each p_value is multiplied by the number of predictors
@@ -70,7 +72,7 @@ class Bitset_QFinder:
 
         # We create models to calculate the odds ratios and p-values for each pattern
         for pattern in self._df.columns:
-            results = sm.Logit(target_column, self._df[pattern]).fit()
+            results = sm.GLM(target_column, self._df[pattern],family=sm.families.Binomial()).fit()
             odds_ratios[pattern] = np.exp(results.params[0])
             p_values[pattern] = results.pvalues[0]
             coverages[pattern] = len(self._df[self._df[pattern]])/(self._TP + self._FP)
@@ -91,6 +93,9 @@ class Bitset_QFinder:
                     minimum_absolute_contribution = min(minimum_absolute_contribution, pattern_without_selector_odds_ratio/odds_ratio)
                     maximum_absolute_contribution = max(maximum_absolute_contribution, pattern_without_selector_odds_ratio/odds_ratio)
             absolute_contributions[pattern_as_str] = minimum_absolute_contribution
-            contribution_ratios[pattern_as_str] = maximum_absolute_contribution/minimum_absolute_contribution
+            if minimum_absolute_contribution == 0:
+                contribution_ratios[pattern_as_str] = np.inf
+            else:
+                contribution_ratios[pattern_as_str] = maximum_absolute_contribution/minimum_absolute_contribution
 
         return coverages, odds_ratios, p_values,absolute_contributions, contribution_ratios, adjusted_odds_ratios, corrected_p_values, adjusted_corrected_p_values

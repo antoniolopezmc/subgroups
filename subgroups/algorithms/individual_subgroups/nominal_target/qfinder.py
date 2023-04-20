@@ -41,7 +41,7 @@ class QFinder(Algorithm):
     :param num_subgroups: the number of top subgroups to return.
     """
 
-    __slots__ = ['_cats', '_max_complexity', '_coverage_thld', '_or_thld', '_p_val_thld', '_abs_contribution_thld', '_contribution_thld', '_file', '_file_path', '_df', '_coverages', '_odds_ratios', '_p_values', '_absolute_contributions', '_contribution_ratios', '_adjusted_odds_ratios', '_corrected_p_values', '_adjusted_corrected_p_values','_delta', '_num_subgroups']
+    __slots__ = ['_num_subgroups','_cats', '_max_complexity', '_coverage_thld', '_or_thld', '_p_val_thld', '_abs_contribution_thld', '_contribution_thld', '_file', '_file_path', '_df', '_coverages', '_odds_ratios', '_p_values', '_absolute_contributions', '_contribution_ratios', '_adjusted_odds_ratios', '_corrected_p_values', '_adjusted_corrected_p_values','_delta', '_num_subgroups', '_top_patterns', '_candidate_patterns']
 
     def __init__(self, num_subgroups :int, cats : int = -1, max_complexity: int = -1, coverage_thld: float = 0.1, or_thld: float = 1.2, p_val_thld: float = 0.05, abs_contribution_thld: float = 0.2, contribution_thld: float = 5, delta :float = 0.2, write_results_in_file: bool = False, file_path: Union[str,None] = None) -> None:
         if type(num_subgroups) is not int:
@@ -79,6 +79,7 @@ class QFinder(Algorithm):
         if (write_results_in_file) and (file_path is None):
             raise ValueError("If the parameter 'write_results_in_file' is True, the parameter 'file_path' must not be None.")
         
+        self._num_subgroups = num_subgroups
         self._cats = cats
         self._max_complexity = max_complexity
         self._coverage_thld = coverage_thld
@@ -94,7 +95,6 @@ class QFinder(Algorithm):
         self._file = None
         self._top_patterns = []
         self._candidate_patterns = []
-        self._top_patterns = []
 
 
 
@@ -172,6 +172,9 @@ class QFinder(Algorithm):
         
         complex_patterns = []
 
+        if (max_complexity == -1):
+            max_complexity = len(df_without_target.columns)
+
         # We generate the list of candidate patterns by combining the simple patterns.
         for L in range(2, max_complexity):
             # We take each combination of L simple patterns.
@@ -188,7 +191,7 @@ class QFinder(Algorithm):
         # The list of candidate patterns is the union of the list of simple patterns and the list of complex patterns.
         return simple_patterns + complex_patterns
 
-    def _compute_rank(self,credibility: list[bool]) -> int:
+    def _handle_individual_result(self,credibility: list[bool]) -> int:
         """
         Method to compute the rank of a pattern.
 
@@ -241,7 +244,7 @@ class QFinder(Algorithm):
         """
 
         # We first sort the patterns by their p_value. This sorting will be used in case of ties in the ranking.
-        sorted_patterns = sorted(self._patterns, key=lambda pattern: self._p_values[str(pattern)])
+        sorted_patterns = sorted(self._candidate_patterns, key=lambda pattern: self._p_values[str(pattern)])
         ranks = []
         for pattern in sorted_patterns:
             # We compute the credibility of each pattern. The credibility of a pattern is a list of booleans, where each boolean represents a criterion.
@@ -255,7 +258,7 @@ class QFinder(Algorithm):
             credibility.append((self._corrected_p_values[str(pattern)] <= self._p_val_thld))
             credibility.append((self._adjusted_corrected_p_values[str(pattern)] <= self._p_val_thld))
             # We compute the rank of the pattern.
-            rank = self._compute_rank(credibility)
+            rank = self._handle_individual_result(credibility)
             ranks.append(rank)
         # We sort the patterns according to their ranks.
         # If two patterns have the same rank, we sort them according to their appearance in sorted_patterns (i.e. according to their p-values).
@@ -285,7 +288,7 @@ class QFinder(Algorithm):
         for length in sorted(ranked_patterns_by_length.keys()):
             for pattern in ranked_patterns_by_length[length]:
                 # If p-value(pattern) > max(p-value(top_k_patterns)) and |top_k_patterns| == k, we continue to the next length.
-                if self._p_values[str(pattern)] > max(map(lambda pattern: self._p_values[str(pattern)], top_k_patterns)) and len(top_k_patterns) == self._num_subgroups:
+                if (len(top_k_patterns) == self._num_subgroups) and (self._p_values[str(pattern)] > max(map(lambda pattern: self._p_values[str(pattern)], top_k_patterns))):
                     break
                 # We check the redundancy of the pattern with the patterns in top_k_patterns. Breaking the loop means that the pattern is redundant and we continue to the next pattern.
                 for top_pattern in top_k_patterns:
@@ -340,7 +343,7 @@ class QFinder(Algorithm):
         qfinder_bitset = Bitset_QFinder()
         qfinder_bitset.generate_bitset(df, tuple_target_attribute_value, self._candidate_patterns)
         self._coverages, self._odds_ratios, self._p_values, self._absolute_contributions, self._contribution_ratios,self._adjusted_odds_ratios, self._corrected_p_values, self._adjusted_corrected_p_values \
-            = qfinder_bitset.compute_confidence_measures()
+            = qfinder_bitset.compute_confidence_measures(df[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1])
         ranked_patterns = self.rank_patterns()
         self._top_patterns = self._select_top_k(ranked_patterns)
         if self._file_path is not None:
