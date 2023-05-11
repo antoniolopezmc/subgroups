@@ -38,13 +38,13 @@ class CPBSD(BSD):
         
 
         # if optimistic estimate > min or k-subgroups is not full
-        if(oe > self._k_subgroups[0][0] or len(self._k_subgroups) < self.num_subgroups):
+        if(oe >= self._k_subgroups[0][0] or len(self._k_subgroups) < self.num_subgroups):
             # Add the current selector to the list of new selectors added to the conditional pattern
             newSelRel.append((oe, sCurr))
             # Add the current selector with the pattern to the dictionaries of positive and negative entries
             CcondPos,CcondNeg = self._attach(cCurrPos, cCurrNeg, CcondPos, CcondNeg, sCurr, selCond)
             #if quality > min or k-subgroups is not full
-            if quality > self._k_subgroups[0][0] or len(self._k_subgroups) < self.num_subgroups:
+            if quality >= self._k_subgroups[0][0] or len(self._k_subgroups) < self.num_subgroups:
                 # sg = conditional pattern + current selector
                 if selCond:
                     sg = selCond.copy()
