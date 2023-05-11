@@ -37,13 +37,15 @@ class QFinder(Algorithm):
     :param contribution_thld: the minimum contribution ratio threshold.
     :param write_results_in_file: if True, the results will be written in a file.
     :param file_path: the path of the file where the results will be written.
+    :param write_stats_in_file: if True, the statistics will be written in a HTML file.
+    :param stats_path: the path of the file where the statistics will be written.
     :param delta: minimum delta to consider that a subgroup has a higher effect size.
     :param num_subgroups: the number of top subgroups to return.
     """
 
-    __slots__ = ['_num_subgroups','_cats', '_max_complexity', '_coverage_thld', '_or_thld', '_p_val_thld', '_abs_contribution_thld', '_contribution_thld', '_file', '_file_path', '_df', '_coverages', '_odds_ratios', '_p_values', '_absolute_contributions', '_contribution_ratios', '_adjusted_odds_ratios', '_corrected_p_values', '_adjusted_corrected_p_values','_delta', '_num_subgroups', '_top_patterns', '_candidate_patterns']
+    __slots__ = ['_num_subgroups','_cats', '_max_complexity', '_coverage_thld', '_or_thld', '_p_val_thld', '_abs_contribution_thld', '_contribution_thld', '_file', '_file_path', '_stats_file', '_stats_path' , '_df', '_coverages', '_odds_ratios', '_p_values', '_absolute_contributions', '_contribution_ratios', '_adjusted_odds_ratios', '_corrected_p_values', '_adjusted_p_values','_delta', '_num_subgroups', '_top_patterns', '_candidate_patterns']
 
-    def __init__(self, num_subgroups :int, cats : int = -1, max_complexity: int = -1, coverage_thld: float = 0.1, or_thld: float = 1.2, p_val_thld: float = 0.05, abs_contribution_thld: float = 0.2, contribution_thld: float = 5, delta :float = 0.2, write_results_in_file: bool = False, file_path: Union[str,None] = None) -> None:
+    def __init__(self, num_subgroups :int, cats : int = -1, max_complexity: int = -1, coverage_thld: float = 0.1, or_thld: float = 1.2, p_val_thld: float = 0.05, abs_contribution_thld: float = 0.2, contribution_thld: float = 5, delta :float = 0.2, write_results_in_file: bool = False, file_path: Union[str,None] = None, write_stats_in_file: bool = False, stats_path: Union[str,None] = None) -> None:
         if type(num_subgroups) is not int:
             raise TypeError("The type of the parameter 'num_subgroups' must be 'int'.")
         if type(cats) is not int:
@@ -78,6 +80,9 @@ class QFinder(Algorithm):
         # If 'write_results_in_file' is True, 'file_path' must not be None.
         if (write_results_in_file) and (file_path is None):
             raise ValueError("If the parameter 'write_results_in_file' is True, the parameter 'file_path' must not be None.")
+        # If 'write_stats_in_file' is True, 'stats_path' must not be None.
+        if (write_stats_in_file) and (stats_path is None):
+            raise ValueError("If the parameter 'write_stats_in_file' is True, the parameter 'stats_path' must not be None.")
         
         self._num_subgroups = num_subgroups
         self._cats = cats
@@ -89,9 +94,13 @@ class QFinder(Algorithm):
         self._contribution_thld = contribution_thld
         self._delta = delta
         if (write_results_in_file):
-                self._file_path = file_path
+            self._file_path = file_path
         else:
             self._file_path = None
+        if (write_stats_in_file):
+            self._stats_path = stats_path
+        else:
+            self._stats_path = None
         self._file = None
         self._top_patterns = []
         self._candidate_patterns = []
@@ -234,7 +243,7 @@ class QFinder(Algorithm):
         return True
 
 
-    def rank_patterns(self) -> list[Pattern]:
+    def _rank_patterns(self) -> list[Pattern]:
 
         """
         Method to assing a rank to each of the candidate patterns.
@@ -254,9 +263,10 @@ class QFinder(Algorithm):
             credibility.append((self._p_values[str(pattern)] <= self._p_val_thld))
             credibility.append((self._absolute_contributions[str(pattern)] >= self._abs_contribution_thld))
             credibility.append((self._contribution_ratios[str(pattern)] <= self._contribution_thld))
-            credibility.append((self._adjusted_odds_ratios[str(pattern)] >= self._or_thld))
-            credibility.append((self._corrected_p_values[str(pattern)] <= self._p_val_thld))
-            credibility.append((self._adjusted_corrected_p_values[str(pattern)] <= self._p_val_thld))
+            # WARNING: Corrected measures for confounders are not implemented yet. 
+            # credibility.append((self._adjusted_odds_ratios[str(pattern)] >= self._or_thld))
+            # credibility.append((self._corrected_p_values[str(pattern)] <= self._p_val_thld))
+            credibility.append((self._adjusted_p_values[str(pattern)] <= self._p_val_thld))
             # We compute the rank of the pattern.
             rank = self._handle_individual_result(credibility)
             ranks.append(rank)
@@ -312,6 +322,7 @@ class QFinder(Algorithm):
                     if len(top_k_patterns) > self._num_subgroups:
                         max_p_val_pattern = max(top_k_patterns, key=lambda pattern: self._p_values[str(pattern)])
                         top_k_patterns.remove(max_p_val_pattern)
+                    continue
                 
                 # If we did break the first top_pattern in top_patterns loop, we continue to the next pattern.
                 break
@@ -342,12 +353,14 @@ class QFinder(Algorithm):
         # We compute the confidence measures for each candidate pattern using the bitset structure.
         qfinder_bitset = Bitset_QFinder()
         qfinder_bitset.generate_bitset(df, tuple_target_attribute_value, self._candidate_patterns)
-        self._coverages, self._odds_ratios, self._p_values, self._absolute_contributions, self._contribution_ratios,self._adjusted_odds_ratios, self._corrected_p_values, self._adjusted_corrected_p_values \
+        self._coverages, self._odds_ratios, self._p_values, self._absolute_contributions, self._contribution_ratios, self._adjusted_p_values \
             = qfinder_bitset.compute_confidence_measures(df[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1])
-        ranked_patterns = self.rank_patterns()
+        ranked_patterns = self._rank_patterns()
         self._top_patterns = self._select_top_k(ranked_patterns)
         if self._file_path is not None:
             self._to_file(tuple_target_attribute_value)
+        if self._stats_path is not None:
+            self._to_stats_file()
     
     def _to_file(self, target):
         self._file = open(self._file_path, "w")
@@ -359,10 +372,23 @@ class QFinder(Algorithm):
             self._file.write("p_value: " + str(self._p_values[str(pat)]) + " ; ")
             self._file.write("absolute_contribution: " + str(self._absolute_contributions[str(pat)]) + " ; ")
             self._file.write("contribution_ratio: " + str(self._contribution_ratios[str(pat)]) + " ; ")
-            self._file.write("adjusted_odds_ratio: " + str(self._adjusted_odds_ratios[str(pat)]) + " ; ")
-            self._file.write("corrected_p_value: " + str(self._corrected_p_values[str(pat)]) + " ; ")
-            self._file.write("adjusted_corrected_p_value: " + str(self._adjusted_corrected_p_values[str(pat)]) + " ; ")
+            # self._file.write("adjusted_odds_ratio: " + str(self._adjusted_odds_ratios[str(pat)]) + " ; ")
+            # self._file.write("corrected_p_value: " + str(self._adjusted_p_values[str(pat)]) + " ; ")
+            self._file.write("adjusted_p_value: " + str(self._adjusted_p_values[str(pat)]) + " ; ")
             self._file.write("\n")
-        
+
+    def _to_stats_file(self):
+        data = {
+            'Pattern': list(self._coverages.keys()),
+            'Coverage': list(self._coverages.values()),
+            'Odds Ratio': list(self._odds_ratios.values()),
+            'P-Value': list(self._p_values.values()),
+            'Absolute Contribution': list(self._absolute_contributions.values()),
+            'Contribution Ratio': list(self._contribution_ratios.values()),
+            'Adjusted P-Value': list(self._adjusted_p_values.values())
+        }
+
+        df = DataFrame(data)
+        df.to_html(self._stats_path, index=False)
         
 

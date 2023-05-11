@@ -185,7 +185,7 @@ class Pattern(object):
             raise TypeError("You are using an object which is not an instance of the 'Selector' class or of a subclass thereof.")
         # We can use the bisection algorithm because the list is sorted.
         index = bisect_left(self._list_of_selectors, item)
-        return (len(self._list_of_selectors) > 0) and (self._list_of_selectors[index] == item)
+        return ( 0 < len(self._list_of_selectors) > index)  and (self._list_of_selectors[index] == item)
     
     def __iter__(self) -> Iterator[Selector]:
         return iter(self._list_of_selectors)

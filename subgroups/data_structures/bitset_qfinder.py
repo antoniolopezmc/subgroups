@@ -54,15 +54,14 @@ class Bitset_QFinder:
 
 
     
-    def compute_confidence_measures(self, target_column) -> tuple[dict, dict, dict, dict, dict, dict, dict, dict]:
+    def compute_confidence_measures(self, target_column) -> tuple[dict, dict, dict, dict, dict, dict]:
 
 
+        # WARNING: Corrected measures for confounders are not implemented yet
         # We create the global model for corrected and adjusted confidence measures
-        results = sm.GLM(target_column, self._df,family=sm.families.Binomial()).fit()
-        adjusted_odds_ratios = results.params.apply(np.exp).to_dict()
-        corrected_p_values = results.pvalues.to_dict()
-        # We use the Bonferroni correction for adjusted corrected p-values: each p_value is multiplied by the number of predictors
-        adjusted_corrected_p_values = results.pvalues.apply(lambda x: x * len(corrected_p_values)).to_dict()
+        # results = sm.Logit(target_column, self._df).fit(method='nm')
+        # adjusted_odds_ratios = results.params.apply(np.exp).to_dict()
+        # corrected_p_values = results.pvalues.to_dict()
         
         odds_ratios = {}
         p_values = {}
@@ -72,30 +71,37 @@ class Bitset_QFinder:
 
         # We create models to calculate the odds ratios and p-values for each pattern
         for pattern in self._df.columns:
-            results = sm.GLM(target_column, self._df[pattern],family=sm.families.Binomial()).fit()
+            # results = sm.Logit(target_column, self._df[pattern]).fit()
+            results = sm.GLM(target_column, self._df[pattern], family=sm.families.Binomial()).fit()
             odds_ratios[pattern] = np.exp(results.params[0])
             p_values[pattern] = results.pvalues[0]
             coverages[pattern] = len(self._df[self._df[pattern]])/(self._TP + self._FP)
 
         # We calculate the absolute contribution and the contribution ratio for each pattern
         for pattern_as_str in self._df.columns:
-            minimum_absolute_contribution = 0
-            maximum_absolute_contribution = 1
+            minimum_absolute_contribution = 1
+            maximum_absolute_contribution = 0
             odds_ratio = odds_ratios[pattern_as_str]
             pattern = Pattern.generate_from_str(pattern_as_str)
             if len(pattern) == 1:
                 minimum_absolute_contribution = 1
+                maximum_absolute_contribution = 1
             else:
                 for selector in pattern:
                     pattern_without_selector = pattern.copy()
                     pattern_without_selector.remove_selector(selector)
                     pattern_without_selector_odds_ratio = odds_ratios[str(pattern_without_selector)]
-                    minimum_absolute_contribution = min(minimum_absolute_contribution, pattern_without_selector_odds_ratio/odds_ratio)
-                    maximum_absolute_contribution = max(maximum_absolute_contribution, pattern_without_selector_odds_ratio/odds_ratio)
+                    minimum_absolute_contribution = min(minimum_absolute_contribution, odds_ratio/pattern_without_selector_odds_ratio)
+                    maximum_absolute_contribution = max(maximum_absolute_contribution, odds_ratio/pattern_without_selector_odds_ratio)
             absolute_contributions[pattern_as_str] = minimum_absolute_contribution
             if minimum_absolute_contribution == 0:
                 contribution_ratios[pattern_as_str] = np.inf
             else:
                 contribution_ratios[pattern_as_str] = maximum_absolute_contribution/minimum_absolute_contribution
+        
 
-        return coverages, odds_ratios, p_values,absolute_contributions, contribution_ratios, adjusted_odds_ratios, corrected_p_values, adjusted_corrected_p_values
+        # We use the Bonferroni correction for adjusted corrected p-values: each p_value is multiplied by the number of predictors
+        adjusted_p_values = {pat : p_values[pat] * len(self._df.columns) for pat in p_values.keys()}
+
+            
+        return coverages, odds_ratios, p_values, absolute_contributions, contribution_ratios, adjusted_p_values
