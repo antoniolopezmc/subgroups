@@ -353,6 +353,7 @@ class QFinder(Algorithm):
         # We compute the confidence measures for each candidate pattern using the bitset structure.
         qfinder_bitset = Bitset_QFinder()
         qfinder_bitset.generate_bitset(df, tuple_target_attribute_value, self._candidate_patterns)
+        self._candidate_patterns = qfinder_bitset.get_non_empty_patterns()
         self._coverages, self._odds_ratios, self._p_values, self._absolute_contributions, self._contribution_ratios, self._adjusted_p_values \
             = qfinder_bitset.compute_confidence_measures(df[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1])
         ranked_patterns = self._rank_patterns()

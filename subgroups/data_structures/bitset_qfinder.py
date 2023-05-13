@@ -48,10 +48,16 @@ class Bitset_QFinder:
                     entry = df_without_target[selector.attribute_name] == selector.value
                 else:
                     entry = entry & (df_without_target[selector.attribute_name] == selector.value)
-            pattern_matches[str(pattern)] = entry
+            # If the pattern is empty (it does not appear in the dataset), we do not add it to the bitset.
+            if entry.sum() != 0:
+                pattern_matches[str(pattern)] = entry
+            # else:
+            #     print( entry.to_list())
         self._df = DataFrame(pattern_matches)
 
 
+    def get_non_empty_patterns(self) -> list[Pattern]:
+        return [Pattern.generate_from_str(pattern_as_str) for pattern_as_str in self._df.columns]
 
     
     def compute_confidence_measures(self, target_column) -> tuple[dict, dict, dict, dict, dict, dict]:
@@ -103,5 +109,4 @@ class Bitset_QFinder:
         # We use the Bonferroni correction for adjusted corrected p-values: each p_value is multiplied by the number of predictors
         adjusted_p_values = {pat : p_values[pat] * len(self._df.columns) for pat in p_values.keys()}
 
-            
         return coverages, odds_ratios, p_values, absolute_contributions, contribution_ratios, adjusted_p_values
