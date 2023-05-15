@@ -60,11 +60,11 @@ class Bitset_QFinder:
         return [Pattern.generate_from_str(pattern_as_str) for pattern_as_str in self._df.columns]
 
     
-    def compute_confidence_measures(self, target_column) -> tuple[dict, dict, dict, dict, dict, dict]:
+    def compute_credibility_measures(self, target_column) -> tuple[dict, dict, dict, dict, dict, dict]:
 
 
         # WARNING: Corrected measures for confounders are not implemented yet
-        # We create the global model for corrected and adjusted confidence measures
+        # We create the global model for corrected and adjusted credibility measures
         # results = sm.Logit(target_column, self._df).fit(method='nm')
         # adjusted_odds_ratios = results.params.apply(np.exp).to_dict()
         # corrected_p_values = results.pvalues.to_dict()

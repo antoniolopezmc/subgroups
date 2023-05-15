@@ -18,7 +18,7 @@ from subgroups.core.selector import Selector
 from subgroups.core.subgroup import Subgroup
 from bitarray import bitarray
 from subgroups.data_structures.bitset_qfinder import Bitset_QFinder
-
+import operator
 
 
 
@@ -43,7 +43,21 @@ class QFinder(Algorithm):
     :param num_subgroups: the number of top subgroups to return.
     """
 
-    __slots__ = ['_num_subgroups','_cats', '_max_complexity', '_coverage_thld', '_or_thld', '_p_val_thld', '_abs_contribution_thld', '_contribution_thld', '_file', '_file_path', '_stats_file', '_stats_path' , '_df', '_coverages', '_odds_ratios', '_p_values', '_absolute_contributions', '_contribution_ratios', '_adjusted_odds_ratios', '_corrected_p_values', '_adjusted_p_values','_delta', '_num_subgroups', '_top_patterns', '_candidate_patterns']
+    __slots__ = ['_num_subgroups','_cats', '_max_complexity', '_thresholds','_credibility_values' , '_file', '_file_path', '_stats_file', '_stats_path' , '_df','_delta', '_num_subgroups', '_top_patterns', '_candidate_patterns']
+
+
+    _credibility_criterions = {
+        "coverage" :  operator.ge,
+        "odds_ratio" : operator.ge,
+        "p_value" : operator.le,
+        "absolute_contribution" : operator.ge,
+        "contribution_ratio" : operator.le,
+        # "adjusted_odds_ratio" : operator.ge,
+        # "corrected_p_value" : operator.le,
+        "adjusted_p_value" : operator.le
+
+    }
+
 
     def __init__(self, num_subgroups :int, cats : int = -1, max_complexity: int = -1, coverage_thld: float = 0.1, or_thld: float = 1.2, p_val_thld: float = 0.05, abs_contribution_thld: float = 0.2, contribution_thld: float = 5, delta :float = 0.2, write_results_in_file: bool = False, file_path: Union[str,None] = None, write_stats_in_file: bool = False, stats_path: Union[str,None] = None) -> None:
         if type(num_subgroups) is not int:
@@ -87,11 +101,6 @@ class QFinder(Algorithm):
         self._num_subgroups = num_subgroups
         self._cats = cats
         self._max_complexity = max_complexity
-        self._coverage_thld = coverage_thld
-        self._or_thld = or_thld
-        self._p_val_thld = p_val_thld
-        self._abs_contribution_thld = abs_contribution_thld
-        self._contribution_thld = contribution_thld
         self._delta = delta
         if (write_results_in_file):
             self._file_path = file_path
@@ -105,6 +114,16 @@ class QFinder(Algorithm):
         self._top_patterns = []
         self._candidate_patterns = []
 
+        self._thresholds = {
+            "coverage" : coverage_thld,
+            "odds_ratio" : or_thld,
+            "p_value" : p_val_thld,
+            "absolute_contribution" : abs_contribution_thld,
+            "contribution_ratio" : contribution_thld,
+            # "adjusted_odds_ratio" : self._or_thld,
+            # "corrected_p_value" : self._p_val_thld,
+            "adjusted_p_value" : p_val_thld
+        }
 
 
     def _get_selected_subgrouops(self) -> int:
@@ -253,20 +272,13 @@ class QFinder(Algorithm):
         """
 
         # We first sort the patterns by their p_value. This sorting will be used in case of ties in the ranking.
-        sorted_patterns = sorted(self._candidate_patterns, key=lambda pattern: self._p_values[str(pattern)])
+        sorted_patterns = sorted(self._candidate_patterns, key=lambda pattern: self._credibility_values["p_value"][str(pattern)])
         ranks = []
         for pattern in sorted_patterns:
             # We compute the credibility of each pattern. The credibility of a pattern is a list of booleans, where each boolean represents a criterion.
             credibility = []
-            credibility.append((self._coverages[str(pattern)] >= self._coverage_thld))
-            credibility.append((self._odds_ratios[str(pattern)] >= self._or_thld))
-            credibility.append((self._p_values[str(pattern)] <= self._p_val_thld))
-            credibility.append((self._absolute_contributions[str(pattern)] >= self._abs_contribution_thld))
-            credibility.append((self._contribution_ratios[str(pattern)] <= self._contribution_thld))
-            # WARNING: Corrected measures for confounders are not implemented yet. 
-            # credibility.append((self._adjusted_odds_ratios[str(pattern)] >= self._or_thld))
-            # credibility.append((self._corrected_p_values[str(pattern)] <= self._p_val_thld))
-            credibility.append((self._adjusted_p_values[str(pattern)] <= self._p_val_thld))
+            for cred in QFinder._credibility_criterions:
+                credibility.append(QFinder._credibility_criterions[cred](self._credibility_values[cred][str(pattern)],self._thresholds[cred]))
             # We compute the rank of the pattern.
             rank = self._handle_individual_result(credibility)
             ranks.append(rank)
@@ -298,7 +310,7 @@ class QFinder(Algorithm):
         for length in sorted(ranked_patterns_by_length.keys()):
             for pattern in ranked_patterns_by_length[length]:
                 # If p-value(pattern) > max(p-value(top_k_patterns)) and |top_k_patterns| == k, we continue to the next length.
-                if (len(top_k_patterns) == self._num_subgroups) and (self._p_values[str(pattern)] > max(map(lambda pattern: self._p_values[str(pattern)], top_k_patterns))):
+                if (len(top_k_patterns) == self._num_subgroups) and (self._credibility_values["p_value"][str(pattern)] > max(map(lambda pattern: self._credibility_values["p_value"][str(pattern)], top_k_patterns))):
                     break
                 # We check the redundancy of the pattern with the patterns in top_k_patterns. Breaking the loop means that the pattern is redundant and we continue to the next pattern.
                 for top_pattern in top_k_patterns:
@@ -306,21 +318,21 @@ class QFinder(Algorithm):
                         if len(pattern) == len(top_pattern):
                             break
                         # If the effect size (odds_ratio) of the pattern is not significantly larger than the effect size of the top pattern, we continue to the next pattern.
-                        if len(pattern) > len(top_pattern) and self._odds_ratios[str(pattern)] <= self._odds_ratios[str(top_pattern)] + self._delta:
+                        if len(pattern) > len(top_pattern) and self._credibility_values["odds_ratio"][str(pattern)] <= self._credibility_values["odds_ratio"][str(top_pattern)] + self._delta:
                             break
                 else: 
                     # If we didn't break, the pattern is not redundant or we justify the redundancy with a high effect size.
                     # In this case, we remove the patterns in top_k_patterns that are redundant with the new pattern and we add the pattern to top_k_patterns.
                     for top_pattern in top_k_patterns:
                         if self._redundant(pattern,top_pattern) and len(pattern) > len(top_pattern) and \
-                            self._odds_ratios[str(pattern)] > self._odds_ratios[str(top_pattern)] + self._delta and \
-                                self._p_values[str(pattern)] < self._p_values[str(top_pattern)]:
+                            self._credibility_values["odds_ratio"][str(pattern)] > self._credibility_values["odds_ratio"][str(top_pattern)] + self._delta and \
+                                self._credibility_values["p_value"][str(pattern)] < self._credibility_values["p_value"][str(top_pattern)]:
                             top_k_patterns.remove(top_pattern)
                     top_k_patterns.append(pattern)
 
                     # If |top_k_patterns| > k, we remove the pattern with the highest p-value.
                     if len(top_k_patterns) > self._num_subgroups:
-                        max_p_val_pattern = max(top_k_patterns, key=lambda pattern: self._p_values[str(pattern)])
+                        max_p_val_pattern = max(top_k_patterns, key=lambda pattern: self._credibility_values["p_value"][str(pattern)])
                         top_k_patterns.remove(max_p_val_pattern)
                     continue
                 
@@ -350,16 +362,29 @@ class QFinder(Algorithm):
         df = pandas_dataframe.copy()
         # We generate the list of candidate patterns.
         self._candidate_patterns = self._generate_candidate_patterns(df, tuple_target_attribute_value, self._max_complexity, self._cats)
-        # We compute the confidence measures for each candidate pattern using the bitset structure.
+        # We compute the credibility measures for each candidate pattern using the bitset structure.
         qfinder_bitset = Bitset_QFinder()
         qfinder_bitset.generate_bitset(df, tuple_target_attribute_value, self._candidate_patterns)
         self._candidate_patterns = qfinder_bitset.get_non_empty_patterns()
-        self._coverages, self._odds_ratios, self._p_values, self._absolute_contributions, self._contribution_ratios, self._adjusted_p_values \
-            = qfinder_bitset.compute_confidence_measures(df[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1])
+        # self._coverages, self._odds_ratios, self._p_values, self._absolute_contributions, self._contribution_ratios, self._adjusted_p_values \
+        #     = qfinder_bitset.compute_credibility_measures(df[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1])
+        coverages, odds_ratios, p_values, absolute_contributions, contribution_ratios, adjusted_p_values \
+            = qfinder_bitset.compute_credibility_measures(df[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1])
+        self._credibility_values = {
+            "coverage": coverages,
+            "odds_ratio": odds_ratios,
+            "p_value": p_values,
+            "absolute_contribution": absolute_contributions,
+            "contribution_ratio": contribution_ratios,
+            # "adjusted_odds_ratio": adjusted_odds_ratios,
+            # "corrected_p_value": corrected_p_values,
+            "adjusted_p_value": adjusted_p_values
+        }
+
         ranked_patterns = self._rank_patterns()
         self._top_patterns = self._select_top_k(ranked_patterns)
         if self._file_path is not None:
-            self._to_file(tuple_target_attribute_value)
+            self._to_file(self._file_path,tuple_target_attribute_value, self._credibility_values)
         if self._stats_path is not None:
             self._to_stats_file()
 
@@ -370,7 +395,7 @@ class QFinder(Algorithm):
         :param test_dataframe: the DataFrame which is scanned. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
         :param target: a tuple with 2 elements: the target attribute name and the target value.
 
-        :return: a dictionary with the confidence measures for each subgroup.
+        :return: a dictionary with the credibility measures for each subgroup.
 
         """
         # We make sure that the fit method has been called before.
@@ -387,11 +412,11 @@ class QFinder(Algorithm):
             raise ValueError("The file path must be specified.")
         elif write_to_file and type(file_path) != str:
             raise TypeError("The file path must be a string.")
-        # We generate a different bitset for the test dataset, which whill be used to compute the confidence measures.
+        # We generate a different bitset for the test dataset, which whill be used to compute the credibility measures.
         qfinder_bitset = Bitset_QFinder()
         qfinder_bitset.generate_bitset(test_dataframe, tuple_target_attribute_value, self._top_patterns)
         coverages, odds_ratios, p_values, absolute_contributions, contribution_ratios, adjusted_p_values \
-            = qfinder_bitset.compute_confidence_measures(test_dataframe[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1])
+            = qfinder_bitset.compute_credibility_measures(test_dataframe[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1])
         parameters = {
             "coverages": coverages,
             "odds_ratios": odds_ratios,
@@ -401,59 +426,38 @@ class QFinder(Algorithm):
             "adjusted_p_values": adjusted_p_values
         }
         if write_to_file:
-            file = open(file_path, "w")
-            for pat in self._top_patterns:
-                subgroup = Subgroup(pat, Selector(tuple_target_attribute_value[0], Operator.EQUAL, tuple_target_attribute_value[1]))
-                file.write(str(subgroup) + " ; ")
-                file.write("coverage: " + str(coverages[str(pat)]) + " ; ")
-                file.write("odds_ratio: " + str(odds_ratios[str(pat)]) + " ; ")
-                file.write("p_value: " + str(p_values[str(pat)]) + " ; ")
-                file.write("absolute_contribution: " + str(absolute_contributions[str(pat)]) + " ; ")
-                file.write("contribution_ratio: " + str(contribution_ratios[str(pat)]) + " ; ")
-                # file.write("adjusted_p_value: " + str(adjusted_p_values[str(pat)]) + " ; ")
-                # file.write("adjusted_p_value: " + str(adjusted_p_values[str(pat)]) + " ; ")
-                file.write("adjusted_p_value: " + str(adjusted_p_values[str(pat)]) + " ; ")
-                file.write("\n")
-            file.close()
+            self._to_file(file_path, tuple_target_attribute_value, parameters)
         return parameters
     
-    def _to_file(self, target):
+    def _to_file(self, file_path, target, credibility_values):
         """
         Writes the top-k patterns to a file.
 
         :param target: a tuple with 2 elements: the target attribute name and the target value.
         """
 
-        self._file = open(self._file_path, "w")
+        self._file = open(file_path, "w")
         for pat in self._top_patterns:
             subgroup = Subgroup(pat, Selector(target[0], Operator.EQUAL, target[1]))
             self._file.write(str(subgroup) + " ; ")
-            self._file.write("coverage: " + str(self._coverages[str(pat)]) + " ; ")
-            self._file.write("odds_ratio: " + str(self._odds_ratios[str(pat)]) + " ; ")
-            self._file.write("p_value: " + str(self._p_values[str(pat)]) + " ; ")
-            self._file.write("absolute_contribution: " + str(self._absolute_contributions[str(pat)]) + " ; ")
-            self._file.write("contribution_ratio: " + str(self._contribution_ratios[str(pat)]) + " ; ")
-            # self._file.write("adjusted_odds_ratio: " + str(self._adjusted_odds_ratios[str(pat)]) + " ; ")
-            # self._file.write("corrected_p_value: " + str(self._adjusted_p_values[str(pat)]) + " ; ")
-            self._file.write("adjusted_p_value: " + str(self._adjusted_p_values[str(pat)]) + " ; ")
+            for cred in credibility_values:
+                self._file.write(cred + ": " + str(credibility_values[cred][str(pat)]) + " ; ")
             self._file.write("\n")
 
     def _to_stats_file(self):
         """
-        Write the confidence measures of each pattern to a file.
+        Write the credibility measures of each pattern to a file.
 
         """
+
         data = {
-            'Pattern': list(self._coverages.keys()),
-            'Coverage': list(self._coverages.values()),
-            'Odds Ratio': list(self._odds_ratios.values()),
-            'P-Value': list(self._p_values.values()),
-            'Absolute Contribution': list(self._absolute_contributions.values()),
-            'Contribution Ratio': list(self._contribution_ratios.values()),
-            'Adjusted P-Value': list(self._adjusted_p_values.values())
-        }
+                cred : list(self._credibility_values[cred].values()) for cred in self._credibility_values
+            }
 
         df = DataFrame(data)
-        df.to_html(self._stats_path, index=False)
-        
+        # Set the row names to be the patterns.
+        df.index = list(self._credibility_values["odds_ratio"].keys())
 
+
+        df.to_html(self._stats_path)
+        
