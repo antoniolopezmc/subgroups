@@ -362,8 +362,68 @@ class QFinder(Algorithm):
             self._to_file(tuple_target_attribute_value)
         if self._stats_path is not None:
             self._to_stats_file()
+
+    def test_subgroups(self,test_dataframe : DataFrame, tuple_target_attribute_value: tuple, write_to_file:bool=False, file_path: Union[str,None]=None):
+        """
+        Method to test the best subgroups on a different dataset. This method can only be called after the fit method.
+        
+        :param test_dataframe: the DataFrame which is scanned. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
+        :param target: a tuple with 2 elements: the target attribute name and the target value.
+
+        :return: a dictionary with the confidence measures for each subgroup.
+
+        """
+        # We make sure that the fit method has been called before.
+        if self._top_patterns is None:
+            raise ValueError("The fit method must be called before testing subgroups.")
+        if type(test_dataframe) != DataFrame:
+            raise TypeError("The dataset must be a pandas DataFrame.")
+        if type(tuple_target_attribute_value) != tuple:
+            raise TypeError("The target must be a tuple.")
+        if type(write_to_file) != bool:
+            raise TypeError("The write_to_file parameter must be a boolean.")
+        # If wirte_to_file is True, file_path must not be None.
+        if write_to_file and file_path is None:
+            raise ValueError("The file path must be specified.")
+        elif write_to_file and type(file_path) != str:
+            raise TypeError("The file path must be a string.")
+        # We generate a different bitset for the test dataset, which whill be used to compute the confidence measures.
+        qfinder_bitset = Bitset_QFinder()
+        qfinder_bitset.generate_bitset(test_dataframe, tuple_target_attribute_value, self._top_patterns)
+        coverages, odds_ratios, p_values, absolute_contributions, contribution_ratios, adjusted_p_values \
+            = qfinder_bitset.compute_confidence_measures(test_dataframe[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1])
+        parameters = {
+            "coverages": coverages,
+            "odds_ratios": odds_ratios,
+            "p_values": p_values,
+            "absolute_contributions": absolute_contributions,
+            "contribution_ratios": contribution_ratios,
+            "adjusted_p_values": adjusted_p_values
+        }
+        if write_to_file:
+            file = open(file_path, "w")
+            for pat in self._top_patterns:
+                subgroup = Subgroup(pat, Selector(tuple_target_attribute_value[0], Operator.EQUAL, tuple_target_attribute_value[1]))
+                file.write(str(subgroup) + " ; ")
+                file.write("coverage: " + str(coverages[str(pat)]) + " ; ")
+                file.write("odds_ratio: " + str(odds_ratios[str(pat)]) + " ; ")
+                file.write("p_value: " + str(p_values[str(pat)]) + " ; ")
+                file.write("absolute_contribution: " + str(absolute_contributions[str(pat)]) + " ; ")
+                file.write("contribution_ratio: " + str(contribution_ratios[str(pat)]) + " ; ")
+                # file.write("adjusted_p_value: " + str(adjusted_p_values[str(pat)]) + " ; ")
+                # file.write("adjusted_p_value: " + str(adjusted_p_values[str(pat)]) + " ; ")
+                file.write("adjusted_p_value: " + str(adjusted_p_values[str(pat)]) + " ; ")
+                file.write("\n")
+            file.close()
+        return parameters
     
     def _to_file(self, target):
+        """
+        Writes the top-k patterns to a file.
+
+        :param target: a tuple with 2 elements: the target attribute name and the target value.
+        """
+
         self._file = open(self._file_path, "w")
         for pat in self._top_patterns:
             subgroup = Subgroup(pat, Selector(target[0], Operator.EQUAL, target[1]))
@@ -379,6 +439,10 @@ class QFinder(Algorithm):
             self._file.write("\n")
 
     def _to_stats_file(self):
+        """
+        Write the confidence measures of each pattern to a file.
+
+        """
         data = {
             'Pattern': list(self._coverages.keys()),
             'Coverage': list(self._coverages.values()),
