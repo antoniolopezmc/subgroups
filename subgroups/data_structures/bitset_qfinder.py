@@ -35,6 +35,17 @@ class Bitset_QFinder:
 
 
     def generate_bitset(self, df : DataFrame, tuple_target_attribute_value: tuple, list_of_candidate_patterns: list[Pattern]) -> None:
+        """
+        This method generates a bitset from a dataset and a list of candidate patterns.
+        Each column of the bitset represents a candidate pattern and each row represents an instance of the dataset.
+        The value of each cell is True if the corresponding pattern appears in the corresponding instance and False otherwise.
+
+        :param df: dataset from which the bitset is generated.
+        :param tuple_target_attribute_value: tuple which contains the name of the target attribute and its value.
+        :param list_of_candidate_patterns: list of candidate patterns.
+
+        
+        """
         self._TP = len(df[df[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1]])
         self._FP = len(df) - self._TP
         
@@ -57,11 +68,21 @@ class Bitset_QFinder:
 
 
     def get_non_empty_patterns(self) -> list[Pattern]:
+        """
+            Method to get the candidate patterns after removing those that do not appear in the dataset.
+        """
         return [Pattern.generate_from_str(pattern_as_str) for pattern_as_str in self._df.columns]
 
     
     def compute_credibility_measures(self, target_column) -> tuple[dict, dict, dict, dict, dict, dict]:
 
+        """
+            Method to compute the credibility measures for each candidate pattern.
+            
+            :param target_column: target column of the dataset.
+            :return: a tuple with dictionaries with the credibility values for each candidate pattern.
+
+        """
 
         # WARNING: Corrected measures for confounders are not implemented yet
         # We create the global model for corrected and adjusted credibility measures

@@ -26,7 +26,7 @@ import operator
 
 class QFinder(Algorithm):
     """
-    This class represents the algorithm BSD (algorithm for subgroup discovery).
+    This class represents the algorithm QFinder (algorithm for subgroup discovery).
 
     :param cats: the number of maximum values for each column. If there is more values, we take the most frequent ones. If this value is -1, we take all the values.
     :param max_complexity: the maximum complexity (length) of the patterns.
@@ -46,6 +46,8 @@ class QFinder(Algorithm):
     __slots__ = ['_num_subgroups','_cats', '_max_complexity', '_thresholds','_credibility_values' , '_file', '_file_path', '_stats_file', '_stats_path' , '_df','_delta', '_num_subgroups', '_top_patterns', '_candidate_patterns']
 
 
+    # A credibility criterion is a credibility measure and a threhosld. Here we set if the credibility measure value
+    # should be greater or equal than the threshold or less or equal than the threshold.
     _credibility_criterions = {
         "coverage" :  operator.ge,
         "odds_ratio" : operator.ge,
@@ -114,6 +116,7 @@ class QFinder(Algorithm):
         self._top_patterns = []
         self._candidate_patterns = []
 
+        # Thresholds for each credibility measure.
         self._thresholds = {
             "coverage" : coverage_thld,
             "odds_ratio" : or_thld,
@@ -252,14 +255,8 @@ class QFinder(Algorithm):
 
         """
 
-        # Since we are only using nominal attributes, we only need to check if one pattern is a subset of the other.
-        pmin = p1 if len(p1) < len(p2) else p2 # The pattern with the smallest number of selectors, hence the one that is likely to be a subset of the other.
-        pmax = p1 if len(p1) >= len(p2) else p2 # The pattern with the largest number of selectors, hence the one that is likely to be a superset of the other.
-        # In order to check if pmin is a subset of pmax, we only need to check if all the selectors of pmin are also in pmax.
-        for s in pmin:
-            if not s in pmax:
-                return False
-        return True
+        # Since we are only using nominal attributes, we only need to check if one pattern is a refinement of the other. We consider a pattern to be a refinement of itself.
+        return p1.is_refinement(p2,True) or p2.is_refinement(p1,True)
 
 
     def _rank_patterns(self) -> list[Pattern]:
