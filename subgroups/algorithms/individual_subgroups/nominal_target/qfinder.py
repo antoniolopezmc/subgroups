@@ -355,7 +355,7 @@ class QFinder(Algorithm):
             if not is_string_dtype(pandas_dataframe[column]):
                 raise DatasetAttributeTypeError("Error in attribute '" + str(column) + "'. This algorithm only supports nominal attributes (i.e., type 'str').")
 
-        # We copy the DataFrame to avoid modifying the original one when dealing with "other" values.
+        # We copy the DataFrame to avoid modifying the original when dealing with "other" values.
         df = pandas_dataframe.copy()
         # We generate the list of candidate patterns.
         self._candidate_patterns = self._generate_candidate_patterns(df, tuple_target_attribute_value, self._max_complexity, self._cats)
@@ -363,8 +363,6 @@ class QFinder(Algorithm):
         qfinder_bitset = Bitset_QFinder()
         qfinder_bitset.generate_bitset(df, tuple_target_attribute_value, self._candidate_patterns)
         self._candidate_patterns = qfinder_bitset.get_non_empty_patterns()
-        # self._coverages, self._odds_ratios, self._p_values, self._absolute_contributions, self._contribution_ratios, self._adjusted_p_values \
-        #     = qfinder_bitset.compute_credibility_measures(df[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1])
         coverages, odds_ratios, p_values, absolute_contributions, contribution_ratios, adjusted_p_values \
             = qfinder_bitset.compute_credibility_measures(df[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1])
         self._credibility_values = {

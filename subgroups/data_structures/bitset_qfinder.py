@@ -62,8 +62,6 @@ class Bitset_QFinder:
             # If the pattern is empty (it does not appear in the dataset), we do not add it to the bitset.
             if entry.sum() != 0:
                 pattern_matches[str(pattern)] = entry
-            # else:
-            #     print( entry.to_list())
         self._df = DataFrame(pattern_matches)
 
 
@@ -98,7 +96,6 @@ class Bitset_QFinder:
 
         # We create models to calculate the odds ratios and p-values for each pattern
         for pattern in self._df.columns:
-            # results = sm.Logit(target_column, self._df[pattern]).fit()
             results = sm.GLM(target_column, self._df[pattern], family=sm.families.Binomial()).fit()
             odds_ratios[pattern] = np.exp(results.params[0])
             p_values[pattern] = results.pvalues[0]
