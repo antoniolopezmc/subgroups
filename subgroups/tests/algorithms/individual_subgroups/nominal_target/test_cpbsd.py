@@ -91,7 +91,7 @@ class TestCPBSD(unittest.TestCase):
         for line in file_to_read:
             list_of_written_results.append(line)
         list_of_subgroups = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]
-        self.assertIn(Subgroup.generate_from_str("Description: [milk = 'no'], Target: diaper = 'yes'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [bread = 'yes', beer = 'yes', coke = 'no', milk = 'no'], Target: diaper = 'yes'"), list_of_subgroups)
         self.assertIn(Subgroup.generate_from_str("Description: [beer = 'yes', bread = 'no', coke = 'yes', milk = 'yes'], Target: diaper = 'yes'"), list_of_subgroups)
         self.assertIn(Subgroup.generate_from_str("Description: [beer = 'no', bread = 'yes', coke = 'yes', milk = 'yes'], Target: diaper = 'yes'"), list_of_subgroups)
         self.assertIn(Subgroup.generate_from_str("Description: [beer = 'yes', bread = 'yes', coke = 'no', milk = 'yes'], Target: diaper = 'yes'"), list_of_subgroups)
