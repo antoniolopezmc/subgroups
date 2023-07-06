@@ -96,7 +96,7 @@ if __name__ == "__main__":
     # Setup function.
     setup(
         cmdclass = {
-            "build_py" : custom_build_py,
+            #"build_py" : custom_build_py,
             "clean_pycache" : clean_pycache,
             "clean" : custom_clean_command
         },
