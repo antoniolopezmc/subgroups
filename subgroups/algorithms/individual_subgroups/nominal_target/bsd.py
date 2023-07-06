@@ -415,11 +415,12 @@ class BSD(Algorithm):
         """
         if type(bitarr1) is not bitarray:
             raise TypeError("Parameter 'bitarr1' must be a bitarray.")
-        n = 0
-        for b in bitarr1:
-            if b:
-                n = n +1
-        return n
+        #n = 0
+        #for b in bitarr1:
+        #    if b:
+        #        n = n +1
+        #return n
+        return bitarr1.count(1)
 
     def _logicalAnd(self,bitarr1 : bitarray,bitarr2 :bitarray) -> bitarray:
         """Internal method to  calculate the logical and of two bitarrays.
@@ -434,12 +435,13 @@ class BSD(Algorithm):
             raise TypeError("Parameter 'bitarr2' must be a bitarray.")
         if len(bitarr1) != len(bitarr2):
             raise TypeError("Lists must be the same length")
-        rv = bitarray()
-        i = 0
-        while i < len(bitarr1):
-            rv.append(bitarr1[i] and bitarr2[i])
-            i = i + 1
-        return rv
+        #rv = bitarray()
+        #i = 0
+        #while i < len(bitarr1):
+        #    rv.append(bitarr1[i] and bitarr2[i])
+        #    i = i + 1
+        #return rv
+        return bitarr1 & bitarr2
 
     def fit(self, pandas_dataframe, tuple_target_attribute_value):
         """Method to run the algorithm BSD and generate subgroups.

@@ -372,6 +372,7 @@ class TestSDMapStar(unittest.TestCase):
         self.assertIn(Subgroup.generate_from_str("Description: [att1 = 'v2'], Target: class = '1'"), list_of_subgroups)
         self.assertIn(Subgroup.generate_from_str("Description: [att1 = 'v2', att3 = 'A'], Target: class = '1'"), list_of_subgroups)
         self.assertIn(Subgroup.generate_from_str("Description: [att3 = 'B'], Target: class = '1'"), list_of_subgroups)
+        file_to_read.close()
         remove("./results.txt")
 
     def test_SDMapStar_additional_parameters_in_fit_method(self) -> None:
