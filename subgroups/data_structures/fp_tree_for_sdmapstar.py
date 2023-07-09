@@ -22,6 +22,7 @@ class FPTreeForSDMapStar(FPTreeForSDMap):
     """This class represents the FPTree data structure used in the SDMapStar algorithm.
     """
 
+    __slots__ = ("_TP", "_FP")
 
     def __init__(self,TP:int,FP:int) -> None:
         """Method to initialize the FPTreeForSDMapStar

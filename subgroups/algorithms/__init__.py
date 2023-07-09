@@ -5,6 +5,7 @@ from subgroups.algorithms.individual_subgroups.nominal_target.bsd import BSD
 from subgroups.algorithms.individual_subgroups.nominal_target.cbsd import CBSD
 from subgroups.algorithms.individual_subgroups.nominal_target.cpbsd import CPBSD
 from subgroups.algorithms.individual_subgroups.nominal_target.sdmapstar import SDMapStar
+from subgroups.algorithms.individual_subgroups.nominal_target.qfinder import QFinder
 from subgroups.algorithms.subgroup_lists.nominal_target.gmsl import GMSL
 from subgroups.algorithms.subgroup_lists.nominal_target.psld import PSLD
 from subgroups.algorithms.subgroup_lists.nominal_target.dslm import DSLM
