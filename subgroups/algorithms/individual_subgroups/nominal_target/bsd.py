@@ -59,7 +59,7 @@ class BSD(Algorithm):
     :param file_path: if 'write_results_in_file' is True, path of the file in which the results will be written.
     """
 
-    __slots__ = ['_maxDepth', '_min_support', '_quality_measure', '_optimistic_estimate', '_num_subgroups', '_k_subgroups', '_TP', '_FP', '_irrelevants', '_visited_subgroups', '_selected_subgroups', '_unselected_subgroups', '_additional_parameters_for_the_quality_measure', '_additional_parameters_for_the_optimistic_estimate', '_file_path' , '_file']
+    __slots__ = ('_maxDepth', '_min_support', '_quality_measure', '_optimistic_estimate', '_num_subgroups', '_k_subgroups', '_TP', '_FP', '_irrelevants', '_visited_subgroups', '_selected_subgroups', '_unselected_subgroups', '_additional_parameters_for_the_quality_measure', '_additional_parameters_for_the_optimistic_estimate', '_file_path' , '_file')
 
     def __init__(self,min_support : Union[int,float] ,quality_measure : QualityMeasure , optimistic_estimate: QualityMeasure ,num_subgroups : int,max_depth: int, additional_parameters_for_the_quality_measure : dict[str, Union[int, float]] = dict(),additional_parameters_for_the_optimistic_estimate : dict[str, Union[int, float]] = dict(), write_results_in_file : bool = False, file_path : Union[str, None] = None) -> None: 
         """Method to initialize an object of type 'BSD'.

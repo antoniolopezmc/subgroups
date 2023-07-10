@@ -21,6 +21,8 @@ class BitsetDictionary(dict):
     If a Selector is inserted, it is converted to a Pattern. Each entry must store a bitarray.
     """
 
+    __slots__ = ()
+
     def __iter__(self):
         for key in super().__iter__():
             yield Pattern.generate_from_str(key)
@@ -56,6 +58,8 @@ class BitsetBSD(object):
     """This class represents a bitset used in the BSD algorithm and its variants.
 
     """
+
+    __slots__ = ("_bitset_pos", "_bitset_neg")
 
     def __init__(self):
         """Method to initialize an object of type 'BitsetBSD'.

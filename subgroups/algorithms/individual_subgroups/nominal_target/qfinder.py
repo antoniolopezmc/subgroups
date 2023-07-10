@@ -43,7 +43,7 @@ class QFinder(Algorithm):
     :param num_subgroups: the number of top subgroups to return.
     """
 
-    __slots__ = ['_num_subgroups','_cats', '_max_complexity', '_thresholds','_credibility_values' , '_file', '_file_path', '_stats_file', '_stats_path' , '_df','_delta', '_num_subgroups', '_top_patterns', '_candidate_patterns']
+    __slots__ = ('_num_subgroups','_cats', '_max_complexity', '_thresholds','_credibility_values' , '_file', '_file_path', '_stats_file', '_stats_path' , '_df','_delta', '_num_subgroups', '_top_patterns', '_candidate_patterns')
 
 
     # A credibility criterion is a credibility measure and a threhosld. Here we set if the credibility measure value
