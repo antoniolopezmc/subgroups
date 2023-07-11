@@ -22,11 +22,8 @@ from subgroups.quality_measures.quality_measure import QualityMeasure
 from subgroups.quality_measures.support import Support
 
 class SD(Algorithm):
-    """This class represents the SD algorithm (Subgroup Discovery).
-
-    IMPORTANT NOTE: You must not access directly to the attributes of the objects. You must use the corresponding methods.
-
-    This class represents the SD algorithm. Two threshold types could be used: (1) the true positives tp and the false positives fp separately or (2) the subgroup description size n (n = tp + fp). This means that: (1) if 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and (2) if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.
+    """This class represents the SD algorithm. Two threshold types could be used: (1) the true positives tp and the false positives fp separately or (2) the subgroup description size n (n = tp + fp). This means that: (1) if 'minimum_tp' and 'minimum_fp' have a value of type 'int', 'minimum_n' must be None; and (2) if 'minimum_n' has a value of type 'int', 'minimum_tp' and 'minimum_fp' must be None.
+    
     :param minimum_quality_measure_value: the minimum quality measure value threshold.
     :param min_support: Minimum support that need to have a subgroup to be considered. Value in form of PROPORTION (between 0 and 1).
     :param beam_width: Width of the beam.
@@ -36,7 +33,7 @@ class SD(Algorithm):
     :param file_path: if 'write_results_in_file' is True, path of the file in which the results will be written.
     """
 
-    __slots__ = ( "_g_parameter","_minimum_quality_measure_value","_quality_measure", "_beam_width","_unselected_subgroups", "_selected_subgroups", "_file_path", "_file")
+    __slots__ = ( "_g_parameter","_minimum_quality_measure_value", "_beam_width","_unselected_subgroups", "_selected_subgroups", "_file_path", "_file")
     
     def __init__(self,  minimum_quality_measure_value: Union[int,float], g_parameter: Union[int,float] = 1,  beam_width : int = 20 ,write_results_in_file : bool = False, file_path : Union[str, None] = None) -> None:
         """Method to initialize an object of type 'SD'.
@@ -73,9 +70,6 @@ class SD(Algorithm):
 
     def _get_beam_width(self) -> int:
         return self._beam_width
-
-    def _get_quality_measure(self) -> QualityMeasure :
-        return self._quality_measure
     
     def _get_unselected_subgroups(self) -> int : 
         return self._unselected_subgroups
@@ -87,7 +81,6 @@ class SD(Algorithm):
         return self._unselected_subgroups + self._selected_subgroups
     
     g_parameter = property(_get_g_parameter, None, None, "The g parameter used.")
-    quality_measure = property(_get_quality_measure, None, None, "The quality measure which is used.")
     minimum_quality_measure_value = property(_get_minimum_quality_measure_value, None, None, "The minimum quality measure value threshold.")
     beam_width = property(_get_beam_width, None, None, "The beam width used.")
     unselected_subgroups = property(_get_unselected_subgroups, None, None, "Number of unselected subgroups after executing the SD algorithm (before executing the 'fit' method, this attribute is 0).")
@@ -415,7 +408,3 @@ class SD(Algorithm):
                 beam[index][0] = newBeam[index][0].copy()
                 beam[index][1] = newBeam[index][1]
         return beam
-
-
-
-
