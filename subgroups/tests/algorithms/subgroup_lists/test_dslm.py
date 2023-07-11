@@ -6,7 +6,7 @@
 """Tests of the functionality contained in the file 'algorithms/dslm.py'.
 """
 
-from subgroups.algorithms.subgroup_lists.nominal_target.dslm import DSLM
+from subgroups.algorithms.subgroup_lists.dslm import DSLM
 from subgroups.core import Subgroup, Pattern, Selector, Operator
 from bitarray import bitarray
 import unittest

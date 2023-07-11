@@ -143,7 +143,7 @@ class CN2SD(Algorithm):
             raise ValueError("Width of the beam must be greater than 0.")
         
         if (isinf(max_rule_length) and max_rule_length > 0) :
-            None # Do nothing, since it is the default value (positive infinite)          
+            pass # Do nothing, since it is the default value (positive infinite)
         else :
             if type(max_rule_length) is not int :
                 raise TypeError("Parameter 'max_rule_length' must be an integer (type 'int').")
@@ -183,7 +183,7 @@ class CN2SD(Algorithm):
     def _get_selected_subgroups(self) -> int : 
         return self._selected_subgroups
 
-    def fit(self, dataset : DataFrame, target_attribute : str , binary_attributes = [], weights : list = None) :
+    def fit(self, dataset : DataFrame, target_attribute : str , binary_attributes = [], weights : Union[list, None] = None) :
         """Method to run the CN2SD algorithm and generate subgroups considering all the values of the target attribute.
 
         :type dataset: pandas.DataFrame
@@ -562,14 +562,14 @@ class CN2SD(Algorithm):
                     subgroup_condition_and_row_match = False
                 index_in_subgroup_condition = index_in_subgroup_condition + 1
 
-            # SECOND: we check the target variable of the subgroup.           
+            # SECOND: we check the target variable of the subgroup.
             try:
                 subgroup_target_and_row_match = subgroup_target.match(subgroup_target._get_attribute_name(), row[index_dict[subgroup_target._get_attribute_name()]])
             except KeyError as e:
                 subgroup_target_and_row_match = False
                 # FINALLY, we check the results.
             if (subgroup_condition_and_row_match) and (subgroup_target_and_row_match):
-                tp = tp + weights[row_index]         
+                tp = tp + weights[row_index]
             if (subgroup_condition_and_row_match) and (not subgroup_target_and_row_match):
                 fp = fp + weights[row_index]
             if subgroup_target_and_row_match:

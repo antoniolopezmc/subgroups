@@ -6,7 +6,7 @@
 """This file contains the implementation of the PSLD algorithm.
 """
 
-from subgroups.algorithms.subgroup_lists.nominal_target.gmsl import GMSL
+from subgroups.algorithms.subgroup_lists.gmsl import GMSL
 from subgroups.data_structures import SubgroupList
 from pandas import DataFrame
 from subgroups.utils.mdl import log2_multinomial_with_recurrence

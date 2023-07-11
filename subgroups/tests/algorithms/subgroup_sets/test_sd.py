@@ -3,7 +3,7 @@ import unittest
 from pandas import DataFrame
 import pandas
 
-from subgroups.algorithms.individual_subgroups.nominal_target.sd import SD
+from subgroups.algorithms.subgroup_sets.sd import SD
 
 class TestSD(unittest.TestCase):
 

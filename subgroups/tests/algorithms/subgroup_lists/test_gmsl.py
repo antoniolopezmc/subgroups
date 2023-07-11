@@ -7,7 +7,7 @@
 """
 
 from pandas import DataFrame, read_csv
-from subgroups.algorithms.subgroup_lists.nominal_target.gmsl import GMSL
+from subgroups.algorithms.subgroup_lists.gmsl import GMSL
 from subgroups.core import Subgroup, Pattern, Selector, Operator
 from subgroups.data_structures.subgroup_list import SubgroupList
 from subgroups.utils.mdl import universal_code_for_integer, log2_multinomial_with_recurrence

@@ -6,7 +6,7 @@
 """This file contains the implementation of the CBSD algorithm.
 """
 
-from subgroups.algorithms.individual_subgroups.nominal_target.bsd import BSD
+from subgroups.algorithms.subgroup_sets.bsd import BSD
 from subgroups.core.pattern import Pattern
 from subgroups.data_structures.bitset_bsd import BitsetDictionary
 from bitarray import bitarray

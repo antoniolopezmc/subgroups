@@ -1,7 +1,7 @@
 import os
 import pandas
 from pandas import DataFrame
-from subgroups.algorithms.individual_subgroups.nominal_target.cn2sd import CN2SD
+from subgroups.algorithms.subgroup_sets.cn2sd import CN2SD
 from subgroups.quality_measures import WRAcc
 from subgroups.quality_measures.quality_measure import QualityMeasure
 from subgroups.core.pattern import Pattern
