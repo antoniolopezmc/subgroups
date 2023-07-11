@@ -8,11 +8,7 @@
 
 from subgroups.algorithms.individual_subgroups.nominal_target.bsd import BSD
 from subgroups.core.pattern import Pattern
-from subgroups.core.operator import Operator
-from subgroups.core.selector import Selector
-from subgroups.core.subgroup import Subgroup
 from subgroups.data_structures.bitset_bsd import BitsetDictionary
-from subgroups.quality_measures.quality_measure import QualityMeasure
 from bitarray import bitarray
 
 class CBSD(BSD):

@@ -20,13 +20,9 @@ from bitarray import bitarray
 from subgroups.data_structures.bitset_qfinder import Bitset_QFinder
 import operator
 
-
-
-
-
 class QFinder(Algorithm):
     """
-    This class represents the algorithm QFinder (algorithm for subgroup discovery).
+    This class represents the QFinder algorithm.
 
     :param cats: the number of maximum values for each column. If there is more values, we take the most frequent ones. If this value is -1, we take all the values.
     :param max_complexity: the maximum complexity (length) of the patterns.
@@ -45,7 +41,6 @@ class QFinder(Algorithm):
 
     __slots__ = ('_num_subgroups','_cats', '_max_complexity', '_thresholds','_credibility_values' , '_file', '_file_path', '_stats_file', '_stats_path' , '_df','_delta', '_num_subgroups', '_top_patterns', '_candidate_patterns')
 
-
     # A credibility criterion is a credibility measure and a threhosld. Here we set if the credibility measure value
     # should be greater or equal than the threshold or less or equal than the threshold.
     _credibility_criterions = {
@@ -59,7 +54,6 @@ class QFinder(Algorithm):
         "adjusted_p_value" : operator.le
 
     }
-
 
     def __init__(self, num_subgroups :int, cats : int = -1, max_complexity: int = -1, coverage_thld: float = 0.1, or_thld: float = 1.2, p_val_thld: float = 0.05, abs_contribution_thld: float = 0.2, contribution_thld: float = 5, delta :float = 0.2, write_results_in_file: bool = False, file_path: Union[str,None] = None, write_stats_in_file: bool = False, stats_path: Union[str,None] = None) -> None:
         if type(num_subgroups) is not int:
@@ -141,7 +135,6 @@ class QFinder(Algorithm):
     def _get_top_patterns(self) -> list[Pattern]:
         return self._top_patterns
     
-
     selected_subgroups = property(_get_selected_subgrouops, None, None, "The number of selected subgroups.")
     unselected_subgroups = property(_get_unselected_subgroups, None, None, "The number of unselected subgroups.")
     visited_subgroups = property(_get_visited_subgroups, None, None, "The number of visited subgroups.")
@@ -241,9 +234,6 @@ class QFinder(Algorithm):
                 rank = i+1
         return rank
 
-
-
-
     def _redundant(self,p1: Pattern, p2: Pattern) -> bool:
         
         """
@@ -257,7 +247,6 @@ class QFinder(Algorithm):
 
         # Since we are only using nominal attributes, we only need to check if one pattern is a refinement of the other. We consider a pattern to be a refinement of itself.
         return p1.is_refinement(p2,True) or p2.is_refinement(p1,True)
-
 
     def _rank_patterns(self) -> list[Pattern]:
 
@@ -283,8 +272,6 @@ class QFinder(Algorithm):
         # If two patterns have the same rank, we sort them according to their appearance in sorted_patterns (i.e. according to their p-values).
         ranked_patterns = sorted(sorted_patterns, key=lambda pattern: ranks[sorted_patterns.index(pattern)], reverse=True)
         return ranked_patterns
-
-
 
     def _select_top_k(self, ranked_patterns) -> list[Pattern]:
 
@@ -337,8 +324,7 @@ class QFinder(Algorithm):
                 break
 
         return top_k_patterns
-
-                    
+    
     def fit(self, pandas_dataframe: DataFrame, tuple_target_attribute_value: tuple) -> None:
         """
         Main method to run the QFinder algorithm. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
