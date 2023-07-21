@@ -6,7 +6,7 @@
 """This file contains the implementation of the DSLM algorithm.
 """
 
-from subgroups.algorithms.subgroup_lists.nominal_target.psld import PSLD
+from subgroups.algorithms.subgroup_lists.psld import PSLD
 from subgroups.data_structures import SubgroupList
 from pandas import DataFrame
 from subgroups.core import Operator, Selector, Pattern, Subgroup

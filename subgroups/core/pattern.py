@@ -116,7 +116,7 @@ class Pattern(object):
         :param refinement_of_itself: is a pattern a refinement of itself? Sometimes it may be better to assume yes and sometimes no. Therefore, if both patterns are equal, then this method returns the value of 'refinement_of_itself'.
         :return: whether 'refinement_candidate' is a refinement of this (i.e., 'self').
         """
-        # TODO: implementing it more efficiently (i.e., not using sets), and verify whether it is actually more efficient. 
+        # TODO: implementing it more efficient (i.e., not using sets), and verifying whether it is actually more efficient. 
         self_as_set = set(self._list_of_selectors)
         refinement_candidate_as_set = set(refinement_candidate._list_of_selectors)
         if (len(self_as_set) > len(refinement_candidate_as_set)):
@@ -183,9 +183,12 @@ class Pattern(object):
     def __contains__(self, item : Selector) -> bool:
         if not isinstance(item, Selector):
             raise TypeError("You are using an object which is not an instance of the 'Selector' class or of a subclass thereof.")
+        if len(self._list_of_selectors) == 0:
+            return False
         # We can use the bisection algorithm because the list is sorted.
         index = bisect_left(self._list_of_selectors, item)
-        return (len(self._list_of_selectors) > 0) and (self._list_of_selectors[index] == item)
+        return (index < len(self._list_of_selectors)) and (self._list_of_selectors[index] == item)
     
     def __iter__(self) -> Iterator[Selector]:
         return iter(self._list_of_selectors)
+    
