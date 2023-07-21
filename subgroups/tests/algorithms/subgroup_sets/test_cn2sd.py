@@ -8,6 +8,7 @@ from subgroups.core.pattern import Pattern
 from subgroups.core.operator import Operator
 from subgroups.core.selector import Selector
 from subgroups.core.subgroup import Subgroup
+from subgroups.datasets import *
 import unittest as unittestt
 
 class TestCN2SD(unittestt.TestCase):
@@ -124,7 +125,8 @@ class TestCN2SD(unittestt.TestCase):
                 os.remove(cn2sd._file_path)    
 
     def test_CN2SD_fit_method_4(self) -> None:
-        input_dataframe = pandas.read_csv("subgroups/datasets/csv/shop.csv") 
+        #input_dataframe = pandas.read_csv("subgroups/datasets/csv/shop.csv") 
+        input_dataframe = load_shop_csv()
         target = ("diaper")
         cn2sd = CN2SD(beam_width = 3, weighting_scheme = 'multiplicative', gamma = 0,write_results_in_file=True,file_path="./results.txt")
         binary_attributes = ["bread", "milk", "coke","beer"] 
@@ -146,7 +148,8 @@ class TestCN2SD(unittestt.TestCase):
                 os.remove(cn2sd._file_path)       
 
     def test_CN2SD_fit_method_5(self) -> None:
-        input_dataframe = pandas.read_csv("subgroups/datasets/csv/shop.csv") 
+        #input_dataframe = pandas.read_csv("subgroups/datasets/csv/shop.csv")
+        input_dataframe = load_shop_csv()
         target = ("diaper")
         cn2sd = CN2SD(beam_width = 3, weighting_scheme = 'multiplicative', gamma = 0.5,write_results_in_file=True,file_path="./results.txt")
         binary_attributes = ["bread", "milk", "coke","beer"] 
@@ -165,7 +168,8 @@ class TestCN2SD(unittestt.TestCase):
                 os.remove(cn2sd._file_path)  
 
     def test_CN2SD_fit_method_6(self) -> None : 
-        input_dataframe = pandas.read_csv("subgroups/datasets/csv/shop.csv") 
+        #input_dataframe = pandas.read_csv("subgroups/datasets/csv/shop.csv") 
+        input_dataframe = load_shop_csv()
         target = ("diaper")
         cn2sd = CN2SD(beam_width = 3, weighting_scheme = 'aditive',write_results_in_file=True,file_path="./results.txt")
         binary_attributes = ["bread", "milk", "coke","beer"] 

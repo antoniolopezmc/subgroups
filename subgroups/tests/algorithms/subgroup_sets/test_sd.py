@@ -2,13 +2,14 @@ import os
 import unittest
 from pandas import DataFrame
 import pandas
-
 from subgroups.algorithms.subgroup_sets.sd import SD
+from subgroups.datasets import *
 
 class TestSD(unittest.TestCase):
 
         def test_SD_fit_method_1(self) -> None : 
-            input_dataframe = pandas.read_csv("subgroups/datasets/csv/shop.csv")
+            #input_dataframe = pandas.read_csv("subgroups/datasets/csv/shop.csv")
+            input_dataframe = load_shop_csv()
             target = ("diaper", "yes")
             sd = SD(minimum_quality_measure_value= 0.57, g_parameter= 1,beam_width = 2, write_results_in_file=True, file_path="./results.txt")
             binary_attributes = ["bread", "milk", "beer", "coke", "diaper"] 
@@ -26,8 +27,6 @@ class TestSD(unittest.TestCase):
             if sd._file_path is not None : 
                 if os.path.isfile(sd._file_path) :
                     os.remove(sd._file_path)
-
-        
 
         def test_SD_fit_method_2(self) -> None:
             input_dataframe = DataFrame({'att1': ['v3', 'v2', 'v1', 'v3', 'v4', 'v4'], 'att2': ['1', '2', '3', '3', '5', '6'], 'att3': ['B', 'A', 'A', 'B', 'A', 'B'], 'class': ['0', '1', '0', '0', '1', '1']})
@@ -49,7 +48,8 @@ class TestSD(unittest.TestCase):
                     os.remove(sd._file_path)
 
         def test_SD_fit_method_3(self) -> None:
-            input_dataframe = pandas.read_csv("subgroups/datasets/csv/lenses.csv") 
+            #input_dataframe = pandas.read_csv("subgroups/datasets/csv/lenses.csv") 
+            input_dataframe = load_lenses_csv()
             target = ("class", "SOFT-CONTACT-LENSES")
             sd = SD(minimum_quality_measure_value= 0, g_parameter= 1,beam_width = 3, write_results_in_file=True, file_path="./results.txt")
             binary_attributes = ["astigmatic", "spectacle-prescription", "tear-production-rate"] 
@@ -69,10 +69,9 @@ class TestSD(unittest.TestCase):
                 if os.path.isfile(sd._file_path) :
                     os.remove(sd._file_path)
 
-          
-   
         def test_SD_fit_method_4(self) -> None:
-            input_dataframe = pandas.read_csv("subgroups/datasets/csv/lenses.csv") 
+            #input_dataframe = pandas.read_csv("subgroups/datasets/csv/lenses.csv") 
+            input_dataframe = load_lenses_csv()
             target = ("class", "SOFT-CONTACT-LENSES")
             sd = SD(minimum_quality_measure_value= 0.1, g_parameter= 1,beam_width = 3, write_results_in_file=True, file_path="./results.txt")
             binary_attributes = ["astigmatic", "spectacle-prescription", "tear-production-rate"] 
@@ -92,10 +91,9 @@ class TestSD(unittest.TestCase):
                 if os.path.isfile(sd._file_path) :
                     os.remove(sd._file_path)
 
-            
-        
         def test_SD_fit_method_5(self) -> None:
-            input_dataframe = pandas.read_csv("subgroups/datasets/csv/lenses.csv") 
+            #input_dataframe = pandas.read_csv("subgroups/datasets/csv/lenses.csv") 
+            input_dataframe = load_lenses_csv()
             target = ("class", "SOFT-CONTACT-LENSES")
             sd = SD(minimum_quality_measure_value= 0.2, g_parameter= 1,beam_width = 3, write_results_in_file=True, file_path="./results.txt")
             binary_attributes = ["astigmatic", "spectacle-prescription", "tear-production-rate"] 
@@ -115,10 +113,9 @@ class TestSD(unittest.TestCase):
                 if os.path.isfile(sd._file_path) :
                     os.remove(sd._file_path)
 
-            
-        
         def test_SD_fit_method_6(self) -> None:
-            input_dataframe = pandas.read_csv("subgroups/datasets/csv/lenses.csv") 
+            #input_dataframe = pandas.read_csv("subgroups/datasets/csv/lenses.csv") 
+            input_dataframe = load_lenses_csv()
             target = ("class", "SOFT-CONTACT-LENSES")
             sd = SD(minimum_quality_measure_value= 0, g_parameter= 5,beam_width = 3, write_results_in_file=True, file_path="./results.txt")
             binary_attributes = ["astigmatic", "spectacle-prescription", "tear-production-rate"] 
@@ -138,10 +135,9 @@ class TestSD(unittest.TestCase):
                 if os.path.isfile(sd._file_path) :
                     os.remove(sd._file_path)
 
-            
-        
         def test_SD_fit_method_7(self) -> None:
-            input_dataframe = pandas.read_csv("subgroups/datasets/csv/lenses.csv") 
+            #input_dataframe = pandas.read_csv("subgroups/datasets/csv/lenses.csv") 
+            input_dataframe = load_lenses_csv()
             target = ("class", "SOFT-CONTACT-LENSES")
             sd = SD(minimum_quality_measure_value= 0.1, g_parameter= 5,beam_width = 3, write_results_in_file=True, file_path="./results.txt")
             binary_attributes = ["astigmatic", "spectacle-prescription", "tear-production-rate"] 
@@ -161,9 +157,9 @@ class TestSD(unittest.TestCase):
                 if os.path.isfile(sd._file_path) :
                     os.remove(sd._file_path)
 
-
         def test_SD_fit_method_8(self) -> None : 
-            input_dataframe = pandas.read_csv("subgroups/datasets/csv/shop.csv")
+            #input_dataframe = pandas.read_csv("subgroups/datasets/csv/shop.csv")
+            input_dataframe = load_shop_csv()
             target = ("diaper", "yes")
             sd = SD(minimum_quality_measure_value= 0.57, g_parameter= 1,beam_width = 2, write_results_in_file=True, file_path="./results.txt")
             binary_attributes = ["bread", "milk", "beer", "coke", "diaper"] 
