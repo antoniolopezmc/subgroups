@@ -4,7 +4,7 @@ from pandas import read_csv, DataFrame
 current_folder_path = dirname(__file__)
 
 def load_ballons_csv() -> DataFrame:
-    return read_csv(current_folder_path + "/csv/ballons.csv")
+    return read_csv(current_folder_path + "/csv/balloons.csv")
 
 def load_car_evaluation_csv() -> DataFrame:
     return read_csv(current_folder_path + "/csv/car-evaluation.csv")
