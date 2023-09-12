@@ -158,6 +158,21 @@ class TestQFinder(unittest.TestCase):
     def test_QFinder_fit(self):
         df = DataFrame({'bread': {0: 'yes', 1: 'yes', 2: 'no', 3: 'yes', 4: 'yes', 5: 'yes', 6: 'yes'}, 'milk': {0: 'yes', 1: 'no', 2: 'yes', 3: 'yes', 4: 'yes', 5: 'yes', 6: 'yes'}, 'beer': {0: 'no', 1: 'yes', 2: 'yes', 3: 'yes', 4: 'no', 5: 'yes', 6: 'no'}, 'coke': {0: 'no', 1: 'no', 2: 'yes', 3: 'no', 4: 'yes', 5: 'no', 6: 'yes'}, 'diaper': {0: 'no', 1: 'yes', 2: 'yes', 3: 'yes', 4: 'yes', 5: 'yes', 6: 'yes'}})        
         target = ("diaper", "yes")
-        model = QFinder(num_subgroups=5)
+        model = QFinder(num_subgroups=5, write_results_in_file=True, file_path='qfinder_results.txt')
         model.fit(df, target)
-        
+        self.assertEqual(model.selected_subgroups, 5)
+        self.assertEqual(model.unselected_subgroups, 44)
+        self.assertEqual(model.visited_subgroups, 49)
+        list_of_written_results = []
+        file_to_read = open("./qfinder_results.txt", "r")
+        for line in file_to_read:
+            list_of_written_results.append(line)
+        list_of_subgroups = [Subgroup.generate_from_str(elem.split(";")[0][:-1]) for elem in list_of_written_results]
+        self.assertEqual(len(list_of_subgroups), 5)
+        self.assertIn(Subgroup.generate_from_str("Description: [bread = 'yes'], Target: diaper = 'yes'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [milk = 'yes'], Target: diaper = 'yes'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [coke = 'no'], Target: diaper = 'yes'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [beer = 'no'], Target: diaper = 'yes'"), list_of_subgroups)
+        self.assertIn(Subgroup.generate_from_str("Description: [beer = 'yes', bread = 'yes', coke = 'no', milk = 'yes'], Target: diaper = 'yes'"), list_of_subgroups)
+        file_to_read.close()
+        remove("./qfinder_results.txt")
