@@ -1,3 +1,5 @@
+[![PyPI - Version](https://img.shields.io/pypi/v/subgroups)](https://pypi.org/project/subgroups/) [![PyPI - License](https://img.shields.io/pypi/l/subgroups)](https://pypi.org/project/subgroups/) [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/subgroups)](https://pypi.org/project/subgroups/) [![GitHub Repo stars](https://img.shields.io/github/stars/antoniolopezmc/subgroups)](https://github.com/antoniolopezmc/subgroups)
+
 # subgroups
 
 **subgroups** is a Python library that provides a collection of subgroup discovery algorithms and other data analysis utilities.
@@ -21,7 +23,7 @@ import subgroups.tests as st
 st.run_all_tests()
 ```
 
-## Generate the library documentation manually
+## Generating the library documentation manually
 
 To manually generate the library documentation, it is necessary to execute:
 
