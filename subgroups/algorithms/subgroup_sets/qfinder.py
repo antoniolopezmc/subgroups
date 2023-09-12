@@ -39,7 +39,7 @@ class QFinder(Algorithm):
     :param num_subgroups: the number of top subgroups to return.
     """
 
-    __slots__ = ('_num_subgroups','_cats', '_max_complexity', '_thresholds','_credibility_values' , '_file', '_file_path', '_stats_file', '_stats_path' , '_df','_delta', '_num_subgroups', '_top_patterns', '_candidate_patterns')
+    __slots__ = ('_num_subgroups','_cats', '_max_complexity', '_thresholds','_credibility_values' , '_file', '_file_path', '_stats_path' , '_df','_delta', '_num_subgroups', '_top_patterns', '_candidate_patterns')
 
     # A credibility criterion is a credibility measure and a threhosld. Here we set if the credibility measure value
     # should be greater or equal than the threshold or less or equal than the threshold.
@@ -52,7 +52,6 @@ class QFinder(Algorithm):
         # "adjusted_odds_ratio" : operator.ge,
         # "corrected_p_value" : operator.le,
         "adjusted_p_value" : operator.le
-
     }
 
     def __init__(self, num_subgroups :int, cats : int = -1, max_complexity: int = -1, coverage_thld: float = 0.1, or_thld: float = 1.2, p_val_thld: float = 0.05, abs_contribution_thld: float = 0.2, contribution_thld: float = 5, delta :float = 0.2, write_results_in_file: bool = False, file_path: Union[str,None] = None, write_stats_in_file: bool = False, stats_path: Union[str,None] = None) -> None:
@@ -93,7 +92,6 @@ class QFinder(Algorithm):
         # If 'write_stats_in_file' is True, 'stats_path' must not be None.
         if (write_stats_in_file) and (stats_path is None):
             raise ValueError("If the parameter 'write_stats_in_file' is True, the parameter 'stats_path' must not be None.")
-        
         self._num_subgroups = num_subgroups
         self._cats = cats
         self._max_complexity = max_complexity
@@ -102,14 +100,13 @@ class QFinder(Algorithm):
             self._file_path = file_path
         else:
             self._file_path = None
+        self._file = None
         if (write_stats_in_file):
             self._stats_path = stats_path
         else:
             self._stats_path = None
-        self._file = None
         self._top_patterns = []
         self._candidate_patterns = []
-
         # Thresholds for each credibility measure.
         self._thresholds = {
             "coverage" : coverage_thld,
@@ -121,7 +118,6 @@ class QFinder(Algorithm):
             # "corrected_p_value" : self._p_val_thld,
             "adjusted_p_value" : p_val_thld
         }
-
 
     def _get_selected_subgrouops(self) -> int:
         return len(self._top_patterns)
@@ -149,7 +145,6 @@ class QFinder(Algorithm):
         :param cats: the number of maximum values for each column. If there is more values, we take the most frequent ones. If this value is -1, we take all the values.
         :return: the set of candidate patterns.
         """
-
         if type(df) is not DataFrame:
             raise TypeError("The type of the parameter 'df' must be 'DataFrame'.")
         if type(tuple_target_attribute_value) is not tuple:
@@ -162,13 +157,10 @@ class QFinder(Algorithm):
             raise InconsistentMethodParametersError("The parameter 'tuple_as_target' must contain two elements.")
         if (not is_string_dtype(df[tuple_target_attribute_value[0]])):
             raise DatasetAttributeTypeError("The attribute '{}' must be a string.".format(tuple_target_attribute_value[0]))
-        
         # We do not generate patterns with the target attribute.
         df_without_target = df.drop(columns=[tuple_target_attribute_value[0]])
-
         # We generate the list of candidate simple patterns (length 1).
         simple_patterns = []
-
         for column in df_without_target:
             # Number of different values for the current column.
             n_values = len(df_without_target[column].unique())
@@ -193,12 +185,9 @@ class QFinder(Algorithm):
                 # We edit our copy of the dataset to set the "other" value to the rows which have a value that is not in the top_values.
                 df_without_target.loc[df_without_target[column].isin(other_values), column] = other
                 simple_patterns.append(Pattern([Selector(column, Operator.EQUAL, other)]))
-        
         complex_patterns = []
-
         if (max_complexity == -1):
             max_complexity = len(df_without_target.columns)
-
         # We generate the list of candidate patterns by combining the simple patterns.
         for L in range(2, max_complexity+1):
             # We take each combination of L simple patterns.
@@ -211,18 +200,15 @@ class QFinder(Algorithm):
                 for s in subset:
                     pattern.add_selector(s.get_selector(0))
                 complex_patterns.append(pattern)
-        
         # The list of candidate patterns is the union of the list of simple patterns and the list of complex patterns.
         return simple_patterns + complex_patterns
 
     def _handle_individual_result(self,credibility: bitarray) -> int:
-        """
-        Method to compute the rank of a pattern.
+        """Method to compute the rank of a pattern.
 
         :param credibility: the bitarray representing the pattern's credibility.
         :return: the rank of the pattern.
         """
-
         rank = 0
         # Since most of the ranks are achieved only if the previous ones are also achieved, we can stop the loop when we find the first rank that is not achieved.
         # This won't work for the fifth rank, since it only requieres that either the third or the fourth rank are achieved (and its own criterion).
@@ -235,28 +221,20 @@ class QFinder(Algorithm):
         return rank
 
     def _redundant(self,p1: Pattern, p2: Pattern) -> bool:
-        
-        """
-        Check if two patterns are redundant.
+        """Check if two patterns are redundant.
 
         :param p1: the first pattern.
         :param p2: the second pattern.
         :return: True if the patterns are redundant, False otherwise.
-
         """
-
         # Since we are only using nominal attributes, we only need to check if one pattern is a refinement of the other. We consider a pattern to be a refinement of itself.
         return p1.is_refinement(p2,True) or p2.is_refinement(p1,True)
 
     def _rank_patterns(self) -> list[Pattern]:
-
-        """
-        Method to assing a rank to each of the candidate patterns.
+        """Method to assing a rank to each of the candidate patterns.
 
         :return: the list of candidate patterns sorted by their rank.
-
         """
-
         # We first sort the patterns by their p_value. This sorting will be used in case of ties in the ranking.
         sorted_patterns = sorted(self._candidate_patterns, key=lambda pattern: self._credibility_values["p_value"][str(pattern)])
         ranks = []
@@ -274,13 +252,10 @@ class QFinder(Algorithm):
         return ranked_patterns
 
     def _select_top_k(self, ranked_patterns) -> list[Pattern]:
-
-        """
-        Method to select the top-k patterns according to the ranking and the redundancy criterion.
+        """Method to select the top-k patterns according to the ranking and the redundancy criterion.
 
         :param ranked_patterns: the list of candidate patterns sorted by their rank.
         :return: the list of top-k patterns.
-        
         """
         top_k_patterns = []
         # We separate the patterns by their length
@@ -289,7 +264,6 @@ class QFinder(Algorithm):
             if (len(pattern) not in ranked_patterns_by_length):
                 ranked_patterns_by_length[len(pattern)] = []
             ranked_patterns_by_length[len(pattern)].append(pattern)
-        
         # We iterate over the patterns by length, from the shortest to the longest.
         for length in sorted(ranked_patterns_by_length.keys()):
             for pattern in ranked_patterns_by_length[length]:
@@ -313,26 +287,21 @@ class QFinder(Algorithm):
                                 self._credibility_values["p_value"][str(pattern)] < self._credibility_values["p_value"][str(top_pattern)]:
                             top_k_patterns.remove(top_pattern)
                     top_k_patterns.append(pattern)
-
                     # If |top_k_patterns| > k, we remove the pattern with the highest p-value.
                     if len(top_k_patterns) > self._num_subgroups:
                         max_p_val_pattern = max(top_k_patterns, key=lambda pattern: self._credibility_values["p_value"][str(pattern)])
                         top_k_patterns.remove(max_p_val_pattern)
                     continue
-                
                 # If we did break the first top_pattern in top_patterns loop, we continue to the next pattern.
                 break
-
         return top_k_patterns
     
     def fit(self, pandas_dataframe: DataFrame, tuple_target_attribute_value: tuple) -> None:
-        """
-        Main method to run the QFinder algorithm. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
+        """Main method to run the QFinder algorithm. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
         
         :param data: the DataFrame which is scanned. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
         :param target: a tuple with 2 elements: the target attribute name and the target value.
         """
-
         if type(pandas_dataframe) != DataFrame:
             raise TypeError("The dataset must be a pandas DataFrame.")
         if type(tuple_target_attribute_value) != tuple:
@@ -340,7 +309,6 @@ class QFinder(Algorithm):
         for column in pandas_dataframe.columns:
             if not is_string_dtype(pandas_dataframe[column]):
                 raise DatasetAttributeTypeError("Error in attribute '" + str(column) + "'. This algorithm only supports nominal attributes (i.e., type 'str').")
-
         # We copy the DataFrame to avoid modifying the original when dealing with "other" values.
         df = pandas_dataframe.copy()
         # We generate the list of candidate patterns.
@@ -361,7 +329,6 @@ class QFinder(Algorithm):
             # "corrected_p_value": corrected_p_values,
             "adjusted_p_value": adjusted_p_values
         }
-
         ranked_patterns = self._rank_patterns()
         self._top_patterns = self._select_top_k(ranked_patterns)
         if self._file_path is not None:
@@ -370,14 +337,11 @@ class QFinder(Algorithm):
             self._to_stats_file()
 
     def test_subgroups(self,test_dataframe : DataFrame, tuple_target_attribute_value: tuple, write_to_file:bool=False, file_path: Union[str,None]=None):
-        """
-        Method to test the best subgroups on a different dataset. This method can only be called after the fit method.
+        """Method to test the best subgroups on a different dataset. This method can only be called after the fit method.
         
         :param test_dataframe: the DataFrame which is scanned. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
         :param target: a tuple with 2 elements: the target attribute name and the target value.
-
         :return: a dictionary with the credibility measures for each subgroup.
-
         """
         # We make sure that the fit method has been called before.
         if self._top_patterns is None:
@@ -411,12 +375,10 @@ class QFinder(Algorithm):
         return parameters
     
     def _to_file(self, file_path, target, credibility_values):
-        """
-        Writes the top-k patterns to a file.
+        """Writes the top-k patterns to a file.
 
         :param target: a tuple with 2 elements: the target attribute name and the target value.
         """
-
         self._file = open(file_path, "w")
         for pat in self._top_patterns:
             subgroup = Subgroup(pat, Selector(target[0], Operator.EQUAL, target[1]))
@@ -424,21 +386,16 @@ class QFinder(Algorithm):
             for cred in credibility_values:
                 self._file.write(cred + ": " + str(credibility_values[cred][str(pat)]) + " ; ")
             self._file.write("\n")
+        self._file.close()
+        self._file = None
 
     def _to_stats_file(self):
+        """Write the credibility measures of each pattern to a file.
         """
-        Write the credibility measures of each pattern to a file.
-
-        """
-
         data = {
                 cred : list(self._credibility_values[cred].values()) for cred in self._credibility_values
             }
-
         df = DataFrame(data)
         # Set the row names to be the patterns.
         df.index = list(self._credibility_values["odds_ratio"].keys())
-
-
         df.to_html(self._stats_path)
-        

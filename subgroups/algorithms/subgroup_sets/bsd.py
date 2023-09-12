@@ -489,7 +489,7 @@ class BSD(Algorithm):
             self._file = open(self._file_path, "w")
             self._to_file(tuple_target_attribute_value)
             self._file.close()
-
+            self._file = None
     
     def _to_file(self, tuple_target_attribute_value):
         """Internal method to write the result of the BSD algorithm to a text file.
