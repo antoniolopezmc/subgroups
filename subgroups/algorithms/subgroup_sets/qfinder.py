@@ -11,7 +11,7 @@ from typing import Union
 from pandas import DataFrame
 from pandas.api.types import is_string_dtype
 from subgroups.algorithms.algorithm import Algorithm
-from subgroups.exceptions import InconsistentMethodParametersError, DatasetAttributeTypeError
+from subgroups.exceptions import DatasetAttributeTypeError
 from subgroups.core.pattern import Pattern
 from subgroups.core.operator import Operator
 from subgroups.core.selector import Selector
@@ -21,8 +21,7 @@ from subgroups.data_structures.bitset_qfinder import Bitset_QFinder
 import operator
 
 class QFinder(Algorithm):
-    """
-    This class represents the QFinder algorithm.
+    """This class represents the QFinder algorithm.
 
     :param cats: the number of maximum values for each column. If there is more values, we take the most frequent ones. If this value is -1, we take all the values.
     :param max_complexity: the maximum complexity (length) of the patterns.
@@ -75,17 +74,17 @@ class QFinder(Algorithm):
             raise TypeError("The type of the parameter 'delta' must be 'float'.")
         # We check that that the parameter values are valid.
         if (cats < -1):
-            raise InconsistentMethodParametersError("The parameter 'cats' must be greater than or equal to -1.")
+            raise ValueError("The parameter 'cats' must be greater than or equal to -1.")
         if (coverage_thld < 0 or coverage_thld > 1):
-            raise InconsistentMethodParametersError("The parameter 'coverage_thld' must be between 0 and 1.")
+            raise ValueError("The parameter 'coverage_thld' must be between 0 and 1.")
         if (or_thld < 0):
-            raise InconsistentMethodParametersError("The parameter 'or_thld' must be greater than or equal to 0.")
+            raise ValueError("The parameter 'or_thld' must be greater than or equal to 0.")
         if (p_val_thld < 0 or p_val_thld > 1):
-            raise InconsistentMethodParametersError("The parameter 'p_val_thld' must be between 0 and 1.")
+            raise ValueError("The parameter 'p_val_thld' must be between 0 and 1.")
         if (abs_contribution_thld < 0 or abs_contribution_thld > 1):
-            raise InconsistentMethodParametersError("The parameter 'abs_contribution_thld' must be between 0 and 1.")
+            raise ValueError("The parameter 'abs_contribution_thld' must be between 0 and 1.")
         if (contribution_thld < 0):
-            raise InconsistentMethodParametersError("The parameter 'contribution_thld' must be greater than or equal to 0.")
+            raise ValueError("The parameter 'contribution_thld' must be greater than or equal to 0.")
         # If 'write_results_in_file' is True, 'file_path' must not be None.
         if (write_results_in_file) and (file_path is None):
             raise ValueError("If the parameter 'write_results_in_file' is True, the parameter 'file_path' must not be None.")
@@ -154,7 +153,7 @@ class QFinder(Algorithm):
         if type(max_complexity) is not int:
             raise TypeError("The type of the parameter 'max_complexity' must be 'int'.")
         if (len(tuple_target_attribute_value) != 2):
-            raise InconsistentMethodParametersError("The parameter 'tuple_as_target' must contain two elements.")
+            raise ValueError("The parameter 'tuple_as_target' must contain two elements.")
         if (not is_string_dtype(df[tuple_target_attribute_value[0]])):
             raise DatasetAttributeTypeError("The attribute '{}' must be a string.".format(tuple_target_attribute_value[0]))
         # We do not generate patterns with the target attribute.

@@ -20,7 +20,6 @@ from subgroups.core.subgroup import Subgroup
 # Python annotations.
 from typing import Union
 
-
 def _generate_all_combinations(list_of_selectors : list[Selector]):
     """Private method to generate all the combinations (including the empty list) of the list of selectors passed by parameter.
     
@@ -54,10 +53,8 @@ def _delete_subgroup_parameters_from_a_dictionary(dict_of_parameters : dict[str,
     except KeyError:
         pass
 
-
 class SDMapStar(Algorithm):
     """This class represents the SDMapStar algorithm.
-
 
     :param quality_measure: the quality measure which is used.
     :param optimistic_estimate: the optimistic estimate of the quality measure which is used.
@@ -69,7 +66,6 @@ class SDMapStar(Algorithm):
     :param write_results_in_file: whether the results obtained will be written in a file. By default, False.
     :param file_path: if 'write_results_in_file' is True, path of the file in which the results will be written.
     :param num_subgroups: the number of subgroups used to prune the search space. By default, 0. This value is equivalent to using the SDMap algorithm.
-
     """
 
     __slots__ = ("_quality_measure", "_optimistic_estimate" , "_minimum_quality_measure_value", "_minimum_tp", "_minimum_fp", "_minimum_n", "_additional_parameters_for_the_quality_measure", "_unselected_subgroups", "_selected_subgroups", "_file_path", "_file", "_num_subgroups","_additional_parameters_for_the_optimistic_estimate","_k_subgroups","_pruned_subgroups","_conditional_pruned_branches")
@@ -287,7 +283,6 @@ class SDMapStar(Algorithm):
             else:
                 #If num_subgroups = 0, we do not use the SDMapStar optimizations.
                 sorted_selectors = fptree.header_table
-
             # Iterate throughout the selectors in the sorted header table of the fptree.
             for ai in sorted_selectors:
                 # Generate the pattern 'beta = ai U a'.
@@ -299,7 +294,6 @@ class SDMapStar(Algorithm):
                 else:
                     beta_as_list = [ai]
                     beta_as_Pattern = Pattern(beta_as_list)
-
                 if (self.num_subgroups > 0):
                     aux = fptree.header_table[ai][0]
                     #update k subgroups (tp,fp)
@@ -312,7 +306,6 @@ class SDMapStar(Algorithm):
                     if (self.k_subgroups[0] > oe):
                         self._pruned_subgroups += 1
                         continue
-                
                 # The values of the counters tp and fp of 'beta' will be those of the selector ai in the header table.
                 tp = fptree.header_table[ai][0][0]
                 fp = fptree.header_table[ai][0][1]
@@ -333,9 +326,9 @@ class SDMapStar(Algorithm):
                     
     def _updateKSubgroups(self,tp:int,fp:int,TP:int,FP:int) -> None:
         """Internal method to update and sort k subgroups.
+
         :param tp: true positives
         :param fp: false positives
-
         """
         if (type(tp) is not int):
             raise TypeError("Parameter 'tp' must be a int.")
@@ -345,7 +338,6 @@ class SDMapStar(Algorithm):
             raise TypeError("Parameter 'TP' must be a int.",type(TP))
         if (type(FP) is not int):
             raise TypeError("Parameter 'FP' must be a int.")
-
         dict_of_parameters = {QualityMeasure.TRUE_POSITIVES : tp, QualityMeasure.FALSE_POSITIVES : fp, QualityMeasure.TRUE_POPULATION : TP, QualityMeasure.FALSE_POPULATION : FP}
         dict_of_parameters.update(self._additional_parameters_for_the_optimistic_estimate)
         quality_value = self.quality_measure.compute(dict_of_parameters)
