@@ -23,6 +23,10 @@ import subgroups.tests as st
 st.run_all_tests()
 ```
 
+## Documentation
+
+The official documentation is hosted on https://antoniolopezmc.github.io/subgroups-docs/
+
 ## Generating the library documentation manually
 
 To manually generate the library documentation, it is necessary to execute:
