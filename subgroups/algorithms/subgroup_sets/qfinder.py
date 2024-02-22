@@ -291,9 +291,6 @@ class QFinder(Algorithm):
                     if len(top_k_patterns) > self._num_subgroups:
                         max_p_val_pattern = max(top_k_patterns, key=lambda pattern: self._credibility_values["p_value"][str(pattern)])
                         top_k_patterns.remove(max_p_val_pattern)
-                    continue
-                # If we did break the first top_pattern in top_patterns loop, we continue to the next pattern.
-                break
         return top_k_patterns
     
     def fit(self, pandas_dataframe: DataFrame, tuple_target_attribute_value: tuple) -> None:
