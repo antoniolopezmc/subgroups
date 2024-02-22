@@ -97,8 +97,8 @@ class Bitset_QFinder(object):
         # We create models to calculate the odds ratios and p-values for each pattern
         for pattern in self._df.columns:
             results = sm.GLM(target_column, self._df[pattern], family=sm.families.Binomial()).fit()
-            odds_ratios[pattern] = np.exp(results.params[0])
-            p_values[pattern] = results.pvalues[0]
+            odds_ratios[pattern] = np.exp(results.params.iloc[0])
+            p_values[pattern] = results.pvalues.iloc[0]
             coverages[pattern] = len(self._df[self._df[pattern]])/(self._TP + self._FP)
 
         # We calculate the absolute contribution and the contribution ratio for each pattern
