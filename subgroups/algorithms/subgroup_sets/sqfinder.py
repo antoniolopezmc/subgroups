@@ -285,6 +285,8 @@ class SQFinder(Algorithm):
         selectors = self._generate_candidate_selectors(df, tuple_target_attribute_value)
         top_subgroups = []
         target_column_as_boolean = df[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1]
+        if self._max_complexity == -1:
+            self._max_complexity = len(selectors)
         for length in range(1, self._max_complexity+1):
             for subset in itertools.combinations(selectors, length):
                 self._visited_subgroups += 1
@@ -314,8 +316,8 @@ class SQFinder(Algorithm):
                 # We compute the numerical rank of the pattern given its credibility.
                 rank = self._compute_rank(credibility)
                 # We obtain the p_value and effect size (odds ratio) for the pattern. We will use these values to select the top subgroups.
-                p_value = credibility["p_value"]
-                odds_ratio = credibility["odds_ratio"]
+                p_value = credibility_values["p_value"]
+                odds_ratio = credibility_values["odds_ratio"]
                 # Create the pattern object and check if we can add it to the list of top subgroups
                 pattern = Pattern(list(subset))
                 for s, s_rank, s_p_value, s_odds_ratio,_ in top_subgroups:
@@ -375,7 +377,7 @@ class SQFinder(Algorithm):
         df = pandas_dataframe.copy()
         self._generate_top_subgroups(df, tuple_target_attribute_value)
         if self._file_path is not None:
-            self._to_file(self._file_path,tuple_target_attribute_value, self._credibility_values)
+            self._to_file(self._file_path)
 
     #TODO: Update this method
     def test_subgroups(self,test_dataframe : DataFrame, tuple_target_attribute_value: tuple, write_to_file:bool=False, file_path: Union[str,None]=None):
