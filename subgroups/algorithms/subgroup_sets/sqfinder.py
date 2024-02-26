@@ -41,7 +41,7 @@ class SQFinder(Algorithm):
     :param num_subgroups: the number of top subgroups to return.
     """
 
-    __slots__ = ('_num_subgroups','_cats', '_max_complexity', '_thresholds','_credibility_values' , '_file', '_file_path', '_stats_path' , '_df','_delta', '_num_subgroups', '_top_subgroups','_top_subgroups_credibilities', '_candidate_patterns')
+    __slots__ = ('_num_subgroups','_cats', '_max_complexity', '_thresholds','_credibility_values' , '_file', '_file_path','_visited_subgroups' , '_df','_delta', '_top_subgroups','_top_subgroups_credibilities', '_candidate_patterns')
 
     # A credibility criterion is a credibility measure and a threshold. Here we set if the credibility measure value
     # should be greater or equal than the threshold or less or equal than the threshold.
@@ -56,7 +56,7 @@ class SQFinder(Algorithm):
         # "adjusted_p_value" : operator.le
     }
 
-    def __init__(self, num_subgroups :int, cats : int = -1, max_complexity: int = -1, coverage_thld: float = 0.1, or_thld: float = 1.2, p_val_thld: float = 0.05, abs_contribution_thld: float = 0.2, contribution_thld: float = 5, delta :float = 0.2, write_results_in_file: bool = False, file_path: Union[str,None] = None, write_stats_in_file: bool = False, stats_path: Union[str,None] = None) -> None:
+    def __init__(self, num_subgroups :int, cats : int = -1, max_complexity: int = -1, coverage_thld: float = 0.1, or_thld: float = 1.2, p_val_thld: float = 0.05, abs_contribution_thld: float = 0.2, contribution_thld: float = 5, delta :float = 0.2, write_results_in_file: bool = False, file_path: Union[str,None] = None) -> None:
         if type(num_subgroups) is not int:
             raise TypeError("The type of the parameter 'num_subgroups' must be 'int'.")
         if type(cats) is not int:
@@ -91,9 +91,6 @@ class SQFinder(Algorithm):
         # If 'write_results_in_file' is True, 'file_path' must not be None.
         if (write_results_in_file) and (file_path is None):
             raise ValueError("If the parameter 'write_results_in_file' is True, the parameter 'file_path' must not be None.")
-        # If 'write_stats_in_file' is True, 'stats_path' must not be None.
-        if (write_stats_in_file) and (stats_path is None):
-            raise ValueError("If the parameter 'write_stats_in_file' is True, the parameter 'stats_path' must not be None.")
         self._num_subgroups = num_subgroups
         self._cats = cats
         self._max_complexity = max_complexity
@@ -103,12 +100,9 @@ class SQFinder(Algorithm):
         else:
             self._file_path = None
         self._file = None
-        if (write_stats_in_file):
-            self._stats_path = stats_path
-        else:
-            self._stats_path = None
         self._top_subgroups = []
         self._top_subgroups_credibilities = []
+        self._visited_subgroups = 0
         # Thresholds for each credibility measure.
         self._thresholds = {
             "coverage" : coverage_thld,
@@ -127,18 +121,18 @@ class SQFinder(Algorithm):
         return len(self._top_subgroups)
 
     def _get_unselected_subgroups(self) -> int:
-        return len(self._candidate_patterns) - len(self._top_subgroups)
+        return self._visited_subgroups - len(self._top_subgroups)
 
     def _get_visited_subgroups(self) -> int:
-        return len(self._candidate_patterns)
+        return self._visited_subgroups
 
-    def _get_top_patterns(self) -> list[Pattern]:
+    def _get_top_subgroups(self) -> list[Pattern]:
         return self._top_subgroups
     
     selected_subgroups = property(_get_selected_subgrouops, None, None, "The number of selected subgroups.")
     unselected_subgroups = property(_get_unselected_subgroups, None, None, "The number of unselected subgroups.")
     visited_subgroups = property(_get_visited_subgroups, None, None, "The number of visited subgroups.")
-    top_patterns = property(_get_top_patterns, None, None, "The list of the selected patterns.")
+    top_subgroups = property(_get_top_subgroups, None, None, "The list of the selected patterns.")
 
     def _reduce_categories(self,df : DataFrame,tuple_target_attribute_value: tuple) -> DataFrame:
         """ Method to reduce the number of different values for the categorical attributes. If cats = -1, we take all the values.
@@ -293,6 +287,7 @@ class SQFinder(Algorithm):
         target_column_as_boolean = df[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1]
         for length in range(1, self._max_complexity+1):
             for subset in itertools.combinations(selectors, length):
+                self._visited_subgroups += 1
                 # If we are taking twice the same column, the pattern is not valid.
                 attributes = []
                 for selector in subset:
@@ -311,14 +306,18 @@ class SQFinder(Algorithm):
                     continue
                 # We compute the credibility measures for the pattern.
                 credibility_values = self._handle_individual_result(df, target_column_as_boolean, subset, appearance)
-                # We compute the total credibility of the pattern.
+                # We compute the total credibility of the pattern, represented as an array of booleans (True if the credibility measure is better than the threshold, False otherwise).
                 credibility = bitarray()
                 for cred in SQFinder._credibility_criterions:
+                    # The credibility_criterions dictionary contains the function to compare the credibility measure with the threshold.
                     credibility.append(SQFinder._credibility_criterions[cred](credibility_values[cred],self._thresholds[cred]))
+                # We compute the numerical rank of the pattern given its credibility.
                 rank = self._compute_rank(credibility)
+                # We obtain the p_value and effect size (odds ratio) for the pattern. We will use these values to select the top subgroups.
                 p_value = credibility["p_value"]
                 odds_ratio = credibility["odds_ratio"]
-                pattern = Pattern(subset)
+                # Create the pattern object and check if we can add it to the list of top subgroups
+                pattern = Pattern(list(subset))
                 for s, s_rank, s_p_value, s_odds_ratio,_ in top_subgroups:
                     if self._redundant(pattern, s):
                         if len(pattern) == len(s):
@@ -339,6 +338,7 @@ class SQFinder(Algorithm):
                         if self._redundant(s, pattern) and len(pattern) > len(s) and \
                             odds_ratio > s_odds_ratio + self._delta and p_value < s_p_value:
                             top_subgroups.remove((s, s_rank, s_p_value, s_odds_ratio))
+                    # Add the pattern to the list of top subgroups. If the list is full, we remove the subgroup with the highest p-value.
                     top_subgroups.append((pattern, rank, p_value, odds_ratio, credibility))
                     if len(top_subgroups) > self._num_subgroups:
                         top_subgroups = sorted(top_subgroups, key=lambda x: x[2])
@@ -377,6 +377,7 @@ class SQFinder(Algorithm):
         if self._file_path is not None:
             self._to_file(self._file_path,tuple_target_attribute_value, self._credibility_values)
 
+    #TODO: Update this method
     def test_subgroups(self,test_dataframe : DataFrame, tuple_target_attribute_value: tuple, write_to_file:bool=False, file_path: Union[str,None]=None):
         """Method to test the best subgroups on a different dataset. This method can only be called after the fit method.
         
