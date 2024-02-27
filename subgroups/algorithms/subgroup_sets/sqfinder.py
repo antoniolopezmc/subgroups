@@ -288,6 +288,7 @@ class SQFinder(Algorithm):
         if self._max_complexity == -1:
             self._max_complexity = len(selectors)
         for length in range(1, self._max_complexity+1):
+            print("Length: ", length)
             for subset in itertools.combinations(selectors, length):
                 self._visited_subgroups += 1
                 # If we are taking twice the same column, the pattern is not valid.
@@ -304,7 +305,7 @@ class SQFinder(Algorithm):
                     else:
                         appearance = appearance & (df[selector.attribute_name] == selector.value)
                 # If the pattern does not appear in the dataset, we continue to the next pattern.
-                if appearance.sum() != 0:
+                if appearance.sum() == 0:
                     continue
                 # We compute the credibility measures for the pattern.
                 credibility_values = self._handle_individual_result(df, target_column_as_boolean, subset, appearance)
@@ -320,28 +321,28 @@ class SQFinder(Algorithm):
                 odds_ratio = credibility_values["odds_ratio"]
                 # Create the pattern object and check if we can add it to the list of top subgroups
                 pattern = Pattern(list(subset))
-                for s, s_rank, s_p_value, s_odds_ratio,_ in top_subgroups:
+                for s, s_rank, s_p_value, s_odds_ratio,s_credibility_values in top_subgroups:
                     if self._redundant(pattern, s):
                         if len(pattern) == len(s):
                             if s_rank < rank:
-                                top_subgroups.remove((s, s_rank, s_p_value, s_odds_ratio))
+                                top_subgroups.remove((s, s_rank, s_p_value, s_odds_ratio,s_credibility_values))
                             elif rank < s_rank:
                                 break # And continue to next combination of selectors
                             else: # rank == g_rank
                                 if p_value < s_p_value:
-                                    top_subgroups.remove((s, s_rank, s_p_value, s_odds_ratio))
+                                    top_subgroups.remove((s, s_rank, s_p_value, s_odds_ratio,s_credibility_values))
                                 else:
                                     break # And continue to next combination of selectors
                         else: # len(pattern) > len(g) since we generate the combinations in increasing order of length
                             if odds_ratio <= s_odds_ratio + self._delta:
                                 break # And continue to next combination of selectors
                 else: # If we didn't break, we add the pattern to the list of top subgroups
-                    for s, s_rank, s_p_value, s_odds_ratio,_ in top_subgroups:
+                    for s, s_rank, s_p_value, s_odds_ratio,s_credibility_values in top_subgroups:
                         if self._redundant(s, pattern) and len(pattern) > len(s) and \
                             odds_ratio > s_odds_ratio + self._delta and p_value < s_p_value:
-                            top_subgroups.remove((s, s_rank, s_p_value, s_odds_ratio))
+                            top_subgroups.remove((s, s_rank, s_p_value, s_odds_ratio,s_credibility_values))
                     # Add the pattern to the list of top subgroups. If the list is full, we remove the subgroup with the highest p-value.
-                    top_subgroups.append((pattern, rank, p_value, odds_ratio, credibility))
+                    top_subgroups.append((pattern, rank, p_value, odds_ratio, credibility_values))
                     if len(top_subgroups) > self._num_subgroups:
                         top_subgroups = sorted(top_subgroups, key=lambda x: x[2])
                         top_subgroups.pop()
