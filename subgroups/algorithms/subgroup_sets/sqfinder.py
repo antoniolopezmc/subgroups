@@ -288,7 +288,6 @@ class SQFinder(Algorithm):
         if self._max_complexity == -1:
             self._max_complexity = len(selectors)
         for length in range(1, self._max_complexity+1):
-            print("Length: ", length)
             for subset in itertools.combinations(selectors, length):
                 self._visited_subgroups += 1
                 # If we are taking twice the same column, the pattern is not valid.
@@ -321,6 +320,21 @@ class SQFinder(Algorithm):
                 odds_ratio = credibility_values["odds_ratio"]
                 # Create the pattern object and check if we can add it to the list of top subgroups
                 pattern = Pattern(list(subset))
+                # The original pruning performed in QFinder cannot be performed here, since we have not sorted all
+                # candidate patterns with the same complexity. We can only continue to the next pattern instead of to the next complexity.
+                # Compute the minimum rank for top subgroups with the same complexity
+                top_subgroups_with_same_complexity = [s for s in top_subgroups if len(s[0]) == len(pattern)]
+                if len(top_subgroups_with_same_complexity) == 0:
+                    min_rank = 0
+                else:
+                    min_rank = min([r for (_, r, _, _, _) in top_subgroups_with_same_complexity])
+                # Max p-value for top subgroups (all complexities)
+                if len(top_subgroups) == 0:
+                    max_p_value = 0
+                else:
+                    max_p_value = max([p for _, _, p, _, _ in top_subgroups])
+                if rank < min_rank and p_value > max_p_value and len(top_subgroups) == self._num_subgroups:
+                    continue
                 for s, s_rank, s_p_value, s_odds_ratio,s_credibility_values in top_subgroups:
                     if self._redundant(pattern, s):
                         if len(pattern) == len(s):
