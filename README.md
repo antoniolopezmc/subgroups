@@ -1,4 +1,5 @@
-[![PyPI - Version](https://img.shields.io/pypi/v/subgroups)](https://pypi.org/project/subgroups/) [![PyPI - License](https://img.shields.io/pypi/l/subgroups)](https://pypi.org/project/subgroups/) [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/subgroups)](https://pypi.org/project/subgroups/) [![GitHub Repo stars](https://img.shields.io/github/stars/antoniolopezmc/subgroups)](https://github.com/antoniolopezmc/subgroups)
+[![PyPI - Version](https://img.shields.io/pypi/v/subgroups)](https://pypi.org/project/subgroups/) [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/subgroups)](https://pypi.org/project/subgroups/) [![PyPI - License](https://img.shields.io/pypi/l/subgroups)](https://pypi.org/project/subgroups/) ![Pepy Total Downlods](https://img.shields.io/pepy/dt/subgroups)
+ [![GitHub Repo stars](https://img.shields.io/github/stars/antoniolopezmc/subgroups)](https://github.com/antoniolopezmc/subgroups)
 
 # subgroups
 
@@ -23,7 +24,11 @@ import subgroups.tests as st
 st.run_all_tests()
 ```
 
-## Generating the library documentation manually
+## Documentation
+
+The official documentation is hosted on https://antoniolopezmc.github.io/subgroups-docs/
+
+## Manually generating the documentation
 
 To manually generate the library documentation, it is necessary to execute:
 

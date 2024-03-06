@@ -26,7 +26,7 @@ class clean_pycache(Command):
 class custom_clean_command(clean):
     """Custom 'clean' command.
     
-    This version of the 'clean' command also removes the following directories: "./build", "./dist" and "./subgroups.egg-info".
+    This version of the 'clean' command also removes the following directories: "./build", "./dist", "./subgroups.egg-info", "./src/build", "./src/dist" and "./src/subgroups.egg-info".
     """
     
     def run(self):
@@ -38,6 +38,12 @@ class custom_clean_command(clean):
             shutil.rmtree("dist")
         if os.path.isdir("subgroups.egg-info"):
             shutil.rmtree("subgroups.egg-info")
+        if os.path.isdir("src/build"):
+            shutil.rmtree("src/build")
+        if os.path.isdir("src/dist"):
+            shutil.rmtree("src/dist")
+        if os.path.isdir("src/subgroups.egg-info"):
+            shutil.rmtree("src/subgroups.egg-info")
 
 # Entry point of the python script.
 if __name__ == "__main__":
