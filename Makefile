@@ -1,4 +1,4 @@
-.PHONY: build clean clean_pycache upload
+.PHONY: build clean clean_pycache upload install_prod install_dev
 
 build: clean
 	python -m pip install --upgrade build
@@ -13,3 +13,9 @@ clean_pycache:
 upload: clean build
 	python -m pip install --upgrade twine
 	python -m twine upload --repository pypi dist/*.whl
+
+install_prod: clean
+	python -m pip install ./
+
+install_dev: clean
+	python -m pip install -e ./

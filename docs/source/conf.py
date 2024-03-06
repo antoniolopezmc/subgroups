@@ -12,7 +12,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../'))
+sys.path.insert(0, os.path.abspath('../../src/'))
 # IMPORTANT: since we added "../../" directory to the first position of the path, 'subgroups' module is the one located in that directory, 
 #            not in the python modules directory.
 import subgroups
@@ -36,7 +36,7 @@ release = subgroups.__version__
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx_autodoc_typehints',
-    #'sphinx.ext.viewcode', # Uncomment to view the button "source" in the generated documentation.
+    'sphinx.ext.viewcode', # Uncomment to view the button "source" in the generated documentation.
     'sphinx.ext.coverage',
     'sphinx.ext.githubpages'
 ]

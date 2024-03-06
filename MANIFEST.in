@@ -1,1 +1,1 @@
-recursive-include subgroups/datasets/csv *.csv
+recursive-include src/subgroups/datasets/csv *.csv

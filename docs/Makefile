@@ -4,7 +4,7 @@ build: clean
 	python -m pip install --upgrade sphinx
 	python -m pip install --upgrade sphinx-rtd-theme
 	python -m pip install --upgrade sphinx-autodoc-typehints
-	sphinx-apidoc -f -o source/project_files ../subgroups --no-toc
+	sphinx-apidoc -f -o source/project_files ../src/subgroups --no-toc
 	python make.py html
 	python make.py latex
 	cd build && cd latex && pdflatex -synctex=1 -interaction=nonstopmode subgroups.tex && cd .. && cd ..
