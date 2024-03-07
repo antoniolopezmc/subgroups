@@ -3,7 +3,7 @@
 # Contributors:
 #    Antonio López Martínez-Carrasco <antoniolopezmc1995@gmail.com>
 
-"""This file contains the implementation of some additional functions used in the MDL principle.
+"""This file contains the implementation of different functions used by the MDL principle.
 """
 
 from functools import lru_cache

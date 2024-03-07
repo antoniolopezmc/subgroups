@@ -10,7 +10,7 @@ clean:
 clean_pycache:
 	python setup.py clean_pycache
 
-upload: clean build
+upload_to_pypi: clean build
 	python -m pip install --upgrade twine
 	python -m twine upload --repository pypi dist/*.whl
 
