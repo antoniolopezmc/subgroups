@@ -1,4 +1,7 @@
-.PHONY: build extended_build clean help
+.PHONY: clean build extended_build
+
+clean:
+	python make.py clean
 
 build: clean
 	python -m pip install --upgrade sphinx
@@ -13,6 +16,3 @@ extended_build: build
 	python make.py man
 	python make.py text
 	python make.py xml
-
-clean:
-	python make.py clean
