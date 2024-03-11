@@ -232,7 +232,7 @@ class SQFinder(Algorithm):
             contribution_ratio = np.inf
         else:
             contribution_ratio = maximum_absolute_contribution / minimum_absolute_contribution
-        #TODO: We cannot apply Bonferroni correction since we need the total number of tested patterns.
+        #TODO: We cannot apply Bonferroni correction since we need the total number of tested patterns. We could calculate it after the loop but we need it in order to assign the rank. Maybe apply other type of correction?
         # adjusted_p_value = p_value * len(canidadate_patterns)
         credibility = {
             "coverage": coverage,
