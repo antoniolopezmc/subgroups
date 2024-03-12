@@ -8,7 +8,7 @@
 
 from os import remove
 from bitarray import bitarray
-from pandas import DataFrame
+from pandas import DataFrame, Series
 from subgroups.algorithms.subgroup_sets.qfinder import QFinder
 from subgroups.core.operator import Operator
 from subgroups.core.pattern import Pattern
@@ -89,10 +89,10 @@ class TestQFinder(unittest.TestCase):
     def test_QFinder_generate_candidate_patterns1(self):
         df = DataFrame({'bread': {0: 'yes', 1: 'yes', 2: 'no', 3: 'yes', 4: 'yes', 5: 'yes', 6: 'yes'}, 'milk': {0: 'yes', 1: 'no', 2: 'yes', 3: 'yes', 4: 'yes', 5: 'yes', 6: 'yes'}, 'beer': {0: 'no', 1: 'yes', 2: 'yes', 3: 'yes', 4: 'no', 5: 'yes', 6: 'no'}, 'coke': {0: 'no', 1: 'no', 2: 'yes', 3: 'no', 4: 'yes', 5: 'no', 6: 'yes'}, 'diaper': {0: 'no', 1: 'yes', 2: 'yes', 3: 'yes', 4: 'yes', 5: 'yes', 6: 'yes'}})        
         target = ("diaper", "yes")
-        model = QFinder(num_subgroups=5)
         complexity = 3
-        patterns = model._generate_candidate_patterns(df,target, complexity)
-        simple_selectors = [
+        model = QFinder(num_subgroups=5, max_complexity=complexity)
+        model._generate_candidate_patterns(df,target)
+        selectors = [
             Selector("bread", Operator.EQUAL, "yes"),
             Selector("milk", Operator.EQUAL, "yes"),
             Selector("beer", Operator.EQUAL, "yes"),
@@ -102,57 +102,67 @@ class TestQFinder(unittest.TestCase):
             Selector("beer", Operator.EQUAL, "no"),
             Selector("coke", Operator.EQUAL, "no"),
         ]
-        simple_patterns = [Pattern([sel]) for sel in simple_selectors]
-        for pat in simple_patterns:
-            self.assertIn(pat, patterns)
-        test_complex_patterns = [
-            Pattern([Selector("bread", Operator.EQUAL,  "yes"), Selector("milk", Operator.EQUAL,  "yes")]),
-            Pattern([Selector("bread", Operator.EQUAL,  "yes"), Selector("beer", Operator.EQUAL,  "yes")]),
-            Pattern([Selector("bread", Operator.EQUAL,  "yes"), Selector("coke", Operator.EQUAL,  "yes")]),
-            Pattern([Selector("milk", Operator.EQUAL,  "yes"), Selector("beer", Operator.EQUAL,  "yes")]),
-            Pattern([Selector("milk", Operator.EQUAL,  "yes"), Selector("coke", Operator.EQUAL,  "yes")]),
-            Pattern([Selector("beer", Operator.EQUAL,  "yes"), Selector("coke", Operator.EQUAL,  "no")]),
-            Pattern([Selector("bread", Operator.EQUAL,  "no"), Selector("milk", Operator.EQUAL,  "no")]),
-        ]
-        for pat in test_complex_patterns:
-            self.assertIn(pat, patterns)
+        for selec in selectors:
+            self.assertIn(selec,model._selectors.values)
+
+        simple_series = []
+        for i in range(len(model._selectors)):
+            s = Series([False]*len(model._selectors.values))
+            s[i] = True
+            simple_series.append(s)
+
+        for pat in simple_series:
+            #TODO: No se puede hacer comparacion de igualadad entre pd.Series, transformar a listas
+            self.assertIn(list(pat), [list(p) for p in model._candidate_patterns])
+        
+        complex_series = []
+        for i in range(len(model._selectors)-1):
+            s = Series([False]*len(model._selectors))
+            s[i] = True
+            s[i+1] = True
+            complex_series.append(s)
+        
+        for pat in complex_series:
+            self.assertIn(list(pat), [list(p) for p in model._candidate_patterns])
+
+        self.assertIn([True]*3+[False]*(len(model._selectors)-3),[list(p) for p in model._candidate_patterns])
+        self.assertNotIn([True]*4+[False]*(len(model._selectors)-4),[list(p) for p in model._candidate_patterns])
         
     def test_QFinder_generate_candidate_patterns2(self):
         # Check that the value 'other' is added to the categorical variables
         df = DataFrame({'a': {0: '1', 1: '1', 2: '1', 3: '2', 4: '3'}, 'class': {0: '1', 1: '1', 2: '1', 3: '1', 4: '1'}})
         target = ("class", 1)
-        model = QFinder(num_subgroups=5)
         complexity = 1
-        patterns = model._generate_candidate_patterns(df,target, complexity,cats=2)
+        model = QFinder(num_subgroups=5, max_complexity=complexity, cats = 2)
+        patterns = model._generate_candidate_patterns(df,target)
         simple_selectors = [
             Selector("a", Operator.EQUAL, '1'),
             Selector("a", Operator.EQUAL, "other"),
         ]
-        simple_patterns = [Pattern([sel]) for sel in simple_selectors]
-        for pat in simple_patterns:
-            self.assertIn(pat, patterns)
+        for pat in simple_selectors:
+            self.assertIn(pat, model._selectors.values)
     
     def test_QFinder_handle_individual_result(self):
         model = QFinder(num_subgroups=5)
-        result = model._handle_individual_result(bitarray('11111'))
+        result = model._handle_individual_result([True, True, True, True, True])
         self.assertEqual(result, 5)
 
-        result = model._handle_individual_result(bitarray('00000'))
+        result = model._handle_individual_result([False, False, False, False, False])
         self.assertEqual(result, 0)
 
-        result = model._handle_individual_result(bitarray('10101'))
+        result = model._handle_individual_result([True, False, True, False, True])
         self.assertEqual(result, 1)
 
-        result = model._handle_individual_result(bitarray('01010'))
+        result = model._handle_individual_result([False, True, False, True, False])
         self.assertEqual(result, 0)
 
-        result = model._handle_individual_result(bitarray('11100'))
+        result = model._handle_individual_result([True, True, True, False, False])
         self.assertEqual(result, 3)
 
-        result = model._handle_individual_result(bitarray('11110'))
+        result = model._handle_individual_result([True, True, True, True, False])
         self.assertEqual(result, 4)
 
-        result = model._handle_individual_result(bitarray('11101'))
+        result = model._handle_individual_result([True, True, True, False, True])
         self.assertEqual(result, 5)
 
     def test_QFinder_fit(self):
