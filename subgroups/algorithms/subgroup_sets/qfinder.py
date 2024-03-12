@@ -16,7 +16,6 @@ from subgroups.core.pattern import Pattern
 from subgroups.core.operator import Operator
 from subgroups.core.selector import Selector
 from subgroups.core.subgroup import Subgroup
-from bitarray import bitarray
 from subgroups.data_structures.bitset_qfinder import Bitset_QFinder
 import operator
 
@@ -39,7 +38,7 @@ class QFinder(Algorithm):
     :param num_subgroups: the number of top subgroups to return.
     """
 
-    __slots__ = ('_num_subgroups','_cats', '_max_complexity', '_thresholds','_credibility_values' , '_file', '_file_path', '_stats_path' , '_df','_delta', '_num_subgroups', '_top_patterns','_selectors', '_candidate_patterns')
+    __slots__ = ('_num_subgroups','_cats', '_max_complexity', '_thresholds','_credibility_values' , '_file', '_file_path' , '_df','_delta', '_num_subgroups', '_top_patterns','_selectors', '_candidate_patterns')
 
     # A credibility criterion is a credibility measure and a threshold. Here we set if the credibility measure value
     # should be greater or equal than the threshold or less or equal than the threshold.
@@ -54,7 +53,7 @@ class QFinder(Algorithm):
         "adjusted_p_value" : operator.le
     }
 
-    def __init__(self, num_subgroups :int, cats : int = -1, max_complexity: int = -1, coverage_thld: float = 0.1, or_thld: float = 1.2, p_val_thld: float = 0.05, abs_contribution_thld: float = 0.2, contribution_thld: float = 5, delta :float = 0.2, write_results_in_file: bool = False, file_path: Union[str,None] = None, write_stats_in_file: bool = False, stats_path: Union[str,None] = None) -> None:
+    def __init__(self, num_subgroups :int, cats : int = -1, max_complexity: int = -1, coverage_thld: float = 0.1, or_thld: float = 1.2, p_val_thld: float = 0.05, abs_contribution_thld: float = 0.2, contribution_thld: float = 5, delta :float = 0.2, write_results_in_file: bool = False, file_path: Union[str,None] = None) -> None:
         if type(num_subgroups) is not int:
             raise TypeError("The type of the parameter 'num_subgroups' must be 'int'.")
         if type(cats) is not int:
@@ -89,9 +88,6 @@ class QFinder(Algorithm):
         # If 'write_results_in_file' is True, 'file_path' must not be None.
         if (write_results_in_file) and (file_path is None):
             raise ValueError("If the parameter 'write_results_in_file' is True, the parameter 'file_path' must not be None.")
-        # If 'write_stats_in_file' is True, 'stats_path' must not be None.
-        if (write_stats_in_file) and (stats_path is None):
-            raise ValueError("If the parameter 'write_stats_in_file' is True, the parameter 'stats_path' must not be None.")
         self._num_subgroups = num_subgroups
         self._cats = cats
         self._max_complexity = max_complexity
@@ -101,10 +97,6 @@ class QFinder(Algorithm):
         else:
             self._file_path = None
         self._file = None
-        if (write_stats_in_file):
-            self._stats_path = stats_path
-        else:
-            self._stats_path = None
         self._top_patterns = []
         self._candidate_patterns = []
         self._selectors = []
@@ -322,8 +314,6 @@ class QFinder(Algorithm):
         self._top_patterns = self._select_top_k(ranked_patterns)
         if self._file_path is not None:
             self._to_file(self._file_path,tuple_target_attribute_value, self._credibility_values)
-        if self._stats_path is not None:
-            self._to_stats_file()
 
     def test_subgroups(self,test_dataframe : DataFrame, tuple_target_attribute_value: tuple, write_to_file:bool=False, file_path: Union[str,None]=None):
         """Method to test the best subgroups on a different dataset. This method can only be called after the fit method.
@@ -382,14 +372,3 @@ class QFinder(Algorithm):
             self._file.write("\n")
         self._file.close()
         self._file = None
-
-    def _to_stats_file(self):
-        """Write the credibility measures of each pattern to a file.
-        """
-        data = {
-                cred : list(self._credibility_values[cred].values()) for cred in self._credibility_values
-            }
-        df = DataFrame(data)
-        # Set the row names to be the patterns.
-        df.index = list(self._credibility_values["odds_ratio"].keys())
-        df.to_html(self._stats_path)
