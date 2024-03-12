@@ -84,13 +84,13 @@ class Bitset_QFinder(object):
         # The keys are stored as strings, so we need to convert them back to pandas Series
         return [Series(bitarray(pattern),dtype = bool) for pattern in self._df.columns]
     
-    def compute_credibility_measures(self, target_column) -> tuple[dict, dict, dict, dict, dict, dict]:
+    def compute_credibility_measures(self, target_column) -> DataFrame:
 
         """
             Method to compute the credibility measures for each candidate pattern.
             
             :param target_column: target column of the dataset.
-            :return: a tuple with dictionaries with the credibility values for each candidate pattern.
+            :return: a pandas DataFrame with the credibility values for each candidate pattern.
 
         """
 

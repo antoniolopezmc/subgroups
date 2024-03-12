@@ -97,7 +97,7 @@ class QFinder(Algorithm):
         else:
             self._file_path = None
         self._file = None
-        self._top_patterns = []
+        self._top_patterns = None
         self._candidate_patterns = []
         self._selectors = []
         # Thresholds for each credibility measure.
@@ -301,6 +301,10 @@ class QFinder(Algorithm):
         for column in pandas_dataframe.columns:
             if not is_string_dtype(pandas_dataframe[column]):
                 raise DatasetAttributeTypeError("Error in attribute '" + str(column) + "'. This algorithm only supports nominal attributes (i.e., type 'str').")
+        if tuple_target_attribute_value[0] not in pandas_dataframe.columns:
+            raise ValueError("The target attribute must be in the dataset.")
+        if tuple_target_attribute_value[1] not in pandas_dataframe[tuple_target_attribute_value[0]].unique():
+            raise ValueError("The target value must be in the target attribute.")
         # We copy the DataFrame to avoid modifying the original when dealing with "other" values.
         df = pandas_dataframe.copy()
         # We generate the list of candidate patterns.
@@ -315,12 +319,14 @@ class QFinder(Algorithm):
         if self._file_path is not None:
             self._to_file(self._file_path,tuple_target_attribute_value, self._credibility_values)
 
-    def test_subgroups(self,test_dataframe : DataFrame, tuple_target_attribute_value: tuple, write_to_file:bool=False, file_path: Union[str,None]=None):
+    def test_subgroups(self,test_dataframe : DataFrame, tuple_target_attribute_value: tuple, write_to_file:bool=False, file_path: Union[str,None]=None) -> DataFrame:
         """Method to test the best subgroups on a different dataset. This method can only be called after the fit method.
         
         :param test_dataframe: the DataFrame which is scanned. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
         :param target: a tuple with 2 elements: the target attribute name and the target value.
-        :return: a dictionary with the credibility measures for each subgroup.
+        :param write_to_file: if True, the results will be written in a file and the file_path parameter must not be None.
+        :param file_path: the path of the file where the results will be written.
+        :return: a dataframe with the credibility measures for each subgroup.
         """
         # We make sure that the fit method has been called before.
         if self._top_patterns is None:
@@ -338,20 +344,11 @@ class QFinder(Algorithm):
             raise TypeError("The file path must be a string.")
         # We generate a different bitset for the test dataset, which whill be used to compute the credibility measures.
         qfinder_bitset = Bitset_QFinder()
-        qfinder_bitset.generate_bitset(test_dataframe, tuple_target_attribute_value, self._top_patterns)
-        coverages, odds_ratios, p_values, absolute_contributions, contribution_ratios, adjusted_p_values \
-            = qfinder_bitset.compute_credibility_measures(test_dataframe[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1])
-        parameters = {
-            "coverages": coverages,
-            "odds_ratios": odds_ratios,
-            "p_values": p_values,
-            "absolute_contributions": absolute_contributions,
-            "contribution_ratios": contribution_ratios,
-            "adjusted_p_values": adjusted_p_values
-        }
+        qfinder_bitset.generate_bitset(test_dataframe, tuple_target_attribute_value, self._top_patterns, self._selectors)
+        credibility_values = qfinder_bitset.compute_credibility_measures(test_dataframe[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1])
         if write_to_file:
-            self._to_file(file_path, tuple_target_attribute_value, parameters)
-        return parameters
+            self._to_file(file_path, tuple_target_attribute_value, credibility_values)
+        return credibility_values
     
     def _to_file(self, file_path, target, credibility_values):
         """Writes the top-k patterns to a file.
