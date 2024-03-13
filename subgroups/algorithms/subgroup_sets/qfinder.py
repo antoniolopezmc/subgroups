@@ -277,7 +277,7 @@ class QFinder(Algorithm):
                             self._credibility_values["odds_ratio"][pattern_key] > self._credibility_values["odds_ratio"][top_pattern_key] + self._delta and \
                                 self._credibility_values["p_value"][pattern_key] < self._credibility_values["p_value"][top_pattern_key]:
                             # top_k_patterns.remove(top_pattern_as_series)
-                            patterns_to_remove(list(top_pattern_as_series))
+                            patterns_to_remove.append(list(top_pattern_as_series))
                     top_k_patterns = list(filter(lambda p : list(p) not in patterns_to_remove , top_k_patterns))
                     
                     top_k_patterns.append(pattern_as_series)
