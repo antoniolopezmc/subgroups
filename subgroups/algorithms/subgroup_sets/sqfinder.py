@@ -182,7 +182,7 @@ class SQFinder(Algorithm):
                 selectors.append(Selector(column, Operator.EQUAL, value))
         return selectors
     
-    def _handle_individual_result(self, df: DataFrame, target_column: Series, selectors: tuple, appearance: Series) -> int:
+    def _handle_individual_result(self, df: DataFrame, target_column: Series, selectors: tuple, appearance: Series) -> dict:
         """Method to compute the credibility measures for a pattern.
 
         :param df: the dataset.

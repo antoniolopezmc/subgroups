@@ -112,7 +112,7 @@ class QFinder(Algorithm):
             "adjusted_p_value" : p_val_thld
         }
 
-    def _get_selected_subgrouops(self) -> int:
+    def _get_selected_subgroups(self) -> int:
         return len(self._top_patterns)
 
     def _get_unselected_subgroups(self) -> int:
@@ -124,7 +124,7 @@ class QFinder(Algorithm):
     def _get_top_patterns(self) -> list[Pattern]:
         return self._top_patterns
     
-    selected_subgroups = property(_get_selected_subgrouops, None, None, "The number of selected subgroups.")
+    selected_subgroups = property(_get_selected_subgroups, None, None, "The number of selected subgroups.")
     unselected_subgroups = property(_get_unselected_subgroups, None, None, "The number of unselected subgroups.")
     visited_subgroups = property(_get_visited_subgroups, None, None, "The number of visited subgroups.")
     top_patterns = property(_get_top_patterns, None, None, "The list of the selected patterns.")
