@@ -31,7 +31,7 @@ class IterativeSD(Algorithm):
         "contribution_ratio" : operator.le,
     }
 
-    __slots__ = ['_num_subgroups', '_cats', '_max_complexity', '_delta', '_file', '_top_k_subgroups', '_candidate_patterns', '_selectors', '_thresholds']
+    __slots__ = ['_num_subgroups', '_cats', '_max_complexity', '_delta', '_file', '_top_k_subgroups', '_visited_subgroups', '_selectors', '_thresholds']
 
     def __init__(self, num_subgroups :int, cats : int = -1, max_complexity: int = -1, coverage_thld: float = 0.1, or_thld: float = 1.2, p_val_thld: float = 0.05, abs_contribution_thld: float = 0.2, contribution_thld: float = 5, write_results_in_file: bool = False, file_path: Union[str,None] = None) -> None:
         if type(num_subgroups) is not int:
@@ -66,6 +66,7 @@ class IterativeSD(Algorithm):
         # If 'write_results_in_file' is True, 'file_path' must not be None.
         if (write_results_in_file) and (file_path is None):
             raise ValueError("If the parameter 'write_results_in_file' is True, the parameter 'file_path' must not be None.")
+        self._visited_subgroups = 0
         self._num_subgroups = num_subgroups
         self._cats = cats
         self._max_complexity = max_complexity
@@ -74,8 +75,7 @@ class IterativeSD(Algorithm):
         else:
             self._file_path = None
         self._file = None
-        self._top_k_subgroups = None
-        self._candidate_patterns = []
+        self._top_k_subgroups = []
         self._selectors = []
         # Thresholds for each credibility measure.
         self._thresholds = {
@@ -91,13 +91,13 @@ class IterativeSD(Algorithm):
         return len(self._top_k_subgroups)
 
     def _get_unselected_subgroups(self) -> int:
-        return len(self._candidate_patterns) - len(self._top_k_subgroups)
+        return self._visited_subgroups - len(self._top_k_subgroups)
 
     def _get_visited_subgroups(self) -> int:
-        return len(self._candidate_patterns)
+        return self._visited_subgroups
 
     def _get_top_patterns(self) -> list[Pattern]:
-        return self._top_k_subgroups
+        return self._top_k_subgroups.copy()
     
     selected_subgroups = property(_get_selected_subgroups, None, None, "The number of selected subgroups.")
     unselected_subgroups = property(_get_unselected_subgroups, None, None, "The number of unselected subgroups.")
@@ -141,7 +141,12 @@ class IterativeSD(Algorithm):
         
 
     def _generate_selectors(self,df : DataFrame,tuple_target_attribute_value: tuple) -> Series:
-        """ Method to generate the list of selectors in a given dataset
+        """ 
+        Method to generate the list of selectors in a given dataset.
+        We use this function after reducing the number of categories.
+
+        :param df: the dataset.
+        :param tuple_target_attribute_value: the tuple which contains the target attribute name and the target attribute values.
         """
         selectors = []
         for column in df.columns:
@@ -156,45 +161,46 @@ class IterativeSD(Algorithm):
         :param df: the dataset.
         :param target_column: the target column of the dataset represented as a pandas Series of booleans (True if equal to the target value, False otherwise).
         :param pattern: the pattern to be evaluated.
-
+        :return: a dictionary with the credibility measures of the pattern {measure_name: measure_value}.
         """
 
+        # We obtain the rows that satisfy the pattern.
         appearance = Series(True, index = df.index)
         for selector in pattern:
                 appearance = appearance & (df[selector.attribute_name] == selector.value)
-
+        # Most credibility measures are computed using a logistic regression model.
         linear_model = sm.GLM(target_column, appearance, family=sm.families.Binomial()).fit()
         odds_ratio = np.exp(linear_model.params.iloc[0])
         p_value = linear_model.pvalues.iloc[0]
         coverage = appearance.sum() / len(appearance)
-
+        # If the pattern only has one selector, the absolute contribution and the contribution ratio are 1.
         if len(pattern) == 1:
                 minimum_absolute_contribution = 1
                 maximum_absolute_contribution = 1
         else:
+            # We compute the contribution of each selector as the odds ratio of
+            # the pattern without the selector divided by the odds ratio of the pattern.
             minimum_absolute_contribution = 1
             maximum_absolute_contribution = 0
             for selector in pattern:
                 pattern_without_selector = pattern.copy()
                 pattern_without_selector.remove_selector(selector)
-                appearance_without_selector = None
+                appearance_without_selector = Series(True, index = df.index)
                 for s in pattern_without_selector:
-                    if appearance_without_selector is None:
-                        appearance_without_selector = df[s.attribute_name] == s.value
-                    else:
-                        appearance_without_selector = appearance_without_selector & (df[s.attribute_name] == s.value)
+                    appearance_without_selector = appearance_without_selector & (df[s.attribute_name] == s.value)
                 linear_model = sm.GLM(target_column, appearance_without_selector, family=sm.families.Binomial()).fit()
-                patter_wo_selector_odds_ratio = np.exp(linear_model.params.iloc[0])
-                contribution = odds_ratio / patter_wo_selector_odds_ratio
+                pattern_wo_selector_odds_ratio = np.exp(linear_model.params.iloc[0])
+                contribution = odds_ratio / pattern_wo_selector_odds_ratio
                 minimum_absolute_contribution = min(minimum_absolute_contribution, contribution)
                 maximum_absolute_contribution = max(maximum_absolute_contribution, contribution)
-        
+        # The absolute contribution is the minimum contribution of the selectors.
         absolute_contribution = minimum_absolute_contribution
+        # The contribution ratio is the maximum contribution divided by the minimum contribution.
         if absolute_contribution == 0:
             contribution_ratio = np.inf
         else:
             contribution_ratio = maximum_absolute_contribution / minimum_absolute_contribution
-
+        # The credibility measures are returned as a dictionary {measure_name: measure_value}.
         credibility = {
             "coverage": coverage,
             "odds_ratio": odds_ratio,
@@ -207,7 +213,7 @@ class IterativeSD(Algorithm):
     def _compute_rank(self,credibility: list) -> int:
         """Method to compute the rank of a pattern.
 
-        :param credibility: the list representing the pattern's credibility.
+        :param credibility: the list of booleans representing the pattern's credibility.
         :return: the rank of the pattern.
         """
         rank = 0
@@ -268,7 +274,10 @@ class IterativeSD(Algorithm):
         :param pattern: the current pattern (node of the tree).
         """
 
+        self._visited_subgroups += 1
         credibility_values = self._handle_individual_result(df, df[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1], pattern)
+        # The credibility of a patterns is represented as a list of booleans,
+        # where each element is True if the credibility measure meets the threshold and False otherwise.
         credibility = []
         for cred in IterativeSD._credibility_criterions:
             # The credibility_criterions dictionary contains the function to compare the credibility measure with the threshold.
@@ -296,7 +305,8 @@ class IterativeSD(Algorithm):
                 # Sort the top_k_subgroups by rank in descending order
                 self._top_k_subgroups_per_depth[complexity].sort(key=lambda x: (x[1], x[2]), reverse=True)
             return
-        # for selector in selectors:
+        # If we have not pruned the branch, we continue growing the tree.
+        # We do not use the full list of patterns in each call to avoid repeating the same patterns.
         for i in range(len(selectors)):
             new_pattern = pattern.copy()
             new_pattern.add_selector(selectors[i])
@@ -323,16 +333,18 @@ class IterativeSD(Algorithm):
             raise ValueError("The target value must be in the target attribute.")
         # We copy the DataFrame to avoid modifying the original when dealing with "other" values.
         df = pandas_dataframe.copy()
-        # We reduce the number of categories per column according to 'cats'
+        # We reduce the number of categories per column according to 'cats' and generate the list of selectors.
         self._reduce_categories(df, tuple_target_attribute_value)
         selectors = self._generate_selectors(df, tuple_target_attribute_value)
-        # List of global best subgroups (Pattern, rank, effect_size)
+        # List of global best subgroups (Pattern, rank, effect_size, credibility_values)
         self._top_k_subgroups = []
-        # List of best subgroups for each complexity
+        # List of best subgroups for each complexity {complexity: [(Pattern, rank, effect_size, credibility_values)]}
         self._top_k_subgroups_per_depth = {}
+        # Select the top-k subgroups for each complexity growing the tree until a certain depth.
         for complexity in range(1,self._max_complexity+1):
             self._top_k_subgroups_per_depth[complexity] = []
             self._grow_tree(df, tuple_target_attribute_value, selectors, complexity, Pattern([]))
+        # Once we have the best subgroups for each complexity, we select the top-k subgroups.
         self.top_k_selection()
         if self._file_path is not None:
             self._to_file(tuple_target_attribute_value)
@@ -340,10 +352,11 @@ class IterativeSD(Algorithm):
 
     def _to_file(self,tuple_target_attribute_value: tuple) -> None:
         """ Method to write the results to a file.
+
         :param tuple_target_attribute_value: the tuple which contains the target attribute name and the target attribute values.
         """
         file = open(self._file_path,"w")
-        for pat, rank, _, cred_values in self._top_k_subgroups:
+        for pat, _, _, cred_values in self._top_k_subgroups:
             sb = Subgroup(pat, Selector(tuple_target_attribute_value[0],Operator.EQUAL,tuple_target_attribute_value[1]))
             file.write(str(sb) + " ; ")
             for cred in cred_values:
