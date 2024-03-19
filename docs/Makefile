@@ -1,4 +1,4 @@
-.PHONY: clean build_pre build_html build_latex build_man build_text build_xml build build_all
+.PHONY: clean build_pre build_html build_man build_text build_xml build build_all
 
 SOURCEDIR = source
 BUILDDIR = build
@@ -15,10 +15,6 @@ build_pre: clean
 build_html: build_pre
 	sphinx-build -M html $(SOURCEDIR) $(BUILDDIR)
 
-build_latex: build_pre
-	sphinx-build -M latex $(SOURCEDIR) $(BUILDDIR)
-	cd $(BUILDDIR) && cd latex && pdflatex -synctex=1 -interaction=nonstopmode subgroups.tex && cd .. && cd ..
-
 build_man: build_pre
 	sphinx-build -M man $(SOURCEDIR) $(BUILDDIR)
 
@@ -28,8 +24,6 @@ build_text: build_pre
 build_xml: build_pre
 	sphinx-build -M xml $(SOURCEDIR) $(BUILDDIR)
 
-build: build_html build_latex
-	@echo
+build: build_html
 
-build_all: build_html build_latex build_man build_text build_xml
-	@echo
+build_all: build_html build_man build_text build_xml
