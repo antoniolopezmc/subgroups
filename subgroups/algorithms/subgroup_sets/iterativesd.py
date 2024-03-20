@@ -31,7 +31,7 @@ class IterativeSD(Algorithm):
         "contribution_ratio" : operator.le,
     }
 
-    __slots__ = ['_num_subgroups', '_cats', '_max_complexity', '_delta', '_file', '_top_k_subgroups', '_visited_subgroups', '_selectors', '_thresholds']
+    __slots__ = ['_num_subgroups', '_cats', '_max_complexity', '_delta', '_file', '_top_k_subgroups','_top_k_subgroups_per_depth', '_visited_subgroups', '_selectors', '_thresholds','_file_path']
 
     def __init__(self, num_subgroups :int, cats : int = -1, max_complexity: int = -1, coverage_thld: float = 0.1, or_thld: float = 1.2, p_val_thld: float = 0.05, abs_contribution_thld: float = 0.2, contribution_thld: float = 5, write_results_in_file: bool = False, file_path: Union[str,None] = None) -> None:
         if type(num_subgroups) is not int:
