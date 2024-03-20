@@ -1,10 +1,11 @@
+###################################################
 subgroups - A Python library for Subgroup Discovery
-===================================================
+###################################################
 
 ``subgroups`` is a python library which contains a collection of subgroup discovery algorithms and other data analysis utilities.
 
 +-----------------+----------------------+--------------------------------------+------------------+--------------+
-|  **Version**    |  **Python Version**  |  **Main Author**                     |  **GitHub**      |  **PyPI**    |
+|  **Version**    |  **Python Version**  |  **Author**                          |  **GitHub**      |  **PyPI**    |
 +=================+======================+======================================+==================+==============+
 |  |pypiversion|  |  |pythonversion|     |  `Antonio López Martínez-Carrasco`_  |  `Source code`_  |  `Package`_  |
 +-----------------+----------------------+--------------------------------------+------------------+--------------+
@@ -17,6 +18,10 @@ subgroups - A Python library for Subgroup Discovery
    overview
    download
    installation
+   using_the_algorithms
+   code_documentation
+   who_has_used_this_library
+   acknowledgements
 
 .. |pypiversion| image:: https://img.shields.io/pypi/v/subgroups
    :alt: Version
