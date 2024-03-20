@@ -10,7 +10,7 @@ subgroups - A Python library for Subgroup Discovery
 +-----------------+----------------------+--------------------------------------+------------------+--------------+
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Contents:
    :hidden:
 
