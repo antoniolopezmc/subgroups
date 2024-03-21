@@ -1,4 +1,4 @@
-from sys import argv, stderr
+from sys import argv
 from os import path, remove
 from shutil import rmtree
 

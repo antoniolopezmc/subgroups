@@ -111,7 +111,7 @@ or
     sphinx-apidoc -f -T -M -o source/project_files ../src/subgroups
     sphinx-build -M html source build
 
-The generated documentation will be located in the *build* subfolder.
+The generated documentation will be located in the ``build`` subfolder.
 
 .. _`download the package from its PyPI page`: https://pypi.org/project/subgroups/
 .. _`GitHub`: https://github.com/antoniolopezmc/subgroups

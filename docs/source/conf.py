@@ -22,7 +22,7 @@ from datetime import date
 
 project = 'subgroups'
 current_year = date.today().year
-copyright = str(current_year) + ', Antonio López Martínez-Carrasco'
+copyright = "2021-" + str(current_year) + ', Antonio López Martínez-Carrasco'
 author = 'Antonio López Martínez-Carrasco'
 
 # The full version, including alpha/beta/rc tags

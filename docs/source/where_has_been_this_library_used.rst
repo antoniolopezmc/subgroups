@@ -8,8 +8,8 @@ This library has been used in the following projects and scientific papers so fa
 Projects
 ========
 
-#. GRALENIA (Ref: 2021/C005/00150055): supported by the Spanish Ministry of Economic Affairs and Digital Transformation, the Spanish Secretariat of State for Digitization and Artificial Intelligence, Red.es and by the NextGenerationEU funding.
-#. CONFAINCE (Ref: PID2021-122194OB-I00): supported by MCIN/AEI/10.13039/501100011033 and by "ERDF A way of making Europe", by the "European Union".
+#. GRALENIA (Ref. 2021/C005/00150055) project: supported by the Spanish Ministry of Economic Affairs and Digital Transformation, the Spanish Secretariat of State for Digitization and Artificial Intelligence, Red.es and by the NextGenerationEU funding.
+#. CONFAINCE (Ref. PID2021-122194OB-I00) project: supported by MCIN/AEI/10.13039/501100011033 and by "ERDF A way of making Europe", by the "European Union".
 
 =================
 Scientific papers
