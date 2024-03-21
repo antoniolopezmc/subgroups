@@ -1,6 +1,6 @@
-<picture align="center">
-  <img alt="subgroups logo" src="docs/source/images/logo.png">
-</picture>
+<p align="center"><img alt="subgroups logo" src="docs/source/images/logo_for_white_background.png"></p>
+
+-----------------
 
 # subgroups - A Python library for Subgroup Discovery
 
