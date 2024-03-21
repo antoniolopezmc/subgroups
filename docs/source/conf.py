@@ -77,6 +77,9 @@ html_css_files = [
 # To hide the "View page source" button.
 html_show_sourcelink = False
 
+# Logo.
+html_logo = 'images/logo.png'
+
 # -- Options for 'sphinx_autodoc_typehints'.
 
 typehints_fully_qualified = True

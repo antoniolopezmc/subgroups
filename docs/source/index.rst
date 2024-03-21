@@ -16,11 +16,11 @@ subgroups - A Python library for Subgroup Discovery
    :hidden:
 
    overview
-   download
-   installation
+   download_and_installation
    using_the_algorithms
    code_documentation
-   who_has_used_this_library
+   where_has_been_this_library_used
+   extending_the_library
    acknowledgements
 
 .. |pypiversion| image:: https://img.shields.io/pypi/v/subgroups

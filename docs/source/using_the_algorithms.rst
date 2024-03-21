@@ -28,6 +28,12 @@ BSD, CBSD and CPBSD algorithms
 
 https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/BSD-CBSD-CPBSD.ipynb
 
+=================
+QFinder algorithm
+=================
+
+https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/QFinder.ipynb
+
 ==============
 GMSL algorithm
 ==============
