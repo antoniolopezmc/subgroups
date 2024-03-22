@@ -6,11 +6,7 @@
 """This file contains the implementation of the FPTree data structure used in the SDMapStar algorithm.
 """
 
-from subgroups.data_structures.fp_tree_node import FPTreeNode
 from subgroups.core.selector import Selector
-from subgroups.core.operator import Operator
-from pandas import DataFrame
-from numpy import size, sum
 from subgroups.exceptions import InconsistentMethodParametersError
 from subgroups.data_structures.fp_tree_for_sdmap import FPTreeForSDMap
 from subgroups.quality_measures.quality_measure import QualityMeasure
@@ -25,7 +21,8 @@ class FPTreeForSDMapStar(FPTreeForSDMap):
     __slots__ = ("_TP", "_FP")
 
     def __init__(self,TP:int,FP:int) -> None:
-        """Method to initialize the FPTreeForSDMapStar
+        """Method to initialize the FPTreeForSDMapStar.
+
         :param TP: The number of true positives in the dataset.
         :param FP: The number of false positives in the dataset.
         """

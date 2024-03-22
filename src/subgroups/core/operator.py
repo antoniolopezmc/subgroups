@@ -14,7 +14,6 @@ from pandas import Series
 from typing import Union
 
 class Operator(Enum):
-    
     """This enumerator provides the available operators which can be used by the selectors.
     """
     

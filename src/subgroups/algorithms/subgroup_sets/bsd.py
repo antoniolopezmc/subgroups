@@ -79,7 +79,7 @@ class BSD(Algorithm):
         # If 'write_results_in_file' is True, 'file_path' must not be None.
         if (write_results_in_file) and (file_path is None):
             raise ValueError("If the parameter 'write_results_in_file' is True, the parameter 'file_path' must not be None.")
-         # We check whether 'optimistic_estimate' is an optimistic estimate of 'quality_measure'.
+        # We check whether 'optimistic_estimate' is an optimistic estimate of 'quality_measure'.
         if quality_measure.get_name() not in optimistic_estimate.optimistic_estimate_of():
             raise ValueError("The quality measure " + optimistic_estimate.get_name() + " is not an optimistic estimate of the quality measure " + quality_measure.get_name() + ".")
         self._maxDepth = max_depth
@@ -88,7 +88,7 @@ class BSD(Algorithm):
         self._optimistic_estimate = optimistic_estimate
         self._num_subgroups = num_subgroups
         # We initialize the list of subgroups with a dummy subgroup.
-                        #(quality, subgroup, bits, optimistic_estimate,(tp,fp))
+        #     (quality, subgroup, bits, optimistic_estimate, (tp,fp))
         self._k_subgroups = [(-99999,Pattern([]),bitarray(),-99999,(0,0))]
         self._TP = 0
         self._FP = 0
@@ -102,7 +102,7 @@ class BSD(Algorithm):
         _delete_subgroup_parameters_from_a_dictionary(self._additional_parameters_for_the_optimistic_estimate)
         # We only write the results in a file if the parameter 'write_results_in_file' is True.
         if (write_results_in_file):
-                self._file_path = file_path
+            self._file_path = file_path
         else:
             self._file_path = None
         self._file = None
@@ -170,7 +170,7 @@ class BSD(Algorithm):
                 r= self._checkRel(self._k_subgroups, cCurrPos, cCurrNeg,quality,sg)
                 # If the subgroup is relevant, we add it to the list of k-subgroups
                 if r:
-                                        # (quality, subgroup, bits, optimistic_estimate,(tp,fp))
+                    # (quality, subgroup, bits, optimistic_estimate, (tp,fp))
                     self._k_subgroups.append((quality, sg, cCurrPos + cCurrNeg,oe,(tp,fp)))
                     self._k_subgroups = sorted(self._k_subgroups, reverse=False, key=lambda x: x[0])
                     # Check if the subgroups in k_subgroups are still relevant

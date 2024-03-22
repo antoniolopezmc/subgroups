@@ -7,18 +7,13 @@
 """
 
 from pandas import DataFrame
-
-# Python annotations.
-from typing import Union
 from subgroups.core.operator import Operator
-
 from subgroups.core.selector import Selector
 from subgroups.core.pattern import Pattern
 from bitarray import bitarray
 
 class BitsetDictionary(dict):
-    """ Internal class to implement the dicttionaries used in the bitset. This dictionary only allows to insert a Pattern or a Selector as key.
-    If a Selector is inserted, it is converted to a Pattern. Each entry must store a bitarray.
+    """ Internal class to implement the dicttionaries used in the bitset. This dictionary only allows to insert a Pattern or a Selector as key. If a Selector is inserted, it is converted to a Pattern. Each entry must store a bitarray.
     """
 
     __slots__ = ()
@@ -30,33 +25,31 @@ class BitsetDictionary(dict):
     def __setitem__(self, key, value) -> None:
         if (type(value) != bitarray):
             raise TypeError("The value must be a bitarray.")
-        if (type(key)==Selector):
+        if (type(key) is Selector):
             super().__setitem__(str(Pattern([key])),value)
-        elif (type(key)==Pattern):
+        elif (type(key) is Pattern):
             super().__setitem__(str(key), value)
         else:
             raise TypeError("The key must be a Selector or a Pattern.")
     
     def __getitem__(self, key) -> bitarray:
-        if (type(key)==Selector):
+        if (type(key) is Selector):
             return super().__getitem__(str(Pattern([key])))
-        elif (type(key)==Pattern):
+        elif (type(key) is Pattern):
             return super().__getitem__(str(key))
         else:
             raise TypeError("The key must be a Selector or a Pattern.")
     
     def __contains__(self, __o: object) -> bool:
-        if (type(__o)==Selector):
+        if (type(__o) is Selector):
             return super().__contains__(str(Pattern([__o])))
-        elif (type(__o)==Pattern):
+        elif (type(__o) is Pattern):
             return super().__contains__(str(__o))
         else:
             raise TypeError("The key must be a Selector or a Pattern.")
 
-
 class BitsetBSD(object):
     """This class represents a bitset used in the BSD algorithm and its variants.
-
     """
 
     __slots__ = ("_bitset_pos", "_bitset_neg")
@@ -100,7 +93,6 @@ class BitsetBSD(object):
     bitset_pos = property(_get_bitset_pos, _set_bitset_pos, None, "The bitset dictionary for rows that match the target value.")
     bitset_neg = property(_get_bitset_neg, _set_bitset_neg, None, "The bitset dictionary for rows that do not match the target value.")
 
-
     def build_bitset(self, pandas_dataframe :DataFrame,set_of_frequent_selectors:list, tuple_target_attribute_value : tuple) -> None:
         """Method to build the complete tree from the root node using a set of frequent selectors.
 
@@ -125,7 +117,6 @@ class BitsetBSD(object):
             raise ValueError("Parameter 'tuple_target_attribute_value' must be of length 2.")
         if type(tuple_target_attribute_value[0]) is not str:
             raise ValueError("The name of the target attribute (first element in parameter 'tuple_target_attribute_value') must be a string.")
-
         # Initialize an empty list for selectors
         selectors = []
         # Get the columns of the dataset without the target column
@@ -151,7 +142,6 @@ class BitsetBSD(object):
             # Add the bitarrays to the corresponding bitset dictionaries with the selector as key
             self._bitset_pos[Selector(selector[0],Operator.EQUAL, selector[1])] = ba_pos
             self._bitset_neg[Selector(selector[0],Operator.EQUAL, selector[1])] = ba_neg
-
 
     def generate_set_of_frequent_selectors(self, pandas_dataframe, tuple_target_attribute_value, min_support):
         """Method to scan the dataset (ONLY DISCRETE/NOMINAL ATTRIBUTES) and collect the sorted set of frequent selectors (L).

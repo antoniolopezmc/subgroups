@@ -83,6 +83,18 @@ pip install -e ./
 
 This mode installs the library in editable mode, creating a link in the standard Python site-packages directory to the downloaded project directory (the current directory). See the [pip_install documentation](https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-e) for further details.
 
+## Example of use of the algorithms
+
+An example of use of each algorithm implemented in `subgroups` python library can be found in the `examples/algorithms` folder:
+
+- [SDMap](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/SDMap.ipynb)
+- [SDMap*](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/SDMapStar.ipynb)
+- [VLSD](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/VLSD.ipynb)
+- [BSD-CBSD-CPBSD](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/BSD-CBSD-CPBSD.ipynb)
+- [QFinder](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/QFinder.ipynb)
+- [GMSL](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/GMSL.ipynb)
+- [DSLM](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/DSLM.ipynb)
+
 ## Documentation
 
 The official documentation is hosted on https://antoniolopezmc.github.io/subgroups-docs/

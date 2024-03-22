@@ -323,7 +323,6 @@ class SDMapStar(Algorithm):
                 if not conditional_fptree.is_empty():
                     self._fpgrowth(conditional_fptree, beta_as_list, target, TP, FP)
 
-                    
     def _updateKSubgroups(self,tp:int,fp:int,TP:int,FP:int) -> None:
         """Internal method to update and sort k subgroups.
 

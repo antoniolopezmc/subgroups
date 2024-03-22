@@ -301,9 +301,9 @@ class QFinder(Algorithm):
         :param data: the DataFrame which is scanned. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
         :param target: a tuple with 2 elements: the target attribute name and the target value.
         """
-        if type(pandas_dataframe) != DataFrame:
+        if type(pandas_dataframe) is not DataFrame:
             raise TypeError("The dataset must be a pandas DataFrame.")
-        if type(tuple_target_attribute_value) != tuple:
+        if type(tuple_target_attribute_value) is not tuple:
             raise TypeError("The target must be a tuple.")
         for column in pandas_dataframe.columns:
             if not is_string_dtype(pandas_dataframe[column]):
@@ -345,16 +345,16 @@ class QFinder(Algorithm):
         # We make sure that the fit method has been called before.
         if self._top_patterns is None:
             raise ValueError("The fit method must be called before testing subgroups.")
-        if type(test_dataframe) != DataFrame:
+        if type(test_dataframe) is not DataFrame:
             raise TypeError("The dataset must be a pandas DataFrame.")
-        if type(tuple_target_attribute_value) != tuple:
+        if type(tuple_target_attribute_value) is not tuple:
             raise TypeError("The target must be a tuple.")
-        if type(write_to_file) != bool:
+        if type(write_to_file) is not bool:
             raise TypeError("The write_to_file parameter must be a boolean.")
         # If wirte_to_file is True, file_path must not be None.
         if write_to_file and file_path is None:
             raise ValueError("The file path must be specified.")
-        elif write_to_file and type(file_path) != str:
+        elif write_to_file and type(file_path) is not str:
             raise TypeError("The file path must be a string.")
         # We generate a different bitset for the test dataset, which whill be used to compute the credibility measures.
         qfinder_bitset = Bitset_QFinder()

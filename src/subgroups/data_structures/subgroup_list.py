@@ -12,8 +12,8 @@ from subgroups.core.subgroup import Subgroup
 class SubgroupList(object):
     """This class represents a Subgroup List.
     
-    :param bitarray_of_positives: the bitarray of the dataset instances which are covered by the target (its length must be equal to the number of instances of the dataset).
-    :param bitarray_of_negatives: the bitarray of the dataset instances which are not covered by the target (its length must be equal to the number of instances of the dataset).
+    :param dataset_target_bitarray_of_positives: the bitarray of the dataset instances which are covered by the target (its length must be equal to the number of instances of the dataset).
+    :param dataset_target_bitarray_of_negatives: the bitarray of the dataset instances which are not covered by the target (its length must be equal to the number of instances of the dataset).
     :param number_of_dataset_instances: number of instances of the dataset.
     """
 

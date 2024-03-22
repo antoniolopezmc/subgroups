@@ -10,7 +10,6 @@ from subgroups.data_structures.fp_tree_node import FPTreeNode
 from subgroups.core.selector import Selector
 from subgroups.core.operator import Operator
 from pandas import DataFrame
-from numpy import size, sum
 from subgroups.exceptions import InconsistentMethodParametersError
 
 # Python annotations.
@@ -131,7 +130,7 @@ class FPTreeForSDMap(object):
             for column in pandas_dataframe.columns.drop(target[0]):
                 current_Series = pandas_dataframe[column]
                 # Use the 'groupby' method in order to obtain, for each value, the true positives tp and the false positives fp.
-                tp_and_fp_for_each_value = target_attribute_as_a_mask.groupby(current_Series).aggregate([size, sum]) # tp -> sum; fp -> size - sum; n -> size.
+                tp_and_fp_for_each_value = target_attribute_as_a_mask.groupby(current_Series).aggregate(["size", "sum"]) # tp -> sum; fp -> size - sum; n -> size.
                 # Filter the results according to 'minimum_tp' and 'minimum_fp'.
                 filtered = tp_and_fp_for_each_value[(tp_and_fp_for_each_value["sum"] >= minimum_tp) & ((tp_and_fp_for_each_value["size"] - tp_and_fp_for_each_value["sum"]) >= minimum_fp)]
                 # The corresponding values are the indexes of the DataFrame 'filtered'.
@@ -153,7 +152,7 @@ class FPTreeForSDMap(object):
             for column in pandas_dataframe.columns.drop(target[0]):
                 current_Series = pandas_dataframe[column]
                 # Use the 'groupby' method in order to obtain, for each value, the true positives tp and the false positives fp.
-                tp_and_fp_for_each_value = target_attribute_as_a_mask.groupby(current_Series).aggregate([size, sum]) # tp -> sum; fp -> size - sum; n -> size.
+                tp_and_fp_for_each_value = target_attribute_as_a_mask.groupby(current_Series).aggregate(["size", "sum"]) # tp -> sum; fp -> size - sum; n -> size.
                 # Filter the results according to 'minimum_tp' and 'minimum_fp'.
                 filtered = tp_and_fp_for_each_value[tp_and_fp_for_each_value["size"] >= minimum_n]
                 # The corresponding values are the indexes of the DataFrame 'filtered'.
