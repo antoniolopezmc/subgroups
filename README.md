@@ -4,19 +4,34 @@
 
 # subgroups - A Python library for Subgroup Discovery
 
-[![PyPI - Version](https://img.shields.io/pypi/v/subgroups)](https://pypi.org/project/subgroups/) [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/subgroups)](https://pypi.org/project/subgroups/) [![PyPI - License](https://img.shields.io/pypi/l/subgroups)](https://pypi.org/project/subgroups/) ![Pepy Total Downlods](https://img.shields.io/pepy/dt/subgroups)
- [![GitHub Repo stars](https://img.shields.io/github/stars/antoniolopezmc/subgroups)](https://github.com/antoniolopezmc/subgroups)
+|               |   |
+|---------------|---|
+| **Tests** | [![Azure Pipelines - Tests](https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/subgroups-feedstock?branchName=main)](https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=21954&branchName=main) |
+| **Package** | [![PyPI - Version](https://img.shields.io/pypi/v/subgroups?label=PyPI)](https://pypi.org/project/subgroups/) [![Conda Version](https://img.shields.io/conda/vn/conda-forge/subgroups?label=Anaconda.org%20%7C%20conda-forge)](https://anaconda.org/conda-forge/subgroups)|
+| **Metadata** | [![GitHub](https://img.shields.io/badge/GitHub-Latest%20development-blue?style=flat)](https://github.com/antoniolopezmc/subgroups) [![Author's webpage](https://img.shields.io/badge/Author's%20webpage-orange?style=flat)](https://webs.um.es/antoniolopezmc/) [![Python Version](https://img.shields.io/pypi/pyversions/subgroups)](https://www.python.org/) [![License](https://img.shields.io/pypi/l/subgroups)](https://github.com/antoniolopezmc/subgroups/blob/master/LICENSE) ![Total Downlods](https://img.shields.io/pepy/dt/subgroups) [![Documentation](https://img.shields.io/badge/Documentation-green?style=flat)](https://antoniolopezmc.github.io/subgroups-docs/)|
+
+## What is it?
 
 `subgroups` is a public, accessible and open-source python library created to work with the Subgroup Discovery (SD) technique. This library implements the necessary components related to the SD technique and contains a collection of SD algorithms and other data analysis utilities.
 
 ## Quick install
 
-The easiest way to obtain this library is from the Python Package Index (PyPI).
+The easiest way to obtain this library is from either [PyPI](https://pypi.org/) (the Python Package Index) or [Conda](https://docs.conda.io/).
 
-For that, you can [download the package from its PyPI page](https://pypi.org/project/subgroups/) or directly install it by executing:
+### PyPI
+
+For that, you can [view and download the package from its PyPI page](https://pypi.org/project/subgroups/) or directly install it by executing:
 
 ```shell
 pip install subgroups
+```
+
+### Conda
+
+For that, you can [view and download the package from its Anaconda.org page (conda-forge channel)](https://anaconda.org/conda-forge/subgroups) or directly install it by executing:
+
+```shell
+conda install -c conda-forge subgroups
 ```
 
 ## Testing

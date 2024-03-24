@@ -8,13 +8,27 @@ The alternative ways to download and install the ``subgroups`` python library ar
 Quick install
 =============
 
-The easiest way to obtain this library is from the Python Package Index (PyPI).
+The easiest way to obtain this library is from either `PyPI`_ (the Python Package Index) or `Conda`_.
 
-For that, you can `download the package from its PyPI page`_ or directly install it by executing:
+----
+PyPI
+----
+
+For that, you can `view and download the package from its PyPI page`_ or directly install it by executing:
 
 .. code-block:: shell
 
     pip install subgroups
+
+-----
+Conda
+-----
+
+For that, you can `view and download the package from its Anaconda.org page (conda-forge channel)`_ or directly install it by executing:
+
+.. code-block:: shell
+
+    conda install -c conda-forge subgroups
 
 =======
 Testing
@@ -113,6 +127,9 @@ or
 
 The generated documentation will be located in the ``build`` subfolder.
 
-.. _`download the package from its PyPI page`: https://pypi.org/project/subgroups/
+.. _`PyPI`: https://pypi.org/
+.. _`Conda`: https://docs.conda.io/
+.. _`view and download the package from its PyPI page`: https://pypi.org/project/subgroups/
+.. _`view and download the package from its Anaconda.org page (conda-forge channel)`: https://anaconda.org/conda-forge/subgroups
 .. _`GitHub`: https://github.com/antoniolopezmc/subgroups
 .. _`pip_install documentation`: https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-e

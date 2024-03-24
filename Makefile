@@ -1,4 +1,4 @@
-.PHONY: clean_pycache clean install_prod install_dev uninstall build_for_pypi upload_to_pypi build
+.PHONY: clean_pycache clean install_prod install_dev uninstall build upload_to_pypi
 
 clean_pycache:
 	python setup.py clean_pycache
@@ -15,12 +15,10 @@ install_dev: clean
 uninstall:
 	python -m pip uninstall subgroups
 
-build_for_pypi: clean
+build: clean
 	python -m pip install --upgrade build
 	python -m build
 
-upload_to_pypi: build_for_pypi
+upload_to_pypi: build
 	python -m pip install --upgrade twine
-	python -m twine upload --repository pypi dist/*.whl
-
-build: build_for_pypi
+	python -m twine upload --repository pypi dist/*
