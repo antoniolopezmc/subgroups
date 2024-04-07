@@ -69,7 +69,7 @@ class FPTreeForSDMapStar(FPTreeForSDMap):
         conditional_pattern_base = [] # list[list[ element 1 -> list[Selector], element 2 -> int, element 3 -> int ]]
         # If the first selector is not in the header table, return the current conditional FPTree.
         if first_selector not in self._header_table:
-            return final_conditional_fp_tree
+            return final_conditional_fp_tree, 0
         # Dictionary with all the frequent selectors (before pruning).
         dict_of_all_frequent_selectors = dict() # dict[str, tuple[Selector, list[int], int]]
         # Get the first node in the corresponding horizontal list.

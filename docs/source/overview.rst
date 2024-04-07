@@ -8,19 +8,19 @@ Overview
 Subgroup Discovery technique
 ============================
 
-Subgroup Discovery (SD) [`1`_] is a supervised machine learning (ML) technique that is widely used for descriptive and exploratory data analysis and whose main purpose is to mine a set of relations (denominated as *subgroups*) between attributes from a dataset with respect to a target attribute of interest.
+Subgroup Discovery (SD) [`1`_, `2`_] is a supervised machine learning (ML) technique that is widely used for descriptive and exploratory data analysis and whose main purpose is to mine a set of relations (denominated as *subgroups*) between attributes from a dataset with respect to a target attribute of interest.
 
-One key aspect of this technique is the assessment of the quality of a subgroup extracted by an SD algorithm. For that, there is a wide variety of metrics (called *quality measures*). A quality measure is, in general, a function that assigns one numeric value to a subgroup according to certain specific properties [`2`_]. 
+A key aspect of this technique is the assessment of the quality of a subgroup extracted by a SD algorithm. For that, there is a wide variety of metrics (called *quality measures*). A quality measure is, in general, a function that assigns one numeric value to a subgroup according to certain specific properties.
+
+Another essential aspect of this technique is the search strategy used by a SD algorithm. This strategy determines how the search space of the problem is explored and how the subgroups are obtained from it.
 
 ==========
 Motivation
 ==========
 
-Despite the utility of the SD technique and the great variety of SD algorithms that appear in literature, few implementations are available for scientists, researchers and developers. Present-day data scientists and ML researchers often depend on highly reliable libraries to test and compare state-of-the-art algorithms such as the classical ML tool Weka, scikit-learn, or Keras or PyTorch in the Deep Learning area. This is not the case in the SD field, in which no community supports the few available libraries.
+Despite the utility of the SD technique and the great variety of SD algorithms that appear in literature, few implementations are available for scientists, researchers and developers. Present-day data scientists and ML researchers often depend on highly reliable libraries to test and compare state-of-the-art algorithms such as the classical ML tool Weka, scikit-learn, or Keras or PyTorch in the Deep Learning area. This is not the case in the SD field, in which no community supports the few available libraries. Additionally, it is necessary to use different libraries and tools when working with different SD algorithms since there is no single reference library that implements and brings together a large number of SD algorithms, not even the most popular ones.
 
-The aforementioned disadvantages signify that it is necessary to use different libraries and tools when working with different SD algorithms and that there is no single reference library that implements and brings together a large number of SD algorithms, not even the most popular ones.
-
-Therefore, it is necessary to have a complete library available that implements the most popular algorithms in a faithful form with respect to the original definition without adding modifications, along with a complete documentation of use with different examples. This is precisely the main motivation behind the development of this library.
+The aforementioned disadvantages signify that it is necessary to have a complete library available that implements the most popular algorithms in a faithful form with respect to the original definition without adding modifications, along with a complete documentation of use with different examples. This is precisely the main motivation behind the development of this library.
 
 ==========
 Objectives
