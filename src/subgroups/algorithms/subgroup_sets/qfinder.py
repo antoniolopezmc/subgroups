@@ -125,73 +125,67 @@ class QFinder(Algorithm):
     visited_subgroups = property(_get_visited_subgroups, None, None, "The number of visited subgroups.")
     top_patterns = property(_get_top_patterns, None, None, "The list of the selected patterns.")
 
-    def _generate_candidate_patterns(self,df : DataFrame, tuple_target_attribute_value: tuple, max_complexity : int ,cats : int = -1) -> list[Pattern]:
-        """Method to generate the set of candidate patterns for the QFinder algorithm.
+    def _generate_candidate_patterns(self,df : DataFrame, tuple_target_attribute_value: tuple) -> list[Pattern]:
+            """Method to generate the set of candidate patterns for the QFinder algorithm.
 
-        :param df: the dataset.
-        :param tuple_as_target: the tuple which contains the target attribute name and the target attribute values.
-        :param max_complexity: the maximum length of the patterns.
-        :param cats: the number of maximum values for each column. If there is more values, we take the most frequent ones. If this value is -1, we take all the values.
-        :return: the set of candidate patterns.
-        """
-        if type(df) is not DataFrame:
-            raise TypeError("The type of the parameter 'df' must be 'DataFrame'.")
-        if type(tuple_target_attribute_value) is not tuple:
-            raise TypeError("The type of the parameter 'tuple_as_target' must be 'tuple'.")
-        if type(cats) is not int:
-            raise TypeError("The type of the parameter 'cats' must be 'int'.")
-        if type(max_complexity) is not int:
-            raise TypeError("The type of the parameter 'max_complexity' must be 'int'.")
-        if (len(tuple_target_attribute_value) != 2):
-            raise ValueError("The parameter 'tuple_as_target' must contain two elements.")
-        if (not is_string_dtype(df[tuple_target_attribute_value[0]])):
-            raise DatasetAttributeTypeError("The attribute '{}' must be a string.".format(tuple_target_attribute_value[0]))
-        # We do not generate patterns with the target attribute.
-        df_without_target = df.drop(columns=[tuple_target_attribute_value[0]])
-        # We generate the list of candidate simple patterns (length 1).
-        simple_patterns = []
-        for column in df_without_target:
-            # Number of different values for the current column.
-            n_values = len(df_without_target[column].unique())
-            # If we don't have to limit the number of values, we take all of them.
-            if (n_values <= cats or cats == -1):
-                for value in df_without_target[column].unique():
-                    # We will save each selector (column = value) as a pattern.
-                    simple_patterns.append(Pattern([Selector(column, Operator.EQUAL, value)]))
-            # If we have to limit the number of values, we take the cats-1 most frequent ones and the rest of them are grouped in the "other" value.
-            else:
-                value_counts = df_without_target[column].value_counts()
-                # If the "other" value is already in the dataset, we need to make sure that the added value is different.
-                other = "other"
-                while other in value_counts.index:
-                    other += "_"
-                # Most frequent values.
-                top_values = value_counts.nlargest(cats-1).index
-                # Least frequent values. These values will be grouped in the "other" value.
-                other_values = value_counts.nsmallest(n_values - cats + 1).index
-                for value in top_values:
-                    simple_patterns.append(Pattern([Selector(column, Operator.EQUAL, value)]))
-                # We edit our copy of the dataset to set the "other" value to the rows which have a value that is not in the top_values.
-                df_without_target.loc[df_without_target[column].isin(other_values), column] = other
-                simple_patterns.append(Pattern([Selector(column, Operator.EQUAL, other)]))
-        complex_patterns = []
-        if (max_complexity == -1):
-            max_complexity = len(df_without_target.columns)
-        # We generate the list of candidate patterns by combining the simple patterns.
-        for L in range(2, max_complexity+1):
-            # We take each combination of L simple patterns.
-            for subset in itertools.combinations(simple_patterns, L):
-                column_values = [ s.get_selector(0).attribute_name for s in subset ]
-                # If we are taking twice the same column, the pattern is not valid.
-                if (len(column_values) != len(set(column_values))):
-                    continue
-                pattern = Pattern([])
-                for s in subset:
-                    pattern.add_selector(s.get_selector(0))
-                complex_patterns.append(pattern)
-        # The list of candidate patterns is the union of the list of simple patterns and the list of complex patterns.
-        return simple_patterns + complex_patterns
-
+            :param df: the dataset.
+            :param tuple_as_target: the tuple which contains the target attribute name and the target attribute values.
+            :return: the set of candidate patterns.
+            """
+            if type(df) is not DataFrame:
+                raise TypeError("The type of the parameter 'df' must be 'DataFrame'.")
+            if type(tuple_target_attribute_value) is not tuple:
+                raise TypeError("The type of the parameter 'tuple_as_target' must be 'tuple'.")
+            if (len(tuple_target_attribute_value) != 2):
+                raise ValueError("The parameter 'tuple_as_target' must contain two elements.")
+            if (not is_string_dtype(df[tuple_target_attribute_value[0]])):
+                raise DatasetAttributeTypeError("The attribute '{}' must be a string.".format(tuple_target_attribute_value[0]))
+            # We do not generate patterns with the target attribute.
+            df_without_target = df.drop(columns=[tuple_target_attribute_value[0]])
+            # We generate the list of candidate simple patterns (length 1).
+            simple_patterns = []
+            for column in df_without_target:
+                # Number of different values for the current column.
+                n_values = len(df_without_target[column].unique())
+                # If we don't have to limit the number of values, we take all of them.
+                if (n_values <= self._cats or self._cats == -1):
+                    for value in df_without_target[column].unique():
+                        # We will save each selector (column = value) as a pattern.
+                        simple_patterns.append(Pattern([Selector(column, Operator.EQUAL, value)]))
+                # If we have to limit the number of values, we take the self._cats-1 most frequent ones and the rest of them are grouped in the "other" value.
+                else:
+                    value_counts = df_without_target[column].value_counts()
+                    # If the "other" value is already in the dataset, we need to make sure that the added value is different.
+                    other = "other"
+                    while other in value_counts.index:
+                        other += "_"
+                    # Most frequent values.
+                    top_values = value_counts.nlargest(self._cats-1).index
+                    # Least frequent values. These values will be grouped in the "other" value.
+                    other_values = value_counts.nsmallest(n_values - self._cats + 1).index
+                    for value in top_values:
+                        simple_patterns.append(Pattern([Selector(column, Operator.EQUAL, value)]))
+                    # We edit our copy of the dataset to set the "other" value to the rows which have a value that is not in the top_values.
+                    df_without_target.loc[df_without_target[column].isin(other_values), column] = other
+                    simple_patterns.append(Pattern([Selector(column, Operator.EQUAL, other)]))
+            complex_patterns = []
+            if (self._max_complexity == -1):
+                self._max_complexity = len(df_without_target.columns)
+            # We generate the list of candidate patterns by combining the simple patterns.
+            for L in range(2, self._max_complexity+1):
+                # We take each combination of L simple patterns.
+                for subset in itertools.combinations(simple_patterns, L):
+                    column_values = [ s.get_selector(0).attribute_name for s in subset ]
+                    # If we are taking twice the same column, the pattern is not valid.
+                    if (len(column_values) != len(set(column_values))):
+                        continue
+                    pattern = Pattern([])
+                    for s in subset:
+                        pattern.add_selector(s.get_selector(0))
+                    complex_patterns.append(pattern)
+            # The list of candidate patterns is the union of the list of simple patterns and the list of complex patterns.
+            return simple_patterns + complex_patterns
+    
     def _handle_individual_result(self,credibility: list[bool]) -> int:
         """Method to compute the rank of a pattern.
 
@@ -300,7 +294,7 @@ class QFinder(Algorithm):
         # We copy the DataFrame to avoid modifying the original when dealing with "other" values.
         df = pandas_dataframe.copy()
         # We generate the list of candidate patterns.
-        self._candidate_patterns = self._generate_candidate_patterns(df, tuple_target_attribute_value, self._max_complexity, self._cats)
+        self._candidate_patterns = self._generate_candidate_patterns(df, tuple_target_attribute_value)
         # We compute the credibility measures for each candidate pattern using the bitset structure.
         qfinder_bitset = Bitset_QFinder()
         qfinder_bitset.generate_bitset(df, tuple_target_attribute_value, self._candidate_patterns)
