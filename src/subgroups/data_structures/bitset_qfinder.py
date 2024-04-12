@@ -14,7 +14,6 @@ from subgroups.core.pattern import Pattern
 class Bitset_QFinder(object):
     """This class represents a bitset used in the QFinder algorithm.
     """
-    
     __slots__ = ["_df","_TP", "_FP"]
 
     def __init__(self):
@@ -48,11 +47,11 @@ class Bitset_QFinder(object):
         """
         return [Pattern.generate_from_str(pattern_as_str) for pattern_as_str in self._df.columns]
 
-    def compute_credibility_measures(self, target_column) -> tuple[dict, dict, dict, dict, dict, dict]:
+    def compute_credibility_measures(self, target_column) -> DataFrame:
         """Method to compute the credibility measures for each candidate pattern.
             
-        :param target_column: target column of the dataset.
-        :return: a tuple with dictionaries with the credibility values for each candidate pattern.
+            :param target_column: target column of the dataset.
+            :return: a pandas DataFrame with the credibility values for each candidate pattern.
         """
         # WARNING: Corrected measures for confounders are not implemented yet
         # We create the global model for corrected and adjusted credibility measures
@@ -93,4 +92,4 @@ class Bitset_QFinder(object):
                 contribution_ratios[pattern_as_str] = maximum_absolute_contribution/minimum_absolute_contribution
         # We use the Bonferroni correction for adjusted corrected p-values: each p_value is multiplied by the number of predictors
         adjusted_p_values = {pat : p_values[pat] * len(self._df.columns) for pat in p_values.keys()}
-        return coverages, odds_ratios, p_values, absolute_contributions, contribution_ratios, adjusted_p_values
+        return DataFrame({'coverage': coverages, 'odds_ratio': odds_ratios, 'p_value': p_values, 'absolute_contribution': absolute_contributions, 'contribution_ratio': contribution_ratios, 'adjusted_p_value': adjusted_p_values})
