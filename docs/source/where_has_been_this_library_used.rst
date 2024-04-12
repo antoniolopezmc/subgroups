@@ -8,8 +8,9 @@ This library has been used in the following projects and scientific papers so fa
 Projects
 ========
 
-#. GRALENIA (Ref. 2021/C005/00150055) project: supported by the Spanish Ministry of Economic Affairs and Digital Transformation, the Spanish Secretariat of State for Digitization and Artificial Intelligence, Red.es and by the NextGenerationEU funding.
-#. CONFAINCE (Ref. PID2021-122194OB-I00) project: supported by MCIN/AEI/10.13039/501100011033 and by "ERDF A way of making Europe", by the "European Union".
+#. ASTUTENESS: AI-Driven Tools In Healthcare: A Visual Guideline for Trustworthy Treatment Decision Support Systems (grant agreement No 101035821): supported by the European University for Well-being - Research (EUniWell - Research) and by the European Union's Horizon 2020 research and innovation programme.
+#. GRALENIA (Ref. 2021/C005/00150055): supported by the Spanish Ministry of Economic Affairs and Digital Transformation, the Spanish Secretariat of State for Digitization and Artificial Intelligence, Red.es and by the NextGenerationEU funding.
+#. CONFAINCE (Ref. PID2021-122194OB-I00): supported by MCIN/AEI/10.13039/501100011033 and by "ERDF A way of making Europe", by the "European Union".
 
 =================
 Scientific papers

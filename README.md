@@ -1,4 +1,4 @@
-<p align="center"><img alt="subgroups logo" src="docs/source/images/logo_for_white_background.png"></p>
+<p align="center"><img alt="subgroups logo" src="docs/source/images/logo_small.png"></p>
 
 -----------------
 
