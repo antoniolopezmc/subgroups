@@ -13,6 +13,16 @@ subgroups - A Python library for Subgroup Discovery
 |                 | | |donwloads| |documentation|                     |
 +-----------------+---------------------------------------------------+
 
+========
+Dev Team
+========
+
++------------------------------------+
+| `Antonio López Martínez-Carrasco`_ |
++------------------------------------+
+| `Francisco Mora Caselles`_         |
++------------------------------------+
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -50,5 +60,7 @@ subgroups - A Python library for Subgroup Discovery
 .. |donwloads| image:: https://img.shields.io/pepy/dt/subgroups
    :alt: Total Downlods
 .. |documentation| image:: https://img.shields.io/badge/Documentation-green?style=flat
-   :target: https://antoniolopezmc.github.io/subgroups-docs/
+   :target: https://www.um.es/subgroups/
    :alt: Documentation
+.. _`Antonio López Martínez-Carrasco`: https://www.linkedin.com/in/antoniolopezmc/
+.. _`Francisco Mora Caselles`: https://www.linkedin.com/in/francisco-mora-caselles/?locale=en_US
