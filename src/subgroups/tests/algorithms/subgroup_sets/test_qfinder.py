@@ -23,8 +23,7 @@ class TestQFinder(unittest.TestCase):
         obj = QFinder(num_subgroups=5, cats=3, max_complexity=10, coverage_thld=0.5,
                            or_thld=1.0, p_val_thld=0.1, abs_contribution_thld=0.3,
                            contribution_thld=4, delta=0.1, write_results_in_file=True,
-                           file_path='results.txt', write_stats_in_file=True,
-                           stats_path='stats.txt')
+                           file_path='results.txt')
         
         # Assert that the object is created without any exceptions
         self.assertIsNotNone(obj)
@@ -80,18 +79,12 @@ class TestQFinder(unittest.TestCase):
                           or_thld=1.0, p_val_thld=0.1, abs_contribution_thld=0.3,
                           contribution_thld=4, delta=0.1, write_results_in_file=True)
         
-        with self.assertRaises(ValueError):
-            # write_stats_in_file is True but stats_path is None
-            QFinder(num_subgroups=5, cats=3, max_complexity=10, coverage_thld=0.5,
-                          or_thld=1.0, p_val_thld=0.1, abs_contribution_thld=0.3,
-                          contribution_thld=4, delta=0.1, write_stats_in_file=True)
-                          
     def test_QFinder_generate_candidate_patterns1(self):
         df = DataFrame({'bread': {0: 'yes', 1: 'yes', 2: 'no', 3: 'yes', 4: 'yes', 5: 'yes', 6: 'yes'}, 'milk': {0: 'yes', 1: 'no', 2: 'yes', 3: 'yes', 4: 'yes', 5: 'yes', 6: 'yes'}, 'beer': {0: 'no', 1: 'yes', 2: 'yes', 3: 'yes', 4: 'no', 5: 'yes', 6: 'no'}, 'coke': {0: 'no', 1: 'no', 2: 'yes', 3: 'no', 4: 'yes', 5: 'no', 6: 'yes'}, 'diaper': {0: 'no', 1: 'yes', 2: 'yes', 3: 'yes', 4: 'yes', 5: 'yes', 6: 'yes'}})        
         target = ("diaper", "yes")
-        model = QFinder(num_subgroups=5)
         complexity = 3
-        patterns = model._generate_candidate_patterns(df,target, complexity)
+        model = QFinder(num_subgroups=5, max_complexity=complexity)
+        patterns = model._generate_candidate_patterns(df,target)
         simple_selectors = [
             Selector("bread", Operator.EQUAL, "yes"),
             Selector("milk", Operator.EQUAL, "yes"),
@@ -121,9 +114,8 @@ class TestQFinder(unittest.TestCase):
         # Check that the value 'other' is added to the categorical variables
         df = DataFrame({'a': {0: '1', 1: '1', 2: '1', 3: '2', 4: '3'}, 'class': {0: '1', 1: '1', 2: '1', 3: '1', 4: '1'}})
         target = ("class", 1)
-        model = QFinder(num_subgroups=5)
-        complexity = 1
-        patterns = model._generate_candidate_patterns(df,target, complexity,cats=2)
+        model = QFinder(num_subgroups=5, max_complexity=1, cats=2)
+        patterns = model._generate_candidate_patterns(df,target)
         simple_selectors = [
             Selector("a", Operator.EQUAL, '1'),
             Selector("a", Operator.EQUAL, "other"),

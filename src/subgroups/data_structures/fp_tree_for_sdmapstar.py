@@ -6,11 +6,7 @@
 """This file contains the implementation of the FPTree data structure used in the SDMapStar algorithm.
 """
 
-from subgroups.data_structures.fp_tree_node import FPTreeNode
 from subgroups.core.selector import Selector
-from subgroups.core.operator import Operator
-from pandas import DataFrame
-from numpy import size, sum
 from subgroups.exceptions import InconsistentMethodParametersError
 from subgroups.data_structures.fp_tree_for_sdmap import FPTreeForSDMap
 from subgroups.quality_measures.quality_measure import QualityMeasure
@@ -25,7 +21,8 @@ class FPTreeForSDMapStar(FPTreeForSDMap):
     __slots__ = ("_TP", "_FP")
 
     def __init__(self,TP:int,FP:int) -> None:
-        """Method to initialize the FPTreeForSDMapStar
+        """Method to initialize the FPTreeForSDMapStar.
+
         :param TP: The number of true positives in the dataset.
         :param FP: The number of false positives in the dataset.
         """
@@ -72,7 +69,7 @@ class FPTreeForSDMapStar(FPTreeForSDMap):
         conditional_pattern_base = [] # list[list[ element 1 -> list[Selector], element 2 -> int, element 3 -> int ]]
         # If the first selector is not in the header table, return the current conditional FPTree.
         if first_selector not in self._header_table:
-            return final_conditional_fp_tree
+            return final_conditional_fp_tree, 0
         # Dictionary with all the frequent selectors (before pruning).
         dict_of_all_frequent_selectors = dict() # dict[str, tuple[Selector, list[int], int]]
         # Get the first node in the corresponding horizontal list.

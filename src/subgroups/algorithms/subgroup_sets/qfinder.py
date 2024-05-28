@@ -16,7 +16,6 @@ from subgroups.core.pattern import Pattern
 from subgroups.core.operator import Operator
 from subgroups.core.selector import Selector
 from subgroups.core.subgroup import Subgroup
-from bitarray import bitarray
 from subgroups.data_structures.bitset_qfinder import Bitset_QFinder
 import operator
 
@@ -32,15 +31,13 @@ class QFinder(Algorithm):
     :param contribution_thld: the minimum contribution ratio threshold.
     :param write_results_in_file: if True, the results will be written in a file.
     :param file_path: the path of the file where the results will be written.
-    :param write_stats_in_file: if True, the statistics will be written in a HTML file.
-    :param stats_path: the path of the file where the statistics will be written.
     :param delta: minimum delta to consider that a subgroup has a higher effect size.
     :param num_subgroups: the number of top subgroups to return.
     """
 
-    __slots__ = ('_num_subgroups','_cats', '_max_complexity', '_thresholds','_credibility_values' , '_file', '_file_path', '_stats_path' , '_df','_delta', '_num_subgroups', '_top_patterns', '_candidate_patterns')
+    __slots__ = ('_num_subgroups','_cats', '_max_complexity', '_thresholds','_credibility_values' , '_file', '_file_path' , '_df','_delta', '_num_subgroups', '_top_patterns', '_candidate_patterns')
 
-    # A credibility criterion is a credibility measure and a threhosld. Here we set if the credibility measure value
+    # A credibility criterion is a credibility measure and a threshold. Here we set if the credibility measure value
     # should be greater or equal than the threshold or less or equal than the threshold.
     _credibility_criterions = {
         "coverage" :  operator.ge,
@@ -53,7 +50,7 @@ class QFinder(Algorithm):
         "adjusted_p_value" : operator.le
     }
 
-    def __init__(self, num_subgroups :int, cats : int = -1, max_complexity: int = -1, coverage_thld: float = 0.1, or_thld: float = 1.2, p_val_thld: float = 0.05, abs_contribution_thld: float = 0.2, contribution_thld: float = 5, delta :float = 0.2, write_results_in_file: bool = False, file_path: Union[str,None] = None, write_stats_in_file: bool = False, stats_path: Union[str,None] = None) -> None:
+    def __init__(self, num_subgroups :int, cats : int = -1, max_complexity: int = -1, coverage_thld: float = 0.1, or_thld: float = 1.2, p_val_thld: float = 0.05, abs_contribution_thld: float = 0.2, contribution_thld: float = 5, delta :float = 0.2, write_results_in_file: bool = False, file_path: Union[str,None] = None) -> None:
         if type(num_subgroups) is not int:
             raise TypeError("The type of the parameter 'num_subgroups' must be 'int'.")
         if type(cats) is not int:
@@ -88,9 +85,6 @@ class QFinder(Algorithm):
         # If 'write_results_in_file' is True, 'file_path' must not be None.
         if (write_results_in_file) and (file_path is None):
             raise ValueError("If the parameter 'write_results_in_file' is True, the parameter 'file_path' must not be None.")
-        # If 'write_stats_in_file' is True, 'stats_path' must not be None.
-        if (write_stats_in_file) and (stats_path is None):
-            raise ValueError("If the parameter 'write_stats_in_file' is True, the parameter 'stats_path' must not be None.")
         self._num_subgroups = num_subgroups
         self._cats = cats
         self._max_complexity = max_complexity
@@ -100,10 +94,6 @@ class QFinder(Algorithm):
         else:
             self._file_path = None
         self._file = None
-        if (write_stats_in_file):
-            self._stats_path = stats_path
-        else:
-            self._stats_path = None
         self._top_patterns = []
         self._candidate_patterns = []
         # Thresholds for each credibility measure.
@@ -135,77 +125,71 @@ class QFinder(Algorithm):
     visited_subgroups = property(_get_visited_subgroups, None, None, "The number of visited subgroups.")
     top_patterns = property(_get_top_patterns, None, None, "The list of the selected patterns.")
 
-    def _generate_candidate_patterns(self,df : DataFrame, tuple_target_attribute_value: tuple, max_complexity : int ,cats : int = -1) -> list[Pattern]:
-        """Method to generate the set of candidate patterns for the QFinder algorithm.
+    def _generate_candidate_patterns(self,df : DataFrame, tuple_target_attribute_value: tuple) -> list[Pattern]:
+            """Method to generate the set of candidate patterns for the QFinder algorithm.
 
-        :param df: the dataset.
-        :param tuple_as_target: the tuple which contains the target attribute name and the target attribute values.
-        :param max_complexity: the maximum length of the patterns.
-        :param cats: the number of maximum values for each column. If there is more values, we take the most frequent ones. If this value is -1, we take all the values.
-        :return: the set of candidate patterns.
-        """
-        if type(df) is not DataFrame:
-            raise TypeError("The type of the parameter 'df' must be 'DataFrame'.")
-        if type(tuple_target_attribute_value) is not tuple:
-            raise TypeError("The type of the parameter 'tuple_as_target' must be 'tuple'.")
-        if type(cats) is not int:
-            raise TypeError("The type of the parameter 'cats' must be 'int'.")
-        if type(max_complexity) is not int:
-            raise TypeError("The type of the parameter 'max_complexity' must be 'int'.")
-        if (len(tuple_target_attribute_value) != 2):
-            raise ValueError("The parameter 'tuple_as_target' must contain two elements.")
-        if (not is_string_dtype(df[tuple_target_attribute_value[0]])):
-            raise DatasetAttributeTypeError("The attribute '{}' must be a string.".format(tuple_target_attribute_value[0]))
-        # We do not generate patterns with the target attribute.
-        df_without_target = df.drop(columns=[tuple_target_attribute_value[0]])
-        # We generate the list of candidate simple patterns (length 1).
-        simple_patterns = []
-        for column in df_without_target:
-            # Number of different values for the current column.
-            n_values = len(df_without_target[column].unique())
-            # If we don't have to limit the number of values, we take all of them.
-            if (n_values <= cats or cats == -1):
-                for value in df_without_target[column].unique():
-                    # We will save each selector (column = value) as a pattern.
-                    simple_patterns.append(Pattern([Selector(column, Operator.EQUAL, value)]))
-            # If we have to limit the number of values, we take the cats-1 most frequent ones and the rest of them are grouped in the "other" value.
-            else:
-                value_counts = df_without_target[column].value_counts()
-                # If the "other" value is already in the dataset, we need to make sure that the added value is different.
-                other = "other"
-                while other in value_counts.index:
-                    other += "_"
-                # Most frequent values.
-                top_values = value_counts.nlargest(cats-1).index
-                # Least frequent values. These values will be grouped in the "other" value.
-                other_values = value_counts.nsmallest(n_values - cats + 1).index
-                for value in top_values:
-                    simple_patterns.append(Pattern([Selector(column, Operator.EQUAL, value)]))
-                # We edit our copy of the dataset to set the "other" value to the rows which have a value that is not in the top_values.
-                df_without_target.loc[df_without_target[column].isin(other_values), column] = other
-                simple_patterns.append(Pattern([Selector(column, Operator.EQUAL, other)]))
-        complex_patterns = []
-        if (max_complexity == -1):
-            max_complexity = len(df_without_target.columns)
-        # We generate the list of candidate patterns by combining the simple patterns.
-        for L in range(2, max_complexity+1):
-            # We take each combination of L simple patterns.
-            for subset in itertools.combinations(simple_patterns, L):
-                column_values = [ s.get_selector(0).attribute_name for s in subset ]
-                # If we are taking twice the same column, the pattern is not valid.
-                if (len(column_values) != len(set(column_values))):
-                    continue
-                pattern = Pattern([])
-                for s in subset:
-                    pattern.add_selector(s.get_selector(0))
-                complex_patterns.append(pattern)
-        # The list of candidate patterns is the union of the list of simple patterns and the list of complex patterns.
-        return simple_patterns + complex_patterns
-
-    def _handle_individual_result(self,credibility: bitarray) -> int:
+            :param df: the dataset.
+            :param tuple_as_target: the tuple which contains the target attribute name and the target attribute values.
+            :return: the set of candidate patterns.
+            """
+            if type(df) is not DataFrame:
+                raise TypeError("The type of the parameter 'df' must be 'DataFrame'.")
+            if type(tuple_target_attribute_value) is not tuple:
+                raise TypeError("The type of the parameter 'tuple_as_target' must be 'tuple'.")
+            if (len(tuple_target_attribute_value) != 2):
+                raise ValueError("The parameter 'tuple_as_target' must contain two elements.")
+            if (not is_string_dtype(df[tuple_target_attribute_value[0]])):
+                raise DatasetAttributeTypeError("The attribute '{}' must be a string.".format(tuple_target_attribute_value[0]))
+            # We do not generate patterns with the target attribute.
+            df_without_target = df.drop(columns=[tuple_target_attribute_value[0]])
+            # We generate the list of candidate simple patterns (length 1).
+            simple_patterns = []
+            for column in df_without_target:
+                # Number of different values for the current column.
+                n_values = len(df_without_target[column].unique())
+                # If we don't have to limit the number of values, we take all of them.
+                if (n_values <= self._cats or self._cats == -1):
+                    for value in df_without_target[column].unique():
+                        # We will save each selector (column = value) as a pattern.
+                        simple_patterns.append(Pattern([Selector(column, Operator.EQUAL, value)]))
+                # If we have to limit the number of values, we take the self._cats-1 most frequent ones and the rest of them are grouped in the "other" value.
+                else:
+                    value_counts = df_without_target[column].value_counts()
+                    # If the "other" value is already in the dataset, we need to make sure that the added value is different.
+                    other = "other"
+                    while other in value_counts.index:
+                        other += "_"
+                    # Most frequent values.
+                    top_values = value_counts.nlargest(self._cats-1).index
+                    # Least frequent values. These values will be grouped in the "other" value.
+                    other_values = value_counts.nsmallest(n_values - self._cats + 1).index
+                    for value in top_values:
+                        simple_patterns.append(Pattern([Selector(column, Operator.EQUAL, value)]))
+                    # We edit our copy of the dataset to set the "other" value to the rows which have a value that is not in the top_values.
+                    df_without_target.loc[df_without_target[column].isin(other_values), column] = other
+                    simple_patterns.append(Pattern([Selector(column, Operator.EQUAL, other)]))
+            complex_patterns = []
+            if (self._max_complexity == -1):
+                self._max_complexity = len(df_without_target.columns)
+            # We generate the list of candidate patterns by combining the simple patterns.
+            for L in range(2, self._max_complexity+1):
+                # We take each combination of L simple patterns.
+                for subset in itertools.combinations(simple_patterns, L):
+                    column_values = [ s.get_selector(0).attribute_name for s in subset ]
+                    # If we are taking twice the same column, the pattern is not valid.
+                    if (len(column_values) != len(set(column_values))):
+                        continue
+                    pattern = Pattern([])
+                    for s in subset:
+                        pattern.add_selector(s.get_selector(0))
+                    complex_patterns.append(pattern)
+            # The list of candidate patterns is the union of the list of simple patterns and the list of complex patterns.
+            return simple_patterns + complex_patterns
+    
+    def _handle_individual_result(self,credibility: list[bool]) -> int:
         """Method to compute the rank of a pattern.
 
-        :param credibility: the bitarray representing the pattern's credibility.
+        :param credibility: the list of booleans representing the pattern's credibility.
         :return: the rank of the pattern.
         """
         rank = 0
@@ -239,15 +223,17 @@ class QFinder(Algorithm):
         ranks = []
         for pattern in sorted_patterns:
             # We compute the credibility of each pattern. The credibility of a pattern is a list of booleans, where each boolean represents a criterion.
-            credibility = bitarray()
+            credibility = []
             for cred in QFinder._credibility_criterions:
                 credibility.append(QFinder._credibility_criterions[cred](self._credibility_values[cred][str(pattern)],self._thresholds[cred]))
             # We compute the rank of the pattern.
             rank = self._handle_individual_result(credibility)
             ranks.append(rank)
+        sorted_patterns_ranks = list(zip(sorted_patterns,ranks))
         # We sort the patterns according to their ranks.
         # If two patterns have the same rank, we sort them according to their appearance in sorted_patterns (i.e. according to their p-values).
-        ranked_patterns = sorted(sorted_patterns, key=lambda pattern: ranks[sorted_patterns.index(pattern)], reverse=True)
+        sorted_patterns_ranks.sort(key = lambda x:x[1], reverse = True)
+        ranked_patterns = list(map(lambda x:x[0],sorted_patterns_ranks))
         return ranked_patterns
 
     def _select_top_k(self, ranked_patterns) -> list[Pattern]:
@@ -290,9 +276,6 @@ class QFinder(Algorithm):
                     if len(top_k_patterns) > self._num_subgroups:
                         max_p_val_pattern = max(top_k_patterns, key=lambda pattern: self._credibility_values["p_value"][str(pattern)])
                         top_k_patterns.remove(max_p_val_pattern)
-                    continue
-                # If we did break the first top_pattern in top_patterns loop, we continue to the next pattern.
-                break
         return top_k_patterns
     
     def fit(self, pandas_dataframe: DataFrame, tuple_target_attribute_value: tuple) -> None:
@@ -301,9 +284,9 @@ class QFinder(Algorithm):
         :param data: the DataFrame which is scanned. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
         :param target: a tuple with 2 elements: the target attribute name and the target value.
         """
-        if type(pandas_dataframe) != DataFrame:
+        if type(pandas_dataframe) is not DataFrame:
             raise TypeError("The dataset must be a pandas DataFrame.")
-        if type(tuple_target_attribute_value) != tuple:
+        if type(tuple_target_attribute_value) is not tuple:
             raise TypeError("The target must be a tuple.")
         for column in pandas_dataframe.columns:
             if not is_string_dtype(pandas_dataframe[column]):
@@ -311,29 +294,16 @@ class QFinder(Algorithm):
         # We copy the DataFrame to avoid modifying the original when dealing with "other" values.
         df = pandas_dataframe.copy()
         # We generate the list of candidate patterns.
-        self._candidate_patterns = self._generate_candidate_patterns(df, tuple_target_attribute_value, self._max_complexity, self._cats)
+        self._candidate_patterns = self._generate_candidate_patterns(df, tuple_target_attribute_value)
         # We compute the credibility measures for each candidate pattern using the bitset structure.
         qfinder_bitset = Bitset_QFinder()
         qfinder_bitset.generate_bitset(df, tuple_target_attribute_value, self._candidate_patterns)
         self._candidate_patterns = qfinder_bitset.get_non_empty_patterns()
-        coverages, odds_ratios, p_values, absolute_contributions, contribution_ratios, adjusted_p_values \
-            = qfinder_bitset.compute_credibility_measures(df[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1])
-        self._credibility_values = {
-            "coverage": coverages,
-            "odds_ratio": odds_ratios,
-            "p_value": p_values,
-            "absolute_contribution": absolute_contributions,
-            "contribution_ratio": contribution_ratios,
-            # "adjusted_odds_ratio": adjusted_odds_ratios,
-            # "corrected_p_value": corrected_p_values,
-            "adjusted_p_value": adjusted_p_values
-        }
+        self._credibility_values = qfinder_bitset.compute_credibility_measures(df[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1])
         ranked_patterns = self._rank_patterns()
         self._top_patterns = self._select_top_k(ranked_patterns)
         if self._file_path is not None:
             self._to_file(self._file_path,tuple_target_attribute_value, self._credibility_values)
-        if self._stats_path is not None:
-            self._to_stats_file()
 
     def test_subgroups(self,test_dataframe : DataFrame, tuple_target_attribute_value: tuple, write_to_file:bool=False, file_path: Union[str,None]=None):
         """Method to test the best subgroups on a different dataset. This method can only be called after the fit method.
@@ -345,33 +315,24 @@ class QFinder(Algorithm):
         # We make sure that the fit method has been called before.
         if self._top_patterns is None:
             raise ValueError("The fit method must be called before testing subgroups.")
-        if type(test_dataframe) != DataFrame:
+        if type(test_dataframe) is not DataFrame:
             raise TypeError("The dataset must be a pandas DataFrame.")
-        if type(tuple_target_attribute_value) != tuple:
+        if type(tuple_target_attribute_value) is not tuple:
             raise TypeError("The target must be a tuple.")
-        if type(write_to_file) != bool:
+        if type(write_to_file) is not bool:
             raise TypeError("The write_to_file parameter must be a boolean.")
         # If wirte_to_file is True, file_path must not be None.
         if write_to_file and file_path is None:
             raise ValueError("The file path must be specified.")
-        elif write_to_file and type(file_path) != str:
+        elif write_to_file and type(file_path) is not str:
             raise TypeError("The file path must be a string.")
         # We generate a different bitset for the test dataset, which whill be used to compute the credibility measures.
         qfinder_bitset = Bitset_QFinder()
         qfinder_bitset.generate_bitset(test_dataframe, tuple_target_attribute_value, self._top_patterns)
-        coverages, odds_ratios, p_values, absolute_contributions, contribution_ratios, adjusted_p_values \
-            = qfinder_bitset.compute_credibility_measures(test_dataframe[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1])
-        parameters = {
-            "coverages": coverages,
-            "odds_ratios": odds_ratios,
-            "p_values": p_values,
-            "absolute_contributions": absolute_contributions,
-            "contribution_ratios": contribution_ratios,
-            "adjusted_p_values": adjusted_p_values
-        }
+        credibility_values = qfinder_bitset.compute_credibility_measures(test_dataframe[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1])
         if write_to_file:
-            self._to_file(file_path, tuple_target_attribute_value, parameters)
-        return parameters
+            self._to_file(file_path, tuple_target_attribute_value, credibility_values)
+        return credibility_values
     
     def _to_file(self, file_path, target, credibility_values):
         """Writes the top-k patterns to a file.
@@ -387,14 +348,3 @@ class QFinder(Algorithm):
             self._file.write("\n")
         self._file.close()
         self._file = None
-
-    def _to_stats_file(self):
-        """Write the credibility measures of each pattern to a file.
-        """
-        data = {
-                cred : list(self._credibility_values[cred].values()) for cred in self._credibility_values
-            }
-        df = DataFrame(data)
-        # Set the row names to be the patterns.
-        df.index = list(self._credibility_values["odds_ratio"].keys())
-        df.to_html(self._stats_path)

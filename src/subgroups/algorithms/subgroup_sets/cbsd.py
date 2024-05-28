@@ -49,7 +49,7 @@ class CBSD(BSD):
                 r= self._checkRel(self._k_subgroups, cCurrPos, cCurrNeg,quality,sg)
                 # If the subgroup is relevant, we add it to the list of k-subgroups
                 if r:
-                                        # (quality, subgroup, bits, optimistic_estimate,(tp,fp))
+                    # (quality, subgroup, bits, optimistic_estimate, (tp,fp))
                     self._k_subgroups.append((quality, sg, cCurrPos + cCurrNeg,oe,(tp,fp)))
                     self._k_subgroups = sorted(self._k_subgroups, reverse=False, key=lambda x: x[0])
                     # Check if the subgroups in k_subgroups are still relevant
@@ -68,6 +68,7 @@ class CBSD(BSD):
 
     def _checkRelevancies(self,bits : bitarray,sg : Pattern,quality : float) -> None:
         """Internal method to check relevacies in _k_subgroups.
+        
         :param bits: bitarray of positive and negative instances
         :param sg: Pattern that represents a subgroup
         :param quality: sg quality

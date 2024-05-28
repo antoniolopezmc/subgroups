@@ -1,4 +1,4 @@
-BSD 3-Clause License
+BSD 4-Clause License
 
 Copyright (c) 2021, Antonio López Martínez-Carrasco
 All rights reserved.
@@ -13,7 +13,10 @@ modification, are permitted provided that the following conditions are met:
    this list of conditions and the following disclaimer in the documentation
    and/or other materials provided with the distribution.
 
-3. Neither the name of the copyright holder nor the names of its
+3. All materials mentioning features or use of this software must cite the
+   paper in which this software was published.
+
+4. Neither the name of the copyright holder nor the names of its
    contributors may be used to endorse or promote products derived from
    this software without specific prior written permission.
 

@@ -13,6 +13,7 @@ from subgroups.core.pattern import Pattern
 from subgroups.core.subgroup import Subgroup
 from pandas import DataFrame
 from bitarray import bitarray
+from subgroups import datasets
 import unittest
 
 class TestSubgroupList(unittest.TestCase):
@@ -666,3 +667,19 @@ class TestSubgroupList(unittest.TestCase):
         self.assertRaises(IndexError, sl.get_subgroup, 2)
         self.assertRaises(IndexError, sl.get_subgroup_bitarray_of_positives, 2)
         self.assertRaises(IndexError, sl.get_subgroup_bitarray_of_negatives, 2)
+
+    def test_subgroup_list_5(self) -> None:
+        # Load the dataset.
+        df = datasets.load_ballons_csv()
+        target = ("inflated", "T")
+        # Create the subgroups.
+        sl1_s1 = Subgroup.generate_from_str("Description: [color = 'YELLOW', size = 'SMALL'], Target: inflated = 'T'")
+        sl1_s2 = Subgroup.generate_from_str("Description: [color = 'YELLOW', size = 'LARGE'], Target: inflated = 'T'")
+        sl1_s3 = Subgroup.generate_from_str("Description: [act = 'STRETCH', age = 'ADULT'], Target: inflated = 'T'")
+        sl1_s4 = Subgroup.generate_from_str("Description: [act = 'STRETCH', age = 'CHILD'], Target: inflated = 'T'")
+        # Create the subgroup list.
+        sl1 = SubgroupList(bitarray((df[target[0]] == target[1]).to_list(), endian="big"), bitarray((df[target[0]] != target[1]).to_list(), endian="big"), len(df))
+        sl1.add_subgroup(sl1_s1, bitarray((sl1_s1.description.is_contained(df) & sl1_s1.target.match(target[0], df[target[0]])).to_list(), endian="big"), bitarray((sl1_s1.description.is_contained(df) & (~ sl1_s1.target.match(target[0], df[target[0]]))).to_list(), endian="big"))
+        sl1.add_subgroup(sl1_s2, bitarray((sl1_s2.description.is_contained(df) & sl1_s2.target.match(target[0], df[target[0]])).to_list(), endian="big"), bitarray((sl1_s2.description.is_contained(df) & (~ sl1_s2.target.match(target[0], df[target[0]]))).to_list(), endian="big"))
+        sl1.add_subgroup(sl1_s3, bitarray((sl1_s3.description.is_contained(df) & sl1_s3.target.match(target[0], df[target[0]])).to_list(), endian="big"), bitarray((sl1_s3.description.is_contained(df) & (~ sl1_s3.target.match(target[0], df[target[0]]))).to_list(), endian="big"))
+        sl1.add_subgroup(sl1_s4, bitarray((sl1_s4.description.is_contained(df) & sl1_s4.target.match(target[0], df[target[0]])).to_list(), endian="big"), bitarray((sl1_s4.description.is_contained(df) & (~ sl1_s4.target.match(target[0], df[target[0]]))).to_list(), endian="big"))
