@@ -74,7 +74,7 @@ This library offers different metrics after executing the algorithms, such as th
 Free software
 =============
 
-``subgroups`` is free software and follows the BSD-3-Clause license. Additional information is available in the `LICENSE`_ file.
+``subgroups`` is free software and follows the BSD-4-Clause license. Additional information is available in the `LICENSE`_ file.
 
 .. _`1`: https://doi.org/10.1002/widm.1144
 .. _`2`: https://www.mdpi.com/1999-4893/16/6/274
