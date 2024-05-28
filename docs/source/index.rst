@@ -54,7 +54,7 @@ Dev Team
 .. |pythonversion| image:: https://img.shields.io/pypi/pyversions/subgroups
    :target: https://www.python.org/
    :alt: Python Version
-.. |license| image:: https://img.shields.io/pypi/l/subgroups
+.. |license| image:: https://img.shields.io/pypi/l/subgroups?color=green
    :target: https://github.com/antoniolopezmc/subgroups/blob/master/LICENSE
    :alt: License
 .. |donwloads| image:: https://img.shields.io/pepy/dt/subgroups
