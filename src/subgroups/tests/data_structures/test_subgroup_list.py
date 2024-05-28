@@ -668,7 +668,7 @@ class TestSubgroupList(unittest.TestCase):
         self.assertRaises(IndexError, sl.get_subgroup_bitarray_of_positives, 2)
         self.assertRaises(IndexError, sl.get_subgroup_bitarray_of_negatives, 2)
 
-    def test_subgroup_list_4(self) -> None:
+    def test_subgroup_list_5(self) -> None:
         # Load the dataset.
         df = datasets.load_ballons_csv()
         target = ("inflated", "T")
