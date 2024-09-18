@@ -23,6 +23,68 @@ Dev Team
 | `Francisco Mora Caselles`_         |
 +------------------------------------+
 
+========
+Citation
+========
+
+If you use ``subgroups`` library in a scientific publication, please cite the following paper:
+
+* BibTeX format:
+
+.. code-block:: text
+
+   @article{LOPEZMARTINEZCARRASCO2024101895,
+   title = {Subgroups: A Python library for Subgroup Discovery},
+   journal = {SoftwareX},
+   volume = {28},
+   pages = {101895},
+   year = {2024},
+   issn = {2352-7110},
+   doi = {https://doi.org/10.1016/j.softx.2024.101895},
+   url = {https://www.sciencedirect.com/science/article/pii/S2352711024002656},
+   author = {Antonio Lopez-Martinez-Carrasco and Jose M. Juarez and Manuel Campos and Francisco Mora-Caselles},
+   keywords = {Machine learning, Data mining, Subgroup Discovery, Python}
+   }
+
+* RIS format:
+
+.. code-block:: text
+
+   TY  - JOUR
+   T1  - Subgroups: A Python library for Subgroup Discovery
+   AU  - Lopez-Martinez-Carrasco, Antonio
+   AU  - Juarez, Jose M.
+   AU  - Campos, Manuel
+   AU  - Mora-Caselles, Francisco
+   JO  - SoftwareX
+   VL  - 28
+   SP  - 101895
+   PY  - 2024
+   DA  - 2024/12/01/
+   SN  - 2352-7110
+   DO  - https://doi.org/10.1016/j.softx.2024.101895
+   UR  - https://www.sciencedirect.com/science/article/pii/S2352711024002656
+   KW  - Machine learning
+   KW  - Data mining
+   KW  - Subgroup Discovery
+   KW  - Python
+   ER  - 
+
+* Plain text:
+
+.. code-block:: text
+
+   Antonio Lopez-Martinez-Carrasco, Jose M. Juarez, Manuel Campos, Francisco Mora-Caselles,
+   Subgroups: A Python library for Subgroup Discovery,
+   SoftwareX,
+   Volume 28,
+   2024,
+   101895,
+   ISSN 2352-7110,
+   https://doi.org/10.1016/j.softx.2024.101895.
+   (https://www.sciencedirect.com/science/article/pii/S2352711024002656)
+   Keywords: Machine learning; Data mining; Subgroup Discovery; Python
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
