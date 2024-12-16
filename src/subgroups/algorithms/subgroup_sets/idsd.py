@@ -332,7 +332,7 @@ class IDSD(Algorithm):
         """
         
         # We count the number of unique visited subgroups only if the current complexity is the maximum complexity so we don't count the same subgroup twice.
-        if complexity == self._max_complexity:
+        if len(pattern) == complexity:
             self._visited_subgroups += 1
         # We count the number of non-unique visited subgroups.
         self._non_unique_visited_subgroups += 1
