@@ -428,7 +428,3 @@ class IDSD(Algorithm):
                 file.write(cred + " : " + str(cred_values[cred]) + " ; ")
             file.write("\n")
         file.close()
-
-
-
-
