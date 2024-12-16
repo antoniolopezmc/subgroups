@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Contributors:
-#    Paco Mora Caselles <pacomoracaselles@gmail.com>
+#    Francisco Mora-Caselles <franciscojose.morac@um.es>
 
 """This file contains the implementation of the SDMapStar algorithm.
 """
