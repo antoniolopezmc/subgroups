@@ -7,9 +7,9 @@ clean:
 	python clean.py $(SOURCEDIR)/project_files $(BUILDDIR)
 
 build_pre: clean
-	python -m pip install --upgrade sphinx
-	python -m pip install --upgrade sphinx-rtd-theme
-	python -m pip install --upgrade sphinx-autodoc-typehints
+	python -m pip install sphinx==8.1.3
+	python -m pip install sphinx-rtd-theme==3.0.2
+	python -m pip install sphinx-autodoc-typehints==2.5.0
 	sphinx-apidoc -f -T -M -o $(SOURCEDIR)/project_files ../src/subgroups
 
 build_html: build_pre

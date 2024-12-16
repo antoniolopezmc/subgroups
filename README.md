@@ -107,6 +107,7 @@ An example of use of each algorithm implemented in `subgroups` python library ca
 - [VLSD](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/VLSD.ipynb)
 - [BSD-CBSD-CPBSD](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/BSD-CBSD-CPBSD.ipynb)
 - [QFinder](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/QFinder.ipynb)
+- [IDSD](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/IDSD.ipynb)
 - [GMSL](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/GMSL.ipynb)
 - [DSLM](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/DSLM.ipynb)
 
@@ -126,9 +127,9 @@ or
 ```shell
 cd docs
 python clean.py source/project_files build
-python -m pip install --upgrade sphinx
-python -m pip install --upgrade sphinx-rtd-theme
-python -m pip install --upgrade sphinx-autodoc-typehints
+python -m pip install sphinx==8.1.3
+python -m pip install sphinx-rtd-theme==3.0.2
+python -m pip install sphinx-autodoc-typehints==2.5.0
 sphinx-apidoc -f -T -M -o source/project_files ../src/subgroups
 sphinx-build -M html source build
 ```
