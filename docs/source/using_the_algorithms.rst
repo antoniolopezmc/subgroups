@@ -35,6 +35,12 @@ QFinder algorithm
 https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/QFinder.ipynb
 
 ==============
+IDSD algorithm
+==============
+
+https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/IDSD.ipynb
+
+==============
 GMSL algorithm
 ==============
 

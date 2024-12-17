@@ -120,7 +120,7 @@ If you use ``subgroups`` library in a scientific publication, please cite the fo
    :target: https://github.com/antoniolopezmc/subgroups/blob/master/LICENSE
    :alt: License
 .. |donwloads| image:: https://img.shields.io/pepy/dt/subgroups
-   :alt: Total Downlods
+   :alt: Total Downloads
 .. |documentation| image:: https://img.shields.io/badge/Documentation-green?style=flat
    :target: https://www.um.es/subgroups/
    :alt: Documentation

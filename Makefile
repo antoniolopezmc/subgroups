@@ -16,9 +16,9 @@ uninstall:
 	python -m pip uninstall subgroups
 
 build: clean
-	python -m pip install --upgrade build
+	python -m pip install build==1.2.2.post1
 	python -m build
 
 upload_to_pypi: build
-	python -m pip install --upgrade twine
+	python -m pip install twine==6.0.1
 	python -m twine upload --repository pypi dist/*

@@ -8,7 +8,7 @@
 |---------------|---|
 | **Tests** | [![Azure Pipelines - Tests](https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/subgroups-feedstock?branchName=main)](https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=21954&branchName=main) |
 | **Package** | [![PyPI - Version](https://img.shields.io/pypi/v/subgroups?label=PyPI)](https://pypi.org/project/subgroups/) [![Conda Version](https://img.shields.io/conda/vn/conda-forge/subgroups?label=Anaconda.org%20%7C%20conda-forge)](https://anaconda.org/conda-forge/subgroups)|
-| **Metadata** | [![GitHub](https://img.shields.io/badge/GitHub-Latest%20development-blue?style=flat)](https://github.com/antoniolopezmc/subgroups) [![Author's webpage](https://img.shields.io/badge/Author's%20webpage-orange?style=flat)](https://webs.um.es/antoniolopezmc/) [![Python Version](https://img.shields.io/pypi/pyversions/subgroups)](https://www.python.org/) [![License](https://img.shields.io/pypi/l/subgroups?color=green)](https://github.com/antoniolopezmc/subgroups/blob/master/LICENSE) ![Total Downlods](https://img.shields.io/pepy/dt/subgroups) [![Documentation](https://img.shields.io/badge/Documentation-green?style=flat)](https://www.um.es/subgroups/)|
+| **Metadata** | [![GitHub](https://img.shields.io/badge/GitHub-Latest%20development-blue?style=flat)](https://github.com/antoniolopezmc/subgroups) [![Author's webpage](https://img.shields.io/badge/Author's%20webpage-orange?style=flat)](https://webs.um.es/antoniolopezmc/) [![Python Version](https://img.shields.io/pypi/pyversions/subgroups)](https://www.python.org/) [![License](https://img.shields.io/pypi/l/subgroups?color=green)](https://github.com/antoniolopezmc/subgroups/blob/master/LICENSE) ![Total Downloads](https://img.shields.io/pepy/dt/subgroups) [![Documentation](https://img.shields.io/badge/Documentation-green?style=flat)](https://www.um.es/subgroups/)|
 
 ## What is it?
 
@@ -107,6 +107,7 @@ An example of use of each algorithm implemented in `subgroups` python library ca
 - [VLSD](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/VLSD.ipynb)
 - [BSD-CBSD-CPBSD](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/BSD-CBSD-CPBSD.ipynb)
 - [QFinder](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/QFinder.ipynb)
+- [IDSD](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/IDSD.ipynb)
 - [GMSL](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/GMSL.ipynb)
 - [DSLM](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/DSLM.ipynb)
 
@@ -126,9 +127,9 @@ or
 ```shell
 cd docs
 python clean.py source/project_files build
-python -m pip install --upgrade sphinx
-python -m pip install --upgrade sphinx-rtd-theme
-python -m pip install --upgrade sphinx-autodoc-typehints
+python -m pip install sphinx==8.1.3
+python -m pip install sphinx-rtd-theme==3.0.2
+python -m pip install sphinx-autodoc-typehints==2.5.0
 sphinx-apidoc -f -T -M -o source/project_files ../src/subgroups
 sphinx-build -M html source build
 ```

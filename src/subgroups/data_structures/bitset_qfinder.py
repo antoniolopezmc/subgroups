@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 
 # Contributors:
-#    Paco Mora Caselles <pacomoracaselles@gmail.com>
+#    Francisco Mora-Caselles <franciscojose.morac@um.es>
 
 """This file contains the implementation of the Bitset data structure used in the QFinder to create the regression models.
 """
 
 from pandas import DataFrame
+
 import statsmodels.api as sm
-import numpy as np
+from subgroups.credibility_measures.selector_contribution import SelectorContribution
+from subgroups.credibility_measures.odds_ratio_glm import OddsRatioGLM
+from subgroups.credibility_measures.p_value_glm import PValueGLM
+
 from subgroups.core.pattern import Pattern
 
 class Bitset_QFinder(object):
@@ -46,7 +50,7 @@ class Bitset_QFinder(object):
         """Method to get the candidate patterns after removing those that do not appear in the dataset.
         """
         return [Pattern.generate_from_str(pattern_as_str) for pattern_as_str in self._df.columns]
-
+    
     def compute_credibility_measures(self, target_column) -> DataFrame:
         """Method to compute the credibility measures for each candidate pattern.
             
@@ -63,33 +67,21 @@ class Bitset_QFinder(object):
         coverages = {}
         absolute_contributions = {}
         contribution_ratios = {}
+        odds_ratio_measure = OddsRatioGLM()
+        p_value_measure = PValueGLM()
         # We create models to calculate the odds ratios and p-values for each pattern
         for pattern in self._df.columns:
             results = sm.GLM(target_column, self._df[pattern], family=sm.families.Binomial()).fit()
-            odds_ratios[pattern] = np.exp(results.params.iloc[0])
-            p_values[pattern] = results.pvalues.iloc[0]
+            odds_ratios[pattern] = odds_ratio_measure({"glm": results})
+            p_values[pattern] = p_value_measure({"glm": results})
             coverages[pattern] = len(self._df[self._df[pattern]])/(self._TP + self._FP)
         # We calculate the absolute contribution and the contribution ratio for each pattern
+        contribution_measures = SelectorContribution()
         for pattern_as_str in self._df.columns:
-            minimum_absolute_contribution = 1
-            maximum_absolute_contribution = 0
-            odds_ratio = odds_ratios[pattern_as_str]
             pattern = Pattern.generate_from_str(pattern_as_str)
-            if len(pattern) == 1:
-                minimum_absolute_contribution = 1
-                maximum_absolute_contribution = 1
-            else:
-                for selector in pattern:
-                    pattern_without_selector = pattern.copy()
-                    pattern_without_selector.remove_selector(selector)
-                    pattern_without_selector_odds_ratio = odds_ratios[str(pattern_without_selector)]
-                    minimum_absolute_contribution = min(minimum_absolute_contribution, odds_ratio/pattern_without_selector_odds_ratio)
-                    maximum_absolute_contribution = max(maximum_absolute_contribution, odds_ratio/pattern_without_selector_odds_ratio)
-            absolute_contributions[pattern_as_str] = minimum_absolute_contribution
-            if minimum_absolute_contribution == 0:
-                contribution_ratios[pattern_as_str] = np.inf
-            else:
-                contribution_ratios[pattern_as_str] = maximum_absolute_contribution/minimum_absolute_contribution
+            absolute_contribution, contribution_ratio = contribution_measures({"odds_ratios": odds_ratios, "pattern": pattern, "odds_ratio_definition": "glm"})
+            absolute_contributions[pattern_as_str] = absolute_contribution
+            contribution_ratios[pattern_as_str] = contribution_ratio
         # We use the Bonferroni correction for adjusted corrected p-values: each p_value is multiplied by the number of predictors
         adjusted_p_values = {pat : p_values[pat] * len(self._df.columns) for pat in p_values.keys()}
         return DataFrame({'coverage': coverages, 'odds_ratio': odds_ratios, 'p_value': p_values, 'absolute_contribution': absolute_contributions, 'contribution_ratio': contribution_ratios, 'adjusted_p_value': adjusted_p_values})
