@@ -234,6 +234,10 @@ class BSD(Algorithm):
             dict_of_parameters_for_quality_measure.update(self._additional_parameters_for_the_quality_measure)
             quality = self._quality_measure.compute(dict_of_parameters_for_quality_measure)
             CcondPos,CcondNeg,newSelRel = self._handle_individual_result((selCond, sCurr, oe, quality,CcondPos,CcondNeg, cCurrPos, cCurrNeg,newSelRel,tp,fp))
+        # Remove selCond from the bitsets, since we will not use it in the next recursive calls
+        if selCond:
+            CcondPos.pop(selCond)
+            CcondNeg.pop(selCond)
         # Sort the selectors by their optimistic estimate
         newSelRel = sorted(newSelRel, reverse=True)
         # If the current depth is less than the maximum depth and we have more selectors, we continue the search
