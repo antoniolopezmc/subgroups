@@ -47,14 +47,6 @@ class BitsetDictionary(dict):
             return super().__contains__(str(__o))
         else:
             raise TypeError("The key must be a Selector or a Pattern.")
-    
-    def pop(self, key) -> bitarray:
-        if (type(key) is Selector):
-            return super().pop(str(Pattern([key])))
-        elif (type(key) is Pattern):
-            return super().pop(str(key))
-        else:
-            raise TypeError("The key must be a Selector or a Pattern.")
 
 class BitsetBSD(object):
     """This class represents a bitset used in the BSD algorithm and its variants.
