@@ -237,6 +237,7 @@ class BSD(Algorithm):
         if depth < self._maxDepth and newSelRel:
             oe, newSelRelAux = zip(*newSelRel)
             newSelRelAux = list(newSelRelAux)
+            newSelRelAux = newSelRelAux.copy()
             for s in newSelRel:
                 #if optimistic estimate > min
                 if (s[0]> self._k_subgroups[0][0]):
@@ -247,6 +248,8 @@ class BSD(Algorithm):
                         selCondAux = Pattern([s[1]])
                     # We remove the selector from the list of relevant selectors to avoid evaluating it again
                     newSelRelAux.remove(s[1])
+                    cCurrPos = self._logicalAnd(CcondPos, self._bitset_pos[s[1]])
+                    cCurrNeg = self._logicalAnd(CcondNeg, self._bitset_neg[s[1]])
                     self._BSD(selCondAux, newSelRelAux, cCurrPos, cCurrNeg, depth+1)
 
     def _checkRelevancies(self,cCurrPos : bitarray, cCurrNeg : bitarray ,sg : Pattern) -> None:
