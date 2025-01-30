@@ -58,7 +58,9 @@ class CBSD(BSD):
                     self._unselected_subgroups += 1
             else:
                 self._unselected_subgroups += 1
+        # If the optimistic estimate is lower than the quality of the worst subgroup and k_subgroups is full, we prune this selector
         else:
+            self._pruned_subgroups += 1
             self._unselected_subgroups +=1
         return newSelRel
 

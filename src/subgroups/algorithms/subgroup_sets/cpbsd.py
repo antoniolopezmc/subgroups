@@ -59,8 +59,10 @@ class CPBSD(BSD):
                     self._unselected_subgroups += 1
             else:
                 self._unselected_subgroups += 1
+        # If the optimistic estimate is lower than the minimum quality in k_subgroups, we prune the current selector
         else:
             self._unselected_subgroups +=1
+            self._pruned_subgroups += 1
         return newSelRel
 
     def _checkRelevancies(self,ccurrPos : bitarray,sg : Pattern,quality : float) -> None:

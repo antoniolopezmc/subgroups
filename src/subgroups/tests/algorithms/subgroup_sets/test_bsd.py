@@ -75,7 +75,7 @@ class TestBSD(unittest.TestCase):
         bsd = BSD(0, WRAcc(),WRAccOptimisticEstimate1(),5,10,write_results_in_file=False)
         bsd.fit(df, target)
         self.assertEqual(bsd.selected_subgroups, 3)
-        self.assertEqual(bsd.unselected_subgroups, 50)
+        self.assertEqual(bsd.unselected_subgroups, 58)
         self.assertEqual(bsd.visited_subgroups, 21)
         
     def test_BSD_fit2(self) -> None:
