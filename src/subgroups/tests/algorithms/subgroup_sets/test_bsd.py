@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Contributors:
-#    Francisco Mora-Caselles <franciscojose.morac@um.es>
+#    Francisco Mora-Caselles <fmora@um.es>
 
 """Tests of the functionality contained in the file 'algorithms/bsd.py'.
 """
