@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Contributors:
-#    Francisco Mora-Caselles <franciscojose.morac@um.es>
+#    Francisco Mora-Caselles <fmora@um.es>
 
 """This file contains the implementation of the CBSD algorithm.
 """
@@ -25,19 +25,15 @@ class CBSD(BSD):
         sCurr = individual_result[1]
         oe = individual_result[2]
         quality = individual_result[3]
-        CcondPos = individual_result[4]
-        CcondNeg = individual_result[5]
-        cCurrPos = individual_result[6]
-        cCurrNeg = individual_result[7]
-        newSelRel = individual_result[8]
-        tp = individual_result[9]
-        fp = individual_result[10]
+        cCurrPos = individual_result[4]
+        cCurrNeg = individual_result[5]
+        newSelRel = individual_result[6]
+        tp = individual_result[7]
+        fp = individual_result[8]
         # if optimistic estimate > quality of worst subgroup or k-subgroups is not full
         if(oe >= self._k_subgroups[0][0] or len(self._k_subgroups) < self.num_subgroups):
             # Add the current selector to the list of new selectors added to the conditional pattern
             newSelRel.append((oe, sCurr))
-            # Add the current selector with the pattern to the dictionaries of positive and negative entries
-            CcondPos,CcondNeg = self._attach(cCurrPos, cCurrNeg, CcondPos, CcondNeg, sCurr, selCond)
             #if quality > min or k-subgroups is not full
             if quality >= self._k_subgroups[0][0] or len(self._k_subgroups) < self.num_subgroups:
                 # sg = conditional pattern + current selector
@@ -62,9 +58,11 @@ class CBSD(BSD):
                     self._unselected_subgroups += 1
             else:
                 self._unselected_subgroups += 1
+        # If the optimistic estimate is lower than the quality of the worst subgroup and k_subgroups is full, we prune this selector
         else:
+            self._pruned_subgroups += 1
             self._unselected_subgroups +=1
-        return CcondPos,CcondNeg,newSelRel
+        return newSelRel
 
     def _checkRelevancies(self,bits : bitarray,sg : Pattern,quality : float) -> None:
         """Internal method to check relevacies in _k_subgroups.

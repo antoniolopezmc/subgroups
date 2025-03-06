@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Contributors:
-#    Francisco Mora-Caselles: <franciscojose.morac@um.es>
+#    Francisco Mora-Caselles: <fmora@um.es>
 
 """This file contains the implementation of the significance credibility measure computed using statistical independece hypothesis test.
 """

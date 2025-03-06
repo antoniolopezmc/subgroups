@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Contributors:
-#    Francisco Mora-Caselles: <franciscojose.morac@um.es>
+#    Francisco Mora-Caselles: <fmora@um.es>
 
 """This file contains the implementation of the root class of all the implemented credibility measures. This class is an abstract class and cannot be instantiated.
 """

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Contributors:
-#    Francisco Mora-Caselles <franciscojose.morac@um.es>
+#    Francisco Mora-Caselles <fmora@um.es>
 
 """This file contains the implementation of the Bitset data structure used in the BSD algorithm and its variants.
 """
@@ -52,7 +52,7 @@ class BitsetBSD(object):
     """This class represents a bitset used in the BSD algorithm and its variants.
     """
 
-    __slots__ = ("_bitset_pos", "_bitset_neg")
+    __slots__ = ("_bitset_pos", "_bitset_neg", "_TP", "_FP")
 
     def __init__(self):
         """Method to initialize an object of type 'BitsetBSD'.
@@ -131,8 +131,12 @@ class BitsetBSD(object):
         selectors = list(filter(lambda x: Selector(x[0], Operator.EQUAL, x[1]) in set_of_frequent_selectors, selectors))
         # Get the subset of the dataset where the target column has the target value (positive examples)
         df_pos = pandas_dataframe[pandas_dataframe[tuple_target_attribute_value[0]] == tuple_target_attribute_value[1]]
+        # Compute True Population
+        self._TP = len(df_pos)
         # Get the subset of the dataset where the target column does not have the target value (negative examples)
         df_neg = pandas_dataframe[pandas_dataframe[tuple_target_attribute_value[0]] != tuple_target_attribute_value[1]]
+        # Compute False Population
+        self._FP = len(df_neg)
         # For each selector in the list of selectors
         for selector in selectors:
             # Create a bitarray from the boolean array that indicates whether the positive examples match the selector
@@ -199,3 +203,18 @@ class BitsetBSD(object):
         list_of_frequent_selectors.sort(key=lambda x: x[1], reverse=True)
         # Return only the selectors
         return [x[0] for x in list_of_frequent_selectors]
+    
+    def all_true_positives(self) -> bitarray:
+        """Method to get the bitarray of all true values for the positive bitset
+
+        :return: the bitarray of all true values for the positive bitset
+        """
+        return bitarray("1") * self._TP
+    
+    def all_true_negatives(self) -> bitarray:
+        """Method to get the bitarray of all true values for the negative bitset
+
+        :return: the bitarray of all true values for the negative bitset
+        """
+        return bitarray("1") * self._FP
+
