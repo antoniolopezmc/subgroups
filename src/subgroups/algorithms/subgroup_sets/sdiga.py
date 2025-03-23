@@ -5,10 +5,12 @@
 
 """This file contains the implementation of the SDIGA algorithm.
 """
+import pandas as pd
 
 from pandas import DataFrame
 from subgroups.algorithms.algorithm import Algorithm
 from pandas.api.types import is_string_dtype
+from subgroups.core.pattern import Pattern
 from subgroups.quality_measures.quality_measure import QualityMeasure
 from subgroups.exceptions import InconsistentMethodParametersError, DatasetAttributeTypeError
 from subgroups.core.operator import Operator
@@ -16,7 +18,42 @@ from subgroups.core.selector import Selector
 from subgroups.core.subgroup import Subgroup
 
 #Python annotations.
-from typing import Union
+from typing import Tuple, Union
+
+def _chromosome_encoding_and_dictionary(pandas_dataframe : DataFrame, target : tuple[str, str]) -> Tuple[DataFrame,dict,list]:
+    """
+    This function maps the "str" dataset to a chromosome representation using categorical functions and returns a dictionary with the mapping aplicated.
+
+    :param pandas_dataframe: the DataFrame which is provided to find the subgroups. This algorithm only supports nominal attributes (i.e., type 'str').
+    :return: a tuple with the DataFrame parsed using int values for non target columns, a dictionary with the mapping applied and a list with the attribute names.
+    """
+    df = pandas_dataframe.drop(columns=[target[0]]).astype('category')
+    dictionary_df = df.apply(lambda x: x.cat.categories).to_dict()
+    attribute_list = df.columns.tolist()
+    df_coded = df.apply(lambda x: x.cat.codes + 1)
+    df_coded[target[0]] = pandas_dataframe[target[0]]
+    return df_coded, dictionary_df, attribute_list
+
+def _chromosome_decoding(chromosome : pd.Series, dictionary_df : dict, attribute_list : list) -> Pattern:
+    """
+    This function decodes a chromosome uwsing a dictionary with the mapping applied.
+
+    :param chromosome: the chromosome to be decoded.
+    :param dictionary_df: the dictionary with the mapping applied.
+    :param attribute_list: the list with the attribute names.
+    :return: a Pattern object with the decoded chromosome.
+    """
+    selector_list = []
+    #loop through all the chromosome indexes
+    for gene in chromosome.keys():
+        #if the gene is not 0
+        if chromosome[gene] != 0:
+            #attribute = attribute_list[gene]
+            selector_list.append(Selector(gene, Operator.EQUAL, dictionary_df[gene][chromosome[gene]-1]))
+    pattern = Pattern(selector_list)
+    return pattern
+
+
 
 class SDIGA(Algorithm):
     """
@@ -151,3 +188,34 @@ class SDIGA(Algorithm):
         #       mark R cases as visited.
         #           recalculate the non visited dataframe.
         # Return best_cases.
+    def _chromosome_encoding_and_dictionary(pandas_dataframe : DataFrame, target : Tuple[str, str]) -> Tuple[DataFrame,dict,list]:
+        """
+        This function maps the "str" dataset to a chromosome representation using categorical functions and returns a dictionary with the mapping aplicated.
+
+        :param pandas_dataframe: the DataFrame which is provided to find the subgroups. This algorithm only supports nominal attributes (i.e., type 'str').
+        :return: a tuple with the DataFrame parsed using int values for non target columns, a dictionary with the mapping applied and a list with the attribute names.
+        """
+        df = pandas_dataframe.drop(columns=[target[0]]).astype('category')
+        dictionary_df = df.apply(lambda x: x.cat.categories).to_dict()
+        attribute_list = df.columns.tolist()
+        df_coded = df.apply(lambda x: x.cat.codes + 1)
+        df_coded[target[0]] = pandas_dataframe[target[0]]
+        return df_coded, dictionary_df, attribute_list
+
+    def _chromosome_decoding(chromosome : pd.Series, dictionary_df : dict, attribute_list : list) -> Pattern:
+        """
+        This function decodes a chromosome uwsing a dictionary with the mapping applied.
+
+        :param chromosome: the chromosome to be decoded.
+        :param dictionary_df: the dictionary with the mapping applied.
+        :param attribute_list: the list with the attribute names.
+        :return: a Pattern object with the decoded chromosome.
+        """
+        pattern = Pattern()
+        #loop through all the chromosome indexes
+        for gene in chromosome.keys():
+            #if the gene is not 0
+            if chromosome[gene] != 0:
+                attribute = attribute_list[gene]
+                pattern.add_selector(Selector(attribute, Selector.EQUAL, dictionary_df[attribute][chromosome[gene]-1]))
+        return pattern
