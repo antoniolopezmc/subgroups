@@ -16,6 +16,8 @@ from subgroups.exceptions import InconsistentMethodParametersError, DatasetAttri
 from subgroups.core.operator import Operator
 from subgroups.core.selector import Selector
 from subgroups.core.subgroup import Subgroup
+from subgroups.quality_measures.support import Support
+from subgroups.quality_measures.ppv import PPV
 
 #Python annotations.
 from typing import Tuple, Union
@@ -48,11 +50,45 @@ def _chromosome_decoding(chromosome : pd.Series, dictionary_df : dict, attribute
     for gene in chromosome.keys():
         #if the gene is not 0
         if chromosome[gene] != 0:
-            #attribute = attribute_list[gene]
             selector_list.append(Selector(gene, Operator.EQUAL, dictionary_df[gene][chromosome[gene]-1]))
     pattern = Pattern(selector_list)
     return pattern
 
+def _filter_rows(chromosome: pd.Series, pandas_dataframe: DataFrame) -> DataFrame:
+    """
+    This function filters the rows of a DataFrame using a chromosome.
+
+    :param chromosome: the chromosome to be used to filter the rows.
+    :param pandas_dataframe: the DataFrame which is provided to find the subgroups.
+    :return: a DataFrame with the rows filtered by the chromosome.
+    """
+    # Create a boolean mask with all True values initially
+    mask = pd.Series(True, index=pandas_dataframe.index)
+    # Iterate over each index and corresponding chromosome value
+    for i, chrom_val in enumerate(chromosome):
+        # If chromosome[i] is non-zero, update the mask
+        if chrom_val != 0:
+            mask &= (pandas_dataframe.iloc[:,i] == chrom_val)
+    # Return the filtered dataframe rows
+    return pandas_dataframe[mask]
+
+def _get_tp_and_fp(chromosome: pd.Series, pandas_dataframe: DataFrame, target: Tuple[str,str]) -> Tuple[int, int]:
+    """
+    This function calculates the True Positives and False Positives of a chromosome.
+
+    :param chromosome: the chromosome to be evaluated.
+    :param pandas_dataframe: the DataFrame which is provided to find the subgroups.
+    :param target: a tuple with 2 elements: the target attribute name and the target value.
+    :return: a tuple with the True Positives and False Positives of the chromosome.
+    """
+    filtered_df = _filter_rows(chromosome, pandas_dataframe)
+    
+    print(filtered_df)
+
+    # Calculate the True Positives and False Positives.
+    tp = sum(filtered_df[target[0]].apply(lambda x: target[1]==x))
+    fp = len(filtered_df) - tp
+    return tp, fp
 
 
 class SDIGA(Algorithm):
@@ -147,6 +183,28 @@ class SDIGA(Algorithm):
     confidence_weight = property(_get_confidence_weight, None, None, "Weight of the confidence measure in the fitness evaluation.")
     min_confidence = property(_get_min_confidence, None, None, "Minimum confidence threshold for selecting the best individual.")
     
+    def _fitness_evaluation(self, chromosome : pd.Series, dataframe : DataFrame, unchecked_dataframe : DataFrame, target : tuple[str, str], TP:int, FP:int) -> float:
+        """
+        This function evaluates the fitness of a chromosome using the support and confidence measures.
+
+        :param chromosome: the chromosome to be evaluated.
+        :param pandas_dataframe: the DataFrame which is provided to find the subgroups.
+        :param target: a tuple with 2 elements: the target attribute name and the target value.
+        :return: the fitness value of the chromosome.
+        """
+
+        tp_uncovered, fp_uncovered = _get_tp_and_fp(chromosome, unchecked_dataframe, target)
+        tp,fp = _get_tp_and_fp(chromosome, dataframe, target)
+        
+        # Calculate the support and confidence of the pattern.
+        dict_of_support = {QualityMeasure.TRUE_POSITIVES: tp_uncovered, QualityMeasure.TRUE_POPULATION: TP, QualityMeasure.FALSE_POPULATION: FP}
+        dict_of_confidence = {QualityMeasure.TRUE_POSITIVES: tp, QualityMeasure.FALSE_POSITIVES: fp}
+        support = Support().compute(dict_of_support)
+        confidence = PPV().compute(dict_of_confidence)
+        # Calculate the fitness value.
+        fitness = (self._support_weight * support + self._confidence_weight * confidence)/(self._support_weight + self._confidence_weight)
+        return fitness
+
     def fit(self, pandas_dataframe : DataFrame, target : tuple[str, str]) -> None:
         """
         Main method to run the SDIGA algorithm. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
@@ -170,11 +228,27 @@ class SDIGA(Algorithm):
         if (target[1] not in pandas_dataframe[target[0]].unique()):
             raise ValueError("The second element of the parameter 'target' must be a value of the target variable. "+str(target[1])+" not in "+str(pandas_dataframe[target[0]].unique()))
         
+        # Calculate TP and FP.
+        TP = sum(pandas_dataframe[target[0]] == target[1])
+        FP = len(pandas_dataframe) - TP
+
         # Map the dataset to a chromosome representation.
+        encoded_df, enconded_dict, encoded_list = _chromosome_encoding_and_dictionary(pandas_dataframe, target) 
+        
+        # Create the unchecked dataframe.
+        unchecked_df = encoded_df.copy()
         
         # Create empty best_cases.
+        best_cases = []
+
         # Select random population.
+        # TODO: I really don't know if the population should be selected randomly of a full chromosome
+        # or if some random gene sould be 0.
+        population = encoded_df.drop(columns=['deceased']).sample(n=self._population_size)
+        
         # Evaluate the fitness of each individual.
+        
+
         # Repeat until no new examples or confidence example < min_confidence.
         #    GA(algorithm).
         #       Select 2 parents.
@@ -188,34 +262,3 @@ class SDIGA(Algorithm):
         #       mark R cases as visited.
         #           recalculate the non visited dataframe.
         # Return best_cases.
-    def _chromosome_encoding_and_dictionary(pandas_dataframe : DataFrame, target : Tuple[str, str]) -> Tuple[DataFrame,dict,list]:
-        """
-        This function maps the "str" dataset to a chromosome representation using categorical functions and returns a dictionary with the mapping aplicated.
-
-        :param pandas_dataframe: the DataFrame which is provided to find the subgroups. This algorithm only supports nominal attributes (i.e., type 'str').
-        :return: a tuple with the DataFrame parsed using int values for non target columns, a dictionary with the mapping applied and a list with the attribute names.
-        """
-        df = pandas_dataframe.drop(columns=[target[0]]).astype('category')
-        dictionary_df = df.apply(lambda x: x.cat.categories).to_dict()
-        attribute_list = df.columns.tolist()
-        df_coded = df.apply(lambda x: x.cat.codes + 1)
-        df_coded[target[0]] = pandas_dataframe[target[0]]
-        return df_coded, dictionary_df, attribute_list
-
-    def _chromosome_decoding(chromosome : pd.Series, dictionary_df : dict, attribute_list : list) -> Pattern:
-        """
-        This function decodes a chromosome uwsing a dictionary with the mapping applied.
-
-        :param chromosome: the chromosome to be decoded.
-        :param dictionary_df: the dictionary with the mapping applied.
-        :param attribute_list: the list with the attribute names.
-        :return: a Pattern object with the decoded chromosome.
-        """
-        pattern = Pattern()
-        #loop through all the chromosome indexes
-        for gene in chromosome.keys():
-            #if the gene is not 0
-            if chromosome[gene] != 0:
-                attribute = attribute_list[gene]
-                pattern.add_selector(Selector(attribute, Selector.EQUAL, dictionary_df[attribute][chromosome[gene]-1]))
-        return pattern
