@@ -8,6 +8,7 @@
 import pandas as pd
 
 from pandas import DataFrame
+from numpy import random
 from subgroups.algorithms.algorithm import Algorithm
 from pandas.api.types import is_string_dtype
 from subgroups.core.pattern import Pattern
@@ -204,6 +205,30 @@ class SDIGA(Algorithm):
         # Calculate the fitness value.
         fitness = (self._support_weight * support + self._confidence_weight * confidence)/(self._support_weight + self._confidence_weight)
         return fitness
+    
+    def _perform_crossover(self, parent1: pd.Series, parent2:pd.Series) -> Tuple[pd.Series, pd.Series]:
+        """
+        This function performs the crossover operation between two parents.
+
+        :param parent1: the first parent.
+        :param parent2: the second parent.
+        :return: a tuple with the two children obtained from the crossover operation.
+        """
+        if pd.np.random.rand() < self._crossover_prob:
+            crossover_points = sorted(pd.np.random.choice(range(len(parent1)), 2, replace=False))
+            child1 = pd.concat([parent1[:crossover_points[0]], parent2[crossover_points[0]:crossover_points[1]], parent1[crossover_points[1]:]])
+            child2 = pd.concat([parent2[:crossover_points[0]], parent1[crossover_points[0]:crossover_points[1]], parent2[crossover_points[1]:]])
+        else:
+            child1, child2 = parent1.copy(), parent2.copy()
+        return child1,child2
+    
+    def _perform_mutation(self, enconded_dict: dict, child:pd.Series):
+        if pd.np.random.rand() < self._mutation_prob:
+            mutation_point = pd.np.random.choice(range(len(child)))
+            if pd.np.random.rand() < 0.5:
+                child[mutation_point] = 0
+            else:
+                child[mutation_point] = pd.np.random.choice(range(1, len(enconded_dict[child.keys()[mutation_point]]) + 1))
 
     def fit(self, pandas_dataframe : DataFrame, target : tuple[str, str]) -> None:
         """
@@ -247,15 +272,40 @@ class SDIGA(Algorithm):
         population = encoded_df.drop(columns=['deceased']).sample(n=self._population_size)
         
         # Evaluate the fitness of each individual.
-        
+        population['fitness'] = population.apply(lambda x: self._fitness_evaluation(x, encoded_df, unchecked_df, target, TP, FP), axis=1)
+
 
         # Repeat until no new examples or confidence example < min_confidence.
-        #    GA(algorithm).
-        #       Select 2 parents.
-        #       Perform crossover.
-        #       Perform mutation.
-        #       Evaluate the fitness of new individuals.
-        #       Select the best values between 2 last population or 2 new individual.
+
+        # Repeat until max_generation.(GA loop)
+
+        for generation in range(self._max_generation):
+            new_population = []
+            
+            # Select 2 parents
+            parents = population.sample(n=2, weights='fitness')
+            parent1, parent2 = parents.iloc[0].drop('fitness'), parents.iloc[1].drop('fitness')
+
+            # Perform crossover_prob (2 point crossover)
+            child1, child2 = self._perform_crossover(parent1, parent2)
+
+            # Perform mutation_prob (mutation 50% gene = 0, 50% gene = random)
+            self._perform_mutation(enconded_dict, child1)
+            self._perform_mutation(enconded_dict, child2)
+
+            # Evaluate the fitness of new individuals
+            child1_fitness = self._fitness_evaluation(child1, encoded_df, unchecked_df, target, TP, FP)
+            child2_fitness = self._fitness_evaluation(child2, encoded_df, unchecked_df, target, TP, FP)
+
+            child1['fitness'] = child1_fitness
+            child2['fitness'] = child2_fitness
+
+            new_population.extend([child1, child2])
+
+            # Select the best values between last population and new individuals
+            population = pd.concat([population, pd.DataFrame(new_population)]).nlargest(self._population_size, 'fitness')
+
+        
         #   Local search (best poblation).
         #   If confidence(R) >= min_confidence and R new cases
         #       best_cases.append(R)
