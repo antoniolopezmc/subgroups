@@ -23,25 +23,25 @@ from subgroups.quality_measures.ppv import PPV
 #Python annotations.
 from typing import Tuple, Union
 
-def _chromosome_encoding_and_dictionary(pandas_dataframe : DataFrame, target : tuple[str, str]) -> Tuple[DataFrame,dict,list]:
+def _chromosome_encoding_and_dictionary(pandas_dataframe : DataFrame, target : tuple[str, str]) -> Tuple[DataFrame,dict]:
     """
     This function maps the "str" dataset to a chromosome representation using categorical functions and returns a dictionary with the mapping aplicated.
 
     :param pandas_dataframe: the DataFrame which is provided to find the subgroups. This algorithm only supports nominal attributes (i.e., type 'str').
-    :return: a tuple with the DataFrame parsed using int values for non target columns, a dictionary with the mapping applied and a list with the attribute names.
+    :return: a tuple with the DataFrame parsed using int values for non target columns and a dictionary with the mapping applied.
     """
+
     df = pandas_dataframe.drop(columns=[target[0]]).astype('category')
-    dictionary_df = df.apply(lambda x: x.cat.categories).to_dict()
-    attribute_list = df.columns.tolist()
+    dictionary_df = df.apply(lambda x: x.cat.categories.to_list()).to_dict()
     df_coded = df.apply(lambda x: x.cat.codes + 1)
     df_coded[target[0]] = pandas_dataframe[target[0]]
-    return df_coded, dictionary_df, attribute_list
+    return df_coded, dictionary_df
 
 def _chromosome_decoding(chromosome : pd.Series, dictionary_df : dict) -> Pattern:
     """
     This function decodes a chromosome uwsing a dictionary with the mapping applied.
 
-    :param chromosome: the chromosome to be decoded.
+    :param chromosome: the chromosome to be decoded. The chromosome don't have the target column or fitness value.
     :param dictionary_df: the dictionary with the mapping applied.
     :return: a Pattern object with the decoded chromosome.
     """
@@ -74,11 +74,11 @@ def _filter_rows_with_chromosome(chromosome: pd.Series, pandas_dataframe: DataFr
 
 def _filter_rows_without_chromosome(chromosome: pd.Series, pandas_dataframe: DataFrame) -> DataFrame:
     """
-    This function filters the rows of a DataFrame using a chromosome.
+    This function filters the rows of a DataFrame not using a chromosome.
 
     :param chromosome: the chromosome to be used to filter the rows.
     :param pandas_dataframe: the DataFrame which is provided to find the subgroups.
-    :return: a DataFrame with the rows filtered by the chromosome.
+    :return: a DataFrame with the rows filtered by not containing the chromosome.
     """
     # Create a boolean mask with all True values initially
     mask = pd.Series(True, index=pandas_dataframe.index)
@@ -108,7 +108,8 @@ def _get_tp_and_fp(chromosome: pd.Series, pandas_dataframe: DataFrame, target: T
     fp = len(filtered_df) - tp
     return tp, fp
 
-def _calculate_support( chromosome : pd.Series, dataframe : DataFrame, target : tuple[str, str], TP : int, FP:int) -> float:
+
+def _calculate_support( tp:int, TP : int, FP:int) -> float:
     """
     This function calculates the support of a chromosome.
 
@@ -117,22 +118,43 @@ def _calculate_support( chromosome : pd.Series, dataframe : DataFrame, target : 
     :param target: a tuple with 2 elements: the target attribute name and the target value.
     :return: the support value of the chromosome.
     """
-    tp,fp = _get_tp_and_fp(chromosome, dataframe, target)
+    #tp,fp = _get_tp_and_fp(chromosome, dataframe, target)
     dict_of_support = {QualityMeasure.TRUE_POSITIVES: tp, QualityMeasure.TRUE_POPULATION: TP, QualityMeasure.FALSE_POPULATION: FP}
     return Support().compute(dict_of_support)
+
+
     
-def _calculate_confidence(chromosome : pd.Series, dataframe : DataFrame, target : tuple[str, str]) -> float:
+def _calculate_confidence(tp:int, fp:int) -> Tuple[float, int, int]:
     """
     This function calculates the confidence of a chromosome.
 
     :param chromosome: the chromosome to be evaluated.
     :param pandas_dataframe: the DataFrame which is provided to find the subgroups.
     :param target: a tuple with 2 elements: the target attribute name and the target value.
-    :return: the confidence value of the chromosome.
+    :return: the confidence value of the chromosome, the tp and fp values.
     """
-    tp,fp = _get_tp_and_fp(chromosome, dataframe, target)
+    #tp,fp = _get_tp_and_fp(chromosome, dataframe, target)
     dict_of_confidence = {QualityMeasure.TRUE_POSITIVES: tp, QualityMeasure.FALSE_POSITIVES: fp}
     return PPV().compute(dict_of_confidence)
+
+
+def _generate_population(codification_dict:dict, population_size:int) -> pd.DataFrame:
+    
+    """
+    This function generates a population of chromosomes using the codification dictionary.
+    :param codification_dict: the dictionary with the mapping applied.
+    :param population_size: the size of the population to be generated.
+    :return: a DataFrame with the population of chromosomes.
+    """
+    # Create an empty list to store the population
+    list_of_chromosomes = []
+    
+    # Generate random chromosomes
+    for _ in range(population_size):
+        chromosome = {key: random.randint(0, len(value)+1) for key, value in codification_dict.items()}
+        list_of_chromosomes.append(chromosome)
+    # Convert the list of chromosomes to a DataFrame
+    return pd.DataFrame(list_of_chromosomes, columns=codification_dict.keys())
 
 
 class SDIGA(Algorithm):
@@ -151,9 +173,9 @@ class SDIGA(Algorithm):
     :param file_path: if 'write_results_in_file' is True, path of the file in which the results will be written.
     """
 
-    __slots__ = ['_max_generation', '_population_size','_crossover_prob', '_mutation_prob', '_support_weight', '_confidence_weight', '_min_confidence','_encoded_dict','_file_path','_file']
+    __slots__ = ['_max_generation', '_population_size','_crossover_prob', '_mutation_prob', '_support_weight', '_confidence_weight', '_min_confidence','_encoded_dict','_TP','_FP','_file_path','_file']
 
-    def __init__(self, max_generation: int, population_size: int, crossover_prob: float, mutation_prob: float, support_weight: int, confidence_weight: int, min_confidence: float, write_results_in_file: bool = False, file_path: Union[str, None] = None) -> None:
+    def __init__(self, max_generation: int, population_size: int, crossover_prob: float, mutation_prob: float, support_weight: float, confidence_weight: float, min_confidence: float, write_results_in_file: bool = False, file_path: Union[str, None] = None) -> None:
         if (type(max_generation) is not int):
             raise TypeError("The parameter 'max_generation' must be 'int'.")
         if (type(population_size) is not int):
@@ -162,9 +184,9 @@ class SDIGA(Algorithm):
             raise TypeError("The parameter 'crossover_prob' must be 'float'.")
         if (type(mutation_prob) is not float):
             raise TypeError("The parameter 'mutation_prob' must be 'float'.")
-        if (type(support_weight) is not int):
+        if (type(support_weight) is not float):
             raise TypeError("The parameter 'support_weight' must be 'int'.")
-        if (type(confidence_weight) is not int):
+        if (type(confidence_weight) is not float):
             raise TypeError("The parameter 'confidence_weight' must be 'int'.")
         if (type(min_confidence) is not float):
             raise TypeError("The parameter 'min_confidence' must be 'float'.")
@@ -186,14 +208,21 @@ class SDIGA(Algorithm):
             raise ValueError("The parameter 'support_weight' must be greater than or equal to 0.")
         if (confidence_weight < 0):
             raise ValueError("The parameter 'confidence_weight' must be greater than or equal to 0.")
-        self._max_generation = max_generation
-        self._population_size = population_size
-        self._crossover_prob = crossover_prob
-        self._mutation_prob = mutation_prob
-        self._support_weight = support_weight
-        self._confidence_weight = confidence_weight
-        self._min_confidence = min_confidence
-        self._encoded_dict = None
+        self._max_generation: int = max_generation
+        self._population_size: int = population_size
+        self._crossover_prob: float = crossover_prob
+        self._mutation_prob: float = mutation_prob
+        self._support_weight: float = support_weight
+        self._confidence_weight: float = confidence_weight
+        self._min_confidence: float = min_confidence
+        self._encoded_dict:dict[str, list[str]] = None
+        self._unchecked_dataframe:DataFrame = None
+        self._unselected_subgroups:int = 0
+        self._selected_subgroups:int = 0
+        self._TP:int = 0
+        self._FP:int = 0
+        self._TP_unchecked:int = 0
+        self._FP_unchecked:int = 0
         if (write_results_in_file):
             self._file_path = file_path
         else:
@@ -211,10 +240,10 @@ class SDIGA(Algorithm):
     def _get_mutation_prob(self) -> float:
         return self._mutation_prob
     
-    def _get_support_weight(self) -> int:
+    def _get_support_weight(self) -> float:
         return self._support_weight
     
-    def _get_confidence_weight(self) -> int:
+    def _get_confidence_weight(self) -> float:
         return self._confidence_weight
     
     def _get_min_confidence(self) -> float:
@@ -223,6 +252,28 @@ class SDIGA(Algorithm):
     def _get_encoded_dict(self) -> dict:
         return self._encoded_dict
     
+    def _get_unchecked_dataframe(self) -> DataFrame:
+        return self._unchecked_dataframe
+    
+    def _get_unselected_subgroups(self) -> int:
+        return self._unselected_subgroups
+
+    def _get_selected_subgroups(self) -> int:
+        return self._selected_subgroups
+    
+    def _get_TP(self) -> int:
+        return self._TP
+    
+    def _get_FP(self) -> int:
+        return self._FP
+    
+    def _get_TP_unchecked(self) -> int:
+        return self._TP_unchecked
+    
+    def _get_FP_unchecked(self) -> int:
+        return self._FP_unchecked
+    
+
     max_generation = property(_get_max_generation, None, None, "Maximum number of generations for the evolution process.")
     population_size = property(_get_population_size, None, None, "Number of individuals in the population.")
     crossover_prob = property(_get_crossover_prob, None, None, "Probability of performing crossover during reproduction.")
@@ -231,8 +282,15 @@ class SDIGA(Algorithm):
     confidence_weight = property(_get_confidence_weight, None, None, "Weight of the confidence measure in the fitness evaluation.")
     min_confidence = property(_get_min_confidence, None, None, "Minimum confidence threshold for selecting the best individual.")
     encoded_dict = property(_get_encoded_dict, None, None, "Dictionary of the unique values of the dataset by columns.")
+    unchecked_dataframe = property(_get_unchecked_dataframe, None, None, "DataFrame with the unchecked dataset.")
+    unselected_subgroups = property(_get_unselected_subgroups, None, None, "Number of unselected subgroups after executing the SDMap algorithm (before executing the 'fit' method, this attribute is 0).")
+    selected_subgroups = property(_get_selected_subgroups, None, None, "Number of selected subgroups after executing the SDMap algorithm (before executing the 'fit' method, this attribute is 0).")
+    TP = property(_get_TP, None, None, "Number of True Positives.")
+    FP = property(_get_FP, None, None, "Number of False Positives.")
+    TP_unchecked = property(_get_TP_unchecked, None, None, "Number of True Positives from the unchecked dataset.")
+    FP_unchecked = property(_get_FP_unchecked, None, None, "Number of False Positives from the unchecked dataset.")
     
-    def _fitness_evaluation(self, chromosome : pd.Series, dataframe : DataFrame, unchecked_dataframe : DataFrame, target : tuple[str, str], TP:int, FP:int) -> float:
+    def _fitness_evaluation(self, chromosome : pd.Series, dataframe : DataFrame, target : tuple[str, str]) -> float:
         """
         This function evaluates the fitness of a chromosome using the support and confidence measures.
 
@@ -241,9 +299,13 @@ class SDIGA(Algorithm):
         :param target: a tuple with 2 elements: the target attribute name and the target value.
         :return: the fitness value of the chromosome.
         """
+        #calculate support value
+        tp_sup, fp_sup = _get_tp_and_fp(chromosome, self._unchecked_dataframe,target)
+        support = _calculate_support(tp_sup, self._TP_unchecked, self._FP_unchecked)
 
-        support = _calculate_support(chromosome, unchecked_dataframe, target, TP, FP)
-        confidence = _calculate_confidence(chromosome, dataframe, target)
+        #calculate confidence value
+        tp_conf, fp_conf = _get_tp_and_fp(chromosome, dataframe, target)
+        confidence = _calculate_confidence(tp_conf, fp_conf)
         # Calculate the fitness value.
         fitness = (self._support_weight * support + self._confidence_weight * confidence)/(self._support_weight + self._confidence_weight)
         return fitness
@@ -279,26 +341,28 @@ class SDIGA(Algorithm):
             else:
                 child[mutation_point] = random.choice(range(1, len(self._enconded_dict[child.keys()[mutation_point]]) + 1))
 
-    def _local_search(self, chromosome: pd.Series, dataframe: DataFrame, unchecked_dataframe: DataFrame, target: tuple[str, str], TP:int, FP:int) -> Tuple[Pattern, float]:
+    def _local_search(self, chromosome: pd.Series, dataframe: DataFrame, target: tuple[str, str]) -> Tuple[Pattern, float, float, int, int]:
         """
         This function performs a local search on the best individual found by the genetic algorithm.
 
         :param best_individual: the best individual found by the genetic algorithm.
         :param pandas_dataframe: the DataFrame which is provided to find the subgroups.
         :param target: a tuple with 2 elements: the target attribute name and the target value.
-        :param TP: the number of True Positives.
-        :param FP: the number of False Positives.
-        :return: a Pattern object with the best subgroup found by the local search and the confidence of the subgroup.
+        :return: a Pattern object with the best subgroup found by the local search, the confidence of the subgroup, the fitness value of the subgroup, the tp and fp values.
         """
+        # Get chromosome measures
+        tp_chrom, fp_chrom = _get_tp_and_fp(chromosome, dataframe, target)
+        
+        support_chromosome = _calculate_support(tp_chrom, self._TP, self._FP)
+        confidence_chromosome = _calculate_confidence(tp_chrom, fp_chrom)
+
         #Best individual is the best subgroup of the local search
         best_subgroup = chromosome
 
         #Calculate the support and confidence of the best individual
-        best_support = _calculate_support(best_subgroup, unchecked_dataframe, target, TP, FP)
-        best_confidence = _calculate_confidence(best_subgroup, dataframe, target)
+        best_support = support_chromosome
+        best_confidence = confidence_chromosome
 
-        #store the chromosome measures
-        chromosome_measures = [best_support, best_confidence]
         better = True
 
         #Repeat until no better individual is found
@@ -313,22 +377,138 @@ class SDIGA(Algorithm):
                 new_chromosome = best_subgroup.copy()
                 new_chromosome.iloc[i] = 0
                 #Calculate the support and confidence of the new chromosome
-                new_support = _calculate_support(new_chromosome, unchecked_dataframe, target, TP, FP)
-                new_confidence = _calculate_confidence(new_chromosome, dataframe, target)
+                tp, fp = _get_tp_and_fp(new_chromosome, dataframe, target)
+                new_support = _calculate_support(tp, self._TP, self._FP)
+                new_confidence = _calculate_confidence(tp, fp)
                 #If the new chromosome better or equal to og_chromosome -> better
-                if new_support >= chromosome_measures[0] and new_confidence >= chromosome_measures[1]:
+                if new_support >= support_chromosome and new_confidence >= confidence_chromosome:
                     better = True
                     #Update the measures if the new chromosome is better
                     if new_support > best_support:
                         best_support = new_support
                         best_confidence = new_confidence
                         best_subgroup = new_chromosome
+                else:
+                    # Subgroup is not selected
+                    self._unselected_subgroups += 1
+        
         if best_confidence >= self._min_confidence:
-            return _chromosome_decoding(best_subgroup, self._enconded_dict), best_confidence
+            return _chromosome_decoding(best_subgroup, self._enconded_dict), best_confidence, self._fitness_evaluation(best_subgroup, dataframe, target),tp, fp,
         else:
-            return _chromosome_decoding(chromosome, self._enconded_dict), chromosome_measures[1]
+            return _chromosome_decoding(chromosome, self._enconded_dict), confidence_chromosome, self._fitness_evaluation(chromosome, dataframe, target),tp_chrom,fp_chrom
             
+    def _SDIGA(self, pandas_dataframe : DataFrame, target : tuple[str, str]) -> list[Subgroup]:
+        """"
+        This function implements the SDIGA algorithm. It uses a genetic algorithm to find the best subgroups in the dataset after that it applies a local search to find the best subgroup.
+        :param pandas_dataframe: the DataFrame which is scanned. This algorithm only supports nominal attributes (i.e., type 'str'). IMPORTANT: missing values are not supported yet.
+        :param target: a tuple with 2 elements: the target attribute name and the target value.
+        :return: a list of the best subgroups found by the algorithm.
+        """
+        
+        # Calculate TP and FP.
+        self._TP_unchecked = self._TP = sum(pandas_dataframe[target[0]] == target[1])
+        self._FP_unchecked = self._FP = len(pandas_dataframe) - self._TP_unchecked
 
+        # Map the dataset to a chromosome representation.
+        encoded_df, self._enconded_dict = _chromosome_encoding_and_dictionary(pandas_dataframe, target) 
+        
+        # Create the unchecked dataframe.
+        self._unchecked_dataframe = encoded_df.copy()
+        
+        # Create empty best_cases.
+        best_cases:list[Pattern] = []
+
+        new_subgroup = True
+        last_subgroup_confidence = self._min_confidence
+
+        # Repeat until no new examples or confidence example < min_confidence.
+        while new_subgroup and last_subgroup_confidence >= self._min_confidence:
+            last_subgroup_confidence = self._min_confidence-1
+
+            # Select random population.
+            # TODO: I really don't know if the population should be selected randomly of a full chromosome
+            # or if some random gene should be 0.
+            population = _generate_population(self._enconded_dict, self._population_size)
+            
+            # Evaluate the fitness of each individual.
+            population['fitness'] = population.apply(lambda x: self._fitness_evaluation(x, encoded_df, target), axis=1)
+
+            # Sort the population by fitness.
+            population = population.sort_values(by='fitness', ascending=False)
+
+            # Repeat until max_generation.(GA loop)
+            for generation in range(self._max_generation):
+                
+                # Select 2 parents
+                parent1, parent2  = population.iloc[0].drop('fitness'), population.iloc[1].drop('fitness')
+                
+                # Perform crossover_prob (2 point crossover)
+                child1, child2 = self._perform_crossover(parent1, parent2)
+
+                # Perform mutation_prob (mutation 50% gene = 0, 50% gene = random)
+                self._perform_mutation(child1)
+                self._perform_mutation(child2)
+
+                # Evaluate the fitness of new individuals
+                child1_fitness = self._fitness_evaluation(child1, encoded_df, self._unchecked_dataframe, target)
+                child2_fitness = self._fitness_evaluation(child2, encoded_df, self._unchecked_dataframe, target)
+
+                child1['fitness'] = child1_fitness
+                child2['fitness'] = child2_fitness
+
+                # Add the new children to the new population if their fitness is better than the last row of the current population
+                if child1_fitness > population['fitness'].iloc[-1]:
+                    population.append(child1, ignore_index=True)
+                if child2_fitness > population['fitness'].iloc[-1]:
+                    population.append(child2, ignore_index=True)
+
+                # Select the best values between last population and new individuals
+                population = population.nlargest(self._population_size, 'fitness')
+
+                self._unselected_subgroups += 2
+
+                if not(generation % 10) == 0:
+                    continue
+                print("Generation: ", generation)
+                print("Best fitness: ", population['fitness'].iloc[0])
+                print("Best individual: ", population.iloc[0].drop('fitness'))
+
+            # Local search (best chromosome).
+            last_subgroup, last_subgroup_confidence, last_fitness, last_tp, last_fp = self._local_search(population.iloc[0].drop['fitness'], encoded_df, self._unchecked_dataframe, target)
+
+            # If confidence(R) >= min_confidence and R new cases
+            # TODO: check if the subgroup is already in the best_cases.
+            if any(case.is_refinement(last_subgroup, refinement_of_itself=True) for case in best_cases):
+                print("The subgroup is already in the best cases.")
+                print("Subgroup: ", last_subgroup)
+                new_subgroup = False
+                continue
+            if last_subgroup_confidence < self._min_confidence:
+                continue
+            
+            # Calculate the unchecked tp and fp values.
+            tp, fp = _get_tp_and_fp(last_subgroup, self._unchecked_dataframe, target)
+            # mark R cases as visited.
+            best_cases.append(last_subgroup)
+            self._selected_subgroups += 1
+
+            if self._file_path is not None:
+                self._file.write(str(last_subgroup) + ";")
+                self._file.write("Quality Measure " + last_fitness + ";")
+                self._file.write("tp = " + str(last_tp) + ";")
+                self._file.write("fp = " + str(last_fp) + ";")
+                self._file.write("TP = " + str(self._TP) + ";")
+                self._file.write("FP = " + str(self._FP) + ";")
+                self._file.write("unchecked_tp = " + str(tp) + ";")
+                self._file.write("unchecked_fp = " + str(fp) + ";")
+                self._file.write("TP_unchecked = " + str(self._TP_unchecked) + ";")
+                self._file.write("FP_unchecked = " + str(self._FP_unchecked) + ";")
+            # recalculate the non visited dataframe.
+            # recalculate the TP and FP
+            self._unchecked_dataframe = _filter_rows_without_chromosome(last_subgroup, self._unchecked_dataframe)
+            self._TP_unchecked = sum(pandas_dataframe[target[0]] == target[1])
+            self._FP_unchecked = len(pandas_dataframe) - self._TP_unchecked
+        return best_cases
 
 
     def fit(self, pandas_dataframe : DataFrame, target : tuple[str, str]) -> None:
@@ -354,79 +534,9 @@ class SDIGA(Algorithm):
         if (target[1] not in pandas_dataframe[target[0]].unique()):
             raise ValueError("The second element of the parameter 'target' must be a value of the target variable. "+str(target[1])+" not in "+str(pandas_dataframe[target[0]].unique()))
         
-        # Calculate TP and FP.
-        TP = sum(pandas_dataframe[target[0]] == target[1])
-        FP = len(pandas_dataframe) - TP
-
-        # Map the dataset to a chromosome representation.
-        encoded_df, self._enconded_dict, encoded_list = _chromosome_encoding_and_dictionary(pandas_dataframe, target) 
-        
-        # Create the unchecked dataframe.
-        unchecked_df = encoded_df.copy()
-        
-        # Create empty best_cases.
-        best_cases = []
-
-        # Select random population.
-        # TODO: I really don't know if the population should be selected randomly of a full chromosome
-        # or if some random gene sould be 0.
-        population = encoded_df.drop(columns=['deceased']).sample(n=self._population_size)
-        
-        # Evaluate the fitness of each individual.
-        population['fitness'] = population.apply(lambda x: self._fitness_evaluation(x, encoded_df, unchecked_df, target, TP, FP), axis=1)
-
-        new_subgroup = True
-        last_subgroup_confidence = self._min_confidence
-
-        # Repeat until no new examples or confidence example < min_confidence.
-        while new_subgroup and last_subgroup_confidence >= self._min_confidence:
-            
-            last_subgroup_confidence = self._min_confidence-1
-
-            # Repeat until max_generation.(GA loop)
-            for generation in range(self._max_generation):
-                new_population = []
-                
-                # Select 2 parents
-                parents = population.sample(n=2, weights='fitness')
-                parent1, parent2 = parents.iloc[0].drop('fitness'), parents.iloc[1].drop('fitness')
-
-                # Perform crossover_prob (2 point crossover)
-                child1, child2 = self._perform_crossover(parent1, parent2)
-
-                # Perform mutation_prob (mutation 50% gene = 0, 50% gene = random)
-                self._perform_mutation(child1)
-                self._perform_mutation(child2)
-
-                # Evaluate the fitness of new individuals
-                child1_fitness = self._fitness_evaluation(child1, encoded_df, unchecked_df, target, TP, FP)
-                child2_fitness = self._fitness_evaluation(child2, encoded_df, unchecked_df, target, TP, FP)
-
-                child1['fitness'] = child1_fitness
-                child2['fitness'] = child2_fitness
-
-                new_population.extend([child1, child2])
-
-                # Select the best values between last population and new individuals
-                population = pd.concat([population, pd.DataFrame(new_population)]).nlargest(self._population_size, 'fitness')
-
-            # Local search (best poblation).
-            last_subgroup, last_subgroup_confidence = self._local_search(population.iloc[0], encoded_df, unchecked_df, target, TP, FP)
-
-            # If confidence(R) >= min_confidence and R new cases
-            if last_subgroup in best_cases:
-                new_subgroup = False
-                continue
-            if last_subgroup_confidence < self._min_confidence:
-                continue
-            
-            
-            # mark R cases as visited.
-            best_cases.append(last_subgroup)
-            # recalculate the non visited dataframe.
-            # recalculate the TP and FP
-            unchecked_df = _filter_rows_without_chromosome(last_subgroup, unchecked_df)
-            TP, FP = _get_tp_and_fp(last_subgroup, encoded_df, target)
-
-        # Return best_cases.
-        return best_cases
+        if (self._file_path is not None):
+                self._file = open(self._file_path, "w")
+        best_cases = self._SDIGA(pandas_dataframe, target)
+        if (self._file_path is not None):
+                self._file.close()
+                self._file = None
