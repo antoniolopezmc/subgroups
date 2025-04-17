@@ -44,12 +44,12 @@ class TestSDIGA(unittest.TestCase):
                       support_weight=0.4, confidence_weight=0.3, min_confidence=0.5)
         with self.assertRaises(ValueError):
             # Invalid values for crossover_prob
-            SDIGA(max_generation=10, population_size=20, crossover_prob=1.5, mutation_prob=0.1, 
-                  support_weight=1, confidence_weight=1, min_confidence=0.5)
+            SDIGA(max_generation=10, population_size=20, crossover_prob=1.5, mutation_prob=0.01, 
+                      support_weight=0.4, confidence_weight=0.3, min_confidence=0.5)
         with self.assertRaises(ValueError):
             # Invalid values for mutation_prob
-            SDIGA(max_generation=10, population_size=20, crossover_prob=0.8, mutation_prob=-0.1, 
-                  support_weight=1, confidence_weight=1, min_confidence=0.5)
+            SDIGA(max_generation=10, population_size=20, crossover_prob=0.8, mutation_prob=-0.01, 
+                      support_weight=0.4, confidence_weight=0.3, min_confidence=0.5)
     
     def test_SDIGA_init_method2(self):
 
@@ -58,7 +58,7 @@ class TestSDIGA(unittest.TestCase):
             # Invalid type for file_path when write_results_in_file is True
             SDIGA(max_generation=10, population_size=20, crossover_prob=0.6, mutation_prob=0.01, 
                   support_weight=0.4, confidence_weight=0.3, min_confidence=0.5, write_results_in_file=True, file_path=24)
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValueError):
             # Invalid type for file_path when write_results_in_file is True
             SDIGA(max_generation=10, population_size=20, crossover_prob=0.6, mutation_prob=0.01, 
                   support_weight=0.4, confidence_weight=0.3, min_confidence=0.5, write_results_in_file=True, file_path=None)
@@ -73,8 +73,8 @@ class TestSDIGA(unittest.TestCase):
         df = DataFrame({"a1": ["a", "b", "c", "c"], "a2": ["q", "q", "s", "q"], 
                         "class": ["n", "y", "n", "y"]})
         target = ("class", "y")
-        sdiga = SDIGA(max_generation=10, population_size=5, crossover_prob=0.8, mutation_prob=0.1, 
-                      support_weight=1, confidence_weight=1, min_confidence=0.5)
+        sdiga = SDIGA(max_generation=10, population_size=5, crossover_prob=0.6, mutation_prob=0.01, 
+                      support_weight=0.4, confidence_weight=0.3, min_confidence=0.5)
         sdiga.fit(df, target)
         self.assertEqual(sdiga.TP, 2)
         self.assertEqual(sdiga.FP, 2)
