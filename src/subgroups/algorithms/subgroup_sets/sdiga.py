@@ -25,21 +25,26 @@ from typing import Tuple, Union
 
 def _chromosome_encoding_and_dictionary(pandas_dataframe : DataFrame, target : tuple[str, str]) -> Tuple[DataFrame,dict]:
     """
-    This function maps the "str" dataset to a chromosome representation using categorical functions and returns a dictionary with the mapping aplicated.
+    This function maps the "str" values of the DataFrame to int values, creating a dictionary with the mapping applied.
+    It also returns the DataFrame with the int values for non target columns.
+    The target column is not modified.
 
     :param pandas_dataframe: the DataFrame which is provided to find the subgroups. This algorithm only supports nominal attributes (i.e., type 'str').
+    :param target: a tuple with 2 elements: the target attribute name and the target value.
     :return: a tuple with the DataFrame parsed using int values for non target columns and a dictionary with the mapping applied.
     """
 
     df = pandas_dataframe.drop(columns=[target[0]]).astype('category')
     dictionary_df = df.apply(lambda x: x.cat.categories.to_list()).to_dict()
     df_coded = df.apply(lambda x: x.cat.codes + 1)
+    df_coded = df_coded.astype('uint16')
     df_coded[target[0]] = pandas_dataframe[target[0]]
     return df_coded, dictionary_df
 
 def _chromosome_decoding(chromosome : pd.Series, dictionary_df : dict) -> Pattern:
     """
-    This function decodes a chromosome uwsing a dictionary with the mapping applied.
+    This function decodes a chromosome using a dictionary with the mapping applied.
+    It creates a Pattern object with the decoded chromosome, which contains the selectors for each gene in the chromosome.
 
     :param chromosome: the chromosome to be decoded. The chromosome don't have the target column or fitness value.
     :param dictionary_df: the dictionary with the mapping applied.
@@ -111,9 +116,9 @@ def _calculate_support( tp:int, TP : int, FP:int) -> float:
     """
     This function calculates the support of a chromosome.
 
-    :param chromosome: the chromosome to be evaluated.
-    :param pandas_dataframe: the DataFrame which is provided to find the subgroups.
-    :param target: a tuple with 2 elements: the target attribute name and the target value.
+    :param tp: the number of True Positives of the chromosome.
+    :param TP: the total number of True Population in the dataset.
+    :param FP: the total number of False Population in the dataset.
     :return: the support value of the chromosome.
     """
     #tp,fp = _get_tp_and_fp(chromosome, dataframe, target)
@@ -125,14 +130,13 @@ def _calculate_support( tp:int, TP : int, FP:int) -> float:
 
 
     
-def _calculate_confidence(tp:int, fp:int) -> Tuple[float, int, int]:
+def _calculate_confidence(tp:int, fp:int) -> float:
     """
     This function calculates the confidence of a chromosome.
 
-    :param chromosome: the chromosome to be evaluated.
-    :param pandas_dataframe: the DataFrame which is provided to find the subgroups.
-    :param target: a tuple with 2 elements: the target attribute name and the target value.
-    :return: the confidence value of the chromosome, the tp and fp values.
+    :param tp: the number of True Positives of the chromosome.
+    :param fp: the number of False Positives of the chromosome.
+    :return: the confidence value of the chromosome.
     """
     #tp,fp = _get_tp_and_fp(chromosome, dataframe, target)
     if tp==fp==0:
@@ -146,7 +150,7 @@ def _generate_population(codification_dict:dict, population_size:int) -> pd.Data
     
     """
     This function generates a population of chromosomes using the codification dictionary.
-    :param codification_dict: the dictionary with the mapping applied.
+    :param codification_dict: the dictionary with the unique values of the dataset by columns.
     :param population_size: the size of the population to be generated.
     :return: a DataFrame with the population of chromosomes.
     """
@@ -302,10 +306,12 @@ class SDIGA(Algorithm):
     
     def _fitness_evaluation(self, chromosome : pd.Series, dataframe : DataFrame, target : tuple[str, str]) -> float:
         """
-        This function evaluates the fitness of a chromosome using the support and confidence measures.
+        This function evaluates the fitness of a chromosome based on the support and confidence measures.
+        The fitness value is calculated as a weighted average of the support and confidence measures.
+        The support and confidence measures are calculated using the True Positives and False Positives of the chromosome.
 
         :param chromosome: the chromosome to be evaluated.
-        :param pandas_dataframe: the DataFrame which is provided to find the subgroups.
+        :param dataframe: the DataFrame which is provided to find the subgroups.
         :param target: a tuple with 2 elements: the target attribute name and the target value.
         :return: the fitness value of the chromosome.
         """
@@ -326,8 +332,8 @@ class SDIGA(Algorithm):
         """
         This function performs the crossover operation between two parents.
 
-        :param parent1: the first parent.
-        :param parent2: the second parent.
+        :param parent1: the first parent. Chromosome representation of the first parent.
+        :param parent2: the second parent. Chromosome representation of the second parent.
         :return: a tuple with the two children obtained from the crossover operation.
         """
         if random.rand() < self._crossover_prob:
@@ -358,8 +364,7 @@ class SDIGA(Algorithm):
         :param chromosome: the best individual found by the genetic algorithm.
         :param dataframe: the DataFrame which is provided to find the subgroups.
         :param target: a tuple with 2 elements: the target attribute name and the target value.
-        :return: a Pattern object with the best subgroup found by the local search, the confidence of the subgroup, 
-                 the fitness value of the subgroup, the tp and fp values.
+        :return: a tuple with the best subgroup found, its confidence, its fitness value, and the True Positives and False Positives of the best subgroup.
         """
         # Get chromosome measures
         tp_chrom, fp_chrom = _get_tp_and_fp(chromosome, dataframe, target)
@@ -401,14 +406,14 @@ class SDIGA(Algorithm):
                     if delta > best_support_delta:
                         best_candidate = new_chromosome
                         best_support_delta = delta
-                        best_metrics = (new_confidence, tp, fp)
+                        best_metrics = (new_support, new_confidence, tp, fp)
 
             # Update the best subgroup if a better candidate is found
             if best_candidate is not None:
                 better = True
                 best_subgroup = best_candidate
-                best_confidence, best_tp, best_fp = best_metrics
-                support_chromosome = _calculate_support(best_tp, self._TP, self._FP)
+                best_support, best_confidence, best_tp, best_fp = best_metrics
+                support_chromosome = best_support
                 confidence_chromosome = best_confidence
 
         # Return the best subgroup and its metrics
@@ -460,6 +465,8 @@ class SDIGA(Algorithm):
                 
                 # Select 2 parents
                 parent1, parent2  = population.iloc[0].drop('fitness'), population.iloc[1].drop('fitness')
+
+                # Calculate probabilities and
                 
                 # Perform crossover_prob (2 point crossover)
                 child1, child2 = self._perform_crossover(parent1, parent2)
@@ -491,7 +498,7 @@ class SDIGA(Algorithm):
             last_subgroup = _chromosome_decoding(last_chromosome, self._encoded_dict)
 
             # If confidence(R) >= min_confidence and R new cases
-            # TODO: check if the subgroup is already in the best_cases.
+            
             if any(case.is_refinement(last_subgroup, refinement_of_itself=True) for case in best_cases):
                 new_subgroup = False
                 continue
@@ -504,16 +511,19 @@ class SDIGA(Algorithm):
             best_cases.append(last_subgroup)
             self._selected_subgroups += 1
 
+            # Create the subgroup object.
+            subgroup = Subgroup(last_subgroup, Selector(target[0], Operator.EQUAL, target[1]))
+
             if self._file_path is not None:
-                self._file.write(str(last_subgroup) + ";")
-                self._file.write("Quality Measure " + str(last_fitness) + ";")
-                self._file.write("tp = " + str(last_tp) + ";")
-                self._file.write("fp = " + str(last_fp) + ";")
-                self._file.write("TP = " + str(self._TP) + ";")
-                self._file.write("FP = " + str(self._FP) + ";")
-                self._file.write("unchecked_tp = " + str(tp) + ";")
-                self._file.write("unchecked_fp = " + str(fp) + ";")
-                self._file.write("TP_unchecked = " + str(self._TP_unchecked) + ";")
+                self._file.write(str(subgroup) + " ; ")
+                self._file.write("Quality Measure " + str(last_fitness) + " ; ")
+                self._file.write("tp = " + str(last_tp) + " ; ")
+                self._file.write("fp = " + str(last_fp) + " ; ")
+                self._file.write("TP = " + str(self._TP) + " ; ")
+                self._file.write("FP = " + str(self._FP) + " ; ")
+                self._file.write("unchecked_tp = " + str(tp) + " ; ")
+                self._file.write("unchecked_fp = " + str(fp) + " ; ")
+                self._file.write("TP_unchecked = " + str(self._TP_unchecked) + " ; ")
                 self._file.write("FP_unchecked = " + str(self._FP_unchecked) + "\n")
             # recalculate the non visited dataframe.
             # recalculate the TP and FP
