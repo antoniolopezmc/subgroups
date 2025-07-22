@@ -516,7 +516,7 @@ class SDIGA(Algorithm):
 
             if self._file_path is not None:
                 self._file.write(str(subgroup) + " ; ")
-                self._file.write("Quality Measure " + str(last_fitness) + " ; ")
+                self._file.write("Quality Measure Fitness = " + str(last_fitness) + " ; ")
                 self._file.write("tp = " + str(last_tp) + " ; ")
                 self._file.write("fp = " + str(last_fp) + " ; ")
                 self._file.write("TP = " + str(self._TP) + " ; ")
