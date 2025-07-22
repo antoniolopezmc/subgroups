@@ -51,3 +51,9 @@ DSLM algorithm
 ==============
 
 https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/DSLM.ipynb
+
+===============
+SDIGA algorithm
+===============
+
+https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/SDIGA.ipynb

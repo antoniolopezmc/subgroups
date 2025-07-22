@@ -110,6 +110,7 @@ An example of use of each algorithm implemented in `subgroups` python library ca
 - [IDSD](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/IDSD.ipynb)
 - [GMSL](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/GMSL.ipynb)
 - [DSLM](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/DSLM.ipynb)
+- [SDIGA](https://github.com/antoniolopezmc/subgroups/blob/master/examples/algorithms/SDIGA.ipynb)
 
 ## Documentation
 
