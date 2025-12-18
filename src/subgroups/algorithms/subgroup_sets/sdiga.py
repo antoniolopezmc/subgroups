@@ -20,6 +20,7 @@ from subgroups.core.selector import Selector
 from subgroups.core.subgroup import Subgroup
 from subgroups.quality_measures.support import Support
 from subgroups.quality_measures.ppv import PPV
+from math import inf
 
 #Python annotations.
 from typing import Tuple, Union
@@ -145,21 +146,30 @@ def _calculate_confidence(tp:int, fp:int) -> float:
     return PPV().compute(dict_of_confidence)
 
 
-def _generate_population(codification_dict:dict, population_size:int) -> pd.DataFrame:
+def _generate_population(codification_dict:dict, population_size:int, max_size:int = None) -> pd.DataFrame:
     
     """
     This function generates a population of chromosomes using the codification dictionary.
     :param codification_dict: the dictionary with the unique values of the dataset by columns.
     :param population_size: the size of the population to be generated.
+    :param max_size: the maximum number of non-zero genes of the chromosomes.
     :return: a DataFrame with the population of chromosomes.
     """
     # Create an empty list to store the population
     list_of_chromosomes = []
     
     # Generate random chromosomes
-    for _ in range(population_size):
-        chromosome = {key: random.randint(0, len(value)+1) for key, value in codification_dict.items()}
-        list_of_chromosomes.append(chromosome)
+    if max_size is None:
+        for _ in range(population_size):
+            chromosome = {key: random.randint(0, len(codification_dict[key]) + 1) for key in codification_dict.keys()}
+            list_of_chromosomes.append(chromosome)
+    else:
+        for _ in range(population_size):
+            non_zero_genes = random.choice(list(codification_dict.keys()), size=random.randint(1, max_size + 1), replace=False)
+            chromosome = {key: 0 for key in codification_dict.keys()}
+            for gene in non_zero_genes:
+                chromosome[gene] = random.randint(1, len(codification_dict[gene]) + 1)
+            list_of_chromosomes.append(chromosome)
     # Convert the list of chromosomes to a DataFrame
     return pd.DataFrame(list_of_chromosomes, columns=codification_dict.keys())
 
@@ -178,11 +188,12 @@ class SDIGA(Algorithm):
     :param min_confidence: Minimum confidence threshold for selecting the best individual.
     :param write_results_in_file: whether the results obtained will be written in a file. By default, False.
     :param file_path: if 'write_results_in_file' is True, path of the file in which the results will be written.
+    :param max_pattern_size: maximum number of selectors in the patterns. If None, no limit is applied. By default, None.
     """
 
-    __slots__ = ['_max_generation', '_population_size','_crossover_prob', '_mutation_prob', '_confidence_weight', '_support_weight', '_min_confidence','_encoded_dict','_unchecked_dataframe','_unselected_subgroups','_selected_subgroups','_TP','_FP','_TP_unchecked','_FP_unchecked','_file_path','_file']
+    __slots__ = ['_max_generation', '_population_size','_crossover_prob', '_mutation_prob', '_confidence_weight', '_support_weight', '_min_confidence','_encoded_dict','_unchecked_dataframe','_unselected_subgroups','_selected_subgroups','_TP','_FP','_TP_unchecked','_FP_unchecked','_file_path','_file', '_max_pattern_size', '_num_subgroups']
 
-    def __init__(self, max_generation: int, population_size: int, crossover_prob: float, mutation_prob: float, confidence_weight: float, support_weight: float, min_confidence: float, write_results_in_file: bool = False, file_path: Union[str, None] = None) -> None:
+    def __init__(self, max_generation: int, population_size: int, crossover_prob: float, mutation_prob: float, confidence_weight: float, support_weight: float, min_confidence: float, write_results_in_file: bool = False, file_path: Union[str, None] = None, max_pattern_size: Union[int, None] = None, num_subgroups: Union[int, None] = None) -> None:
         if (type(max_generation) is not int):
             raise TypeError("The parameter 'max_generation' must be 'int'.")
         if (type(population_size) is not int):
@@ -197,6 +208,10 @@ class SDIGA(Algorithm):
             raise TypeError("The parameter 'confidence_weight' must be 'int'.")
         if (type(min_confidence) is not float):
             raise TypeError("The parameter 'min_confidence' must be 'float'.")
+        if (max_pattern_size is not None) and (type(max_pattern_size) is not int):
+            raise TypeError("The parameter 'max_pattern_size' must be 'int' or 'NoneType'.")
+        if (num_subgroups is not None) and (type(num_subgroups) is not int):
+            raise TypeError("The parameter 'num_subgroups' must be 'int' or 'NoneType'.")
         if (type(write_results_in_file) is not bool):
             raise TypeError("The parameter 'write_results_in_file' must be 'bool'.")
         if ((type(file_path) is not str) and (file_path is not None)):
@@ -217,6 +232,10 @@ class SDIGA(Algorithm):
             raise ValueError("The parameter 'confidence_weight' must be greater than 0.")
         if (min_confidence < 0):
             raise ValueError("The parameter 'min_confidence' must be greater than 0.")
+        if (max_pattern_size is not None) and (max_pattern_size <= 0):    
+            raise ValueError("The parameter 'max_pattern_size' must be greater than 0.")
+        if (num_subgroups is not None) and (num_subgroups <= 0):    
+            raise ValueError("The parameter 'num_subgroups' must be greater than 0.")
         
 
         self._max_generation: int = max_generation
@@ -234,6 +253,8 @@ class SDIGA(Algorithm):
         self._FP:int = 0
         self._TP_unchecked:int = 0
         self._FP_unchecked:int = 0
+        self._max_pattern_size: Union[int, None] = max_pattern_size
+        self._num_subgroups: Union[int, None] = num_subgroups if num_subgroups is not None else inf
         if (write_results_in_file):
             self._file_path = file_path
         else:
@@ -446,12 +467,12 @@ class SDIGA(Algorithm):
         last_subgroup_confidence = self._min_confidence
 
         # Repeat until no new examples or confidence example < min_confidence.
-        while new_subgroup and last_subgroup_confidence >= self._min_confidence:
+        while new_subgroup and last_subgroup_confidence >= self._min_confidence and self._selected_subgroups < self._num_subgroups:
             last_subgroup_confidence = self._min_confidence-1
 
             # Select random population.
             
-            population = _generate_population(self._encoded_dict, self._population_size)
+            population = _generate_population(self._encoded_dict, self._population_size, self._max_pattern_size)
             
             # Evaluate the fitness of each individual.
             population['fitness'] = population.apply(lambda x: self._fitness_evaluation(x, encoded_df, target), axis=1)
@@ -499,6 +520,9 @@ class SDIGA(Algorithm):
             # If confidence(R) >= min_confidence and R new cases
             
             if any(case.is_refinement(last_subgroup, refinement_of_itself=True) for case in best_cases):
+                new_subgroup = False
+                continue
+            if len(last_subgroup) == 0:
                 new_subgroup = False
                 continue
             if last_subgroup_confidence < self._min_confidence:
