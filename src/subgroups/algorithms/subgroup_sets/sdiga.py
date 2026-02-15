@@ -2,6 +2,7 @@
 
 # Contributors:
 #    Iván García Alcaraz <igalcaraz19@gmail.com>
+#    Francisco Mora-Caselles <fmora@um.es>
 
 """This file contains the implementation of the SDIGA algorithm.
 """
@@ -67,14 +68,13 @@ def _filter_rows_with_chromosome(chromosome: pd.Series, pandas_dataframe: DataFr
     :param pandas_dataframe: the DataFrame which is provided to find the subgroups.
     :return: a DataFrame with the rows filtered by the chromosome.
     """
-    # Create a boolean mask with all True values initially
-    mask = pd.Series(True, index=pandas_dataframe.index)
-    # Iterate over each index and corresponding chromosome value
-    for i, chrom_val in enumerate(chromosome):
-        # If chromosome[i] is non-zero, update the mask
-        if chrom_val != 0:
-            mask &= (pandas_dataframe.iloc[:,i] == chrom_val)
-    # Return the filtered dataframe rows
+    # Get the non-zero genes of the chromosome.
+    chromosome_non_zero = chromosome[chromosome != 0]
+    # If there are no non-zero genes, return the original DataFrame.
+    if chromosome_non_zero.empty:
+        return pandas_dataframe
+    # Create a mask to filter the rows that match the chromosome.
+    mask = (pandas_dataframe[chromosome_non_zero.index] == chromosome_non_zero.values).all(axis=1)
     return pandas_dataframe[mask]
 
 def _filter_rows_without_chromosome(chromosome: pd.Series, pandas_dataframe: DataFrame) -> DataFrame:
@@ -85,14 +85,13 @@ def _filter_rows_without_chromosome(chromosome: pd.Series, pandas_dataframe: Dat
     :param pandas_dataframe: the DataFrame which is provided to find the subgroups.
     :return: a DataFrame with the rows filtered by not containing the chromosome.
     """
-    # Create a boolean mask with all True values initially
-    mask = pd.Series(True, index=pandas_dataframe.index)
-    # Iterate over each index and corresponding chromosome value
-    for i, chrom_val in enumerate(chromosome):
-        # If chromosome[i] is non-zero, update the mask
-        if chrom_val != 0:
-            mask &= (pandas_dataframe.iloc[:,i] == chrom_val)
-    # Return the filtered dataframe rows
+    # Get the non-zero genes of the chromosome.
+    chromosome_non_zero = chromosome[chromosome != 0]
+    # If there are no non-zero genes, return the original DataFrame.
+    if chromosome_non_zero.empty:
+        return pandas_dataframe
+    # Create a mask to filter the rows that match the chromosome.
+    mask = (pandas_dataframe[chromosome_non_zero.index] == chromosome_non_zero.values).all(axis=1)
     return pandas_dataframe[~mask]
 
 def _get_tp_and_fp(chromosome: pd.Series, pandas_dataframe: DataFrame, target: Tuple[str,str]) -> Tuple[int, int]:
