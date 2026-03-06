@@ -40,10 +40,10 @@ class PValueGLM(CredibilityMeasure):
         # If the glm is included in the dictionary, we extract the p value from it.
         if "glm" in dict_of_parameters:
             glm = dict_of_parameters["glm"]
-            return glm.pvalues.iloc[0]
+            return float(glm.pvalues.iloc[0])
         # Otherwise, we compute the generalized linear model and extract the p value from it.
         results = sm.GLM(dict_of_parameters["target_appearance"], dict_of_parameters["appearance"], family=sm.families.Binomial()).fit()
-        return results.pvalues.iloc[0]
+        return float(results.pvalues.iloc[0])
 
     def get_name(self) -> str:
         """Method to get the credibility measure name (equal to the class name).
